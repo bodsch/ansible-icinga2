@@ -1,0 +1,9 @@
+---
+- hosts: all
+  any_errors_fatal: false
+  environment:
+    NETRC: ''
+  roles:
+    - role: ansible-icinga2
+      vars:
+        icinga2_mode: master

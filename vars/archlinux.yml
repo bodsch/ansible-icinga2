@@ -1,0 +1,16 @@
+---
+
+icinga2_monitoring_plugins:
+  - monitoring-plugins
+  - lynx
+  # required for snmpget/check_snmp
+  - net-snmp
+  # To ensure ansible_default_ipv4 is populated
+  - iproute2
+  # for dig
+  - bind-tools
+
+icinga2_user: icinga
+icinga2_pki_userdir: icinga
+
+monitoring_plugins_directory: /usr/lib/monitoring-plugins

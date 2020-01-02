@@ -1,0 +1,33 @@
+{{ ansible_managed | comment(decoration='// ') }}
+
+{% set satellite_ip = lookup('pipe', 'host ' + ansible_fqdn   + ' | grep "has address" | cut -d" " -f4') %}
+{% set master_ip    = lookup('pipe', 'host ' + icinga2_master + ' | grep "has address" | cut -d" " -f4') %}
+// satellite: {{ ansible_fqdn }}  - {{ satellite_ip }}
+// master   : {{ icinga2_master }} - {{ master_ip }}
+/*
+object Endpoint "{{ ansible_fqdn }}" { host = "{{ satellite_ip }}"; port = "5665" }
+object Zone "{{ ansible_fqdn }}" { parent = "{{ icinga2_master }}" ; endpoints = [ "{{ ansible_fqdn }}" ] }
+*/
+
+{% if icinga2_satellite is defined and icinga2_satellite | count != 0 %}
+{% for key in icinga2_satellite -%}
+object Host "{{ key }}" {
+  address = "{{satellite_ip}}"
+  command_endpoint = "{{ ansible_fqdn }}"
+  zone = "{{ ansible_fqdn }}"
+  {% for ke,ve in icinga2_satellite[key].items() | sort -%}
+  {% if ke == 'import' -%}{{ ke }} "{{ ve }}"
+  {% elif ke == 'groups' -%}{{ ke }} = ["{{ ve|join('","') }}"]
+  {% elif ke == 'vars' -%}
+  vars = {
+    {{ ve | indent(4) }}
+  }
+  {%- else -%}
+  {{ ke }} = "{{ ve }}"
+{% endif %}
+{% endfor %}
+
+}
+
+{% endfor %}
+{% endif %}

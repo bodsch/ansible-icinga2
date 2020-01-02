@@ -1,0 +1,38 @@
+#!/bin/bash
+
+while getopts "s:t:a:S:" opt
+do
+  case ${opt} in
+    s)
+      service_state=${OPTARG}
+      ;;
+    t)
+      service_state_type=${OPTARG}
+      ;;
+    a)
+      service_attempt=${OPTARG}
+      ;;
+    S)
+      service=${OPTARG}
+      ;;
+  esac
+done
+
+if ( [ -z "${service_state}" ] || [ -z "${service_state_type}" ] || [ -z "${service_attempt}" ] || [ -z "${service}" ] )
+then
+  echo "USAGE: ${0} -s service_state -t service_state_type -a service_attempt -S service"
+  [ -z "${service_state}" ] && echo "  missing service_state"
+  [ -z "${service_state_type}" ] && echo "  missing service_state_type"
+  [ -z "${service_attempt}" ] && echo "  missing service_attempt"
+  [ -z "${service}" ] && echo "  missing service"
+  exit 3
+else
+  if ( [ "${service_state}" = "CRITICAL" ] && [ "${service_state_type}" = "HARD" ] )
+  then
+    sudo $(command -v service) ${service} restart
+  # only restart on the third attempt of a critical event
+  elif ( [ "${service_state}" = "CRITICAL" ] && [ "${service_state_type}" = "SOFT" ] && [ ${service_attempt} -eq 2 ] )
+  then
+    sudo $(command -v service) ${service} restart
+  fi
+fi

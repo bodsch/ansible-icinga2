@@ -1,0 +1,362 @@
+---
+## https://www.icinga.org/icinga/icinga-2/
+## https://github.com/Icinga/icingaweb2/blob/master/doc/installation.md
+## http://lowendbox.com/blog/server-monitoring-with-icinga-2-part-1-the-server-ubuntu-host/
+## http://serverfault.com/questions/730214/how-to-set-up-icinga2-master-for-remote-clients-without-using-cli-wizard
+
+#- include_tasks: travis.yml
+
+- include_tasks: debian.yml
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+- include_tasks: server-debian.yml
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
+- include_tasks: redhat.yml
+  when: ansible_os_family == "RedHat" or ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+- include_tasks: server-redhat.yml
+  when: ansible_os_family == "RedHat" or ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+- name: check role user exists
+  user:
+    name: '{{ icinga2_user }}'
+    home: '{{ icinga2_rootdir }}'
+  become: yes
+
+- name: collecting currently enabled icinga2 features
+  shell: icinga2 feature list | grep Enabled
+  register: featurelist
+  changed_when: False
+  tags:
+    - configure
+#- debug: var=featurelist
+- name: Enable features in Icinga2
+  command: icinga2 feature enable {{ item }}
+  with_items:
+    - perfdata
+    - livestatus
+    - ido-mysql
+  notify:
+    - restart icinga2
+#  when: featurelist.stdout.find("perfdata") != -1  # execute always
+  when: featurelist is defined and featurelist.stdout.find("perfdata") == -1
+  tags:
+    - configure
+- name: Enable api feature in Icinga2
+  command: icinga2 feature enable api
+  notify:
+    - restart icinga2
+  when: featurelist.stdout.find("api") == -1 and icinga2_api is defined and icinga2_api
+  tags:
+    - configure
+
+- name: re-gather facts
+  action: setup
+  when: not (ansible_default_ipv4 is defined)
+
+- name: add bind_host for api
+  lineinfile:
+    dest: /etc/icinga2/features-available/api.conf
+    regexp: '^  bind_host = '
+    line: '  bind_host = "{{ icinga2_server_ip | default(ansible_default_ipv4.address) }}"'
+    insertafter: 'ca_path'
+  when: icinga2_api is defined and icinga2_api
+  tags:
+    - configure
+- name: Enable command feature in Icinga2
+  command: icinga2 feature enable command
+  notify:
+    - restart icinga2
+  when: featurelist.stdout.find("command") == -1 and icinga2_command is defined and icinga2_command
+  tags:
+    - configure
+- name: "create icingacmd group (set: {{ icinga2cmd_group }})"
+  group:
+    name: "{{ icinga2cmd_group }}"
+    state: present
+- name: add web user to icingacmd group
+  user:
+    name: "{{ www_user }}"
+    groups: "{{ icinga2cmd_group }}"
+    append: yes
+  notify:
+    - restart icinga2
+  when: featurelist.stdout.find("command") == -1 and icinga2_command is defined and icinga2_command
+  tags:
+    - configure
+
+
+#- group: name=icingaweb2 state=present
+#  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+### FIXME! umask git repo ?? https://github.com/ansible/ansible/pull/10504
+#- stat: path=/usr/share/icingaweb2
+#  register: icingaweb2dir
+#- name: Icinga2 Web UI git clone
+#  git:
+#    repo=https://github.com/Icinga/icingaweb2.git
+#    dest=/usr/share/icingaweb2
+#  when: not icingaweb2dir.stat.exists
+#
+#- shell: "/usr/share/icingaweb2/bin/icingacli setup config webserver apache --document-root /usr/share/icingaweb2/public | tee {{ icinga2_apacheconf }}/icingaweb2.conf"
+#- command: /usr/share/icingaweb2/bin/icingacli setup config directory
+- stat: path=/root/.icingaweb2_token
+  register: tokenfile
+#- shell: "/usr/share/icingaweb2/bin/icingacli setup token create | tee /root/.icingaweb2_token"
+- name: create icingaweb2 token
+  shell: "icingacli setup token create | tee /root/.icingaweb2_token"
+  register: token
+  when: not tokenfile.stat.exists
+- debug: var=token
+  when: not tokenfile.stat.exists
+
+- name: ensure right permissions
+  file: path={{ item }} state=directory mode=0755 owner="{{ www_user }}"
+  with_items:
+    - /var/log/icingaweb2
+    - /var/log/icingaweb2/enabledModules
+    - /var/log/icingaweb2/modules
+    - /var/log/icingaweb2/modules/monitoring
+    - /var/log/icingaweb2/monitoring
+    - /etc/icingaweb2/modules/monitoring
+    - /etc/icingaweb2/enabledModules
+
+#- htpasswd: path=/usr/share/icingaweb2/public/.htpass name={{ icinga2_webuser }} password={{ icinga2_webpass }} owner=root group="{{ www_user }}" mode=0640
+#  when: webuser is defined and webpass is defined
+#- copy: src=icingaweb2-htaccess.conf dest={{ icinga2_apacheconf }}/icingaweb2-htaccess.conf mode=0644
+#
+#
+#- command: chown -R root:icingaweb2 /etc/icingaweb2
+
+- user: name="{{ www_user }}" groups=icingaweb2 append=yes
+
+- name: ensure right permissions for modsecurity active rules dir
+  file: dest="{{ modsecurity_active }}" state=directory mode=0755
+- name: add icinga2 exceptions to modsecurity
+  copy: src=modsecurity_crs_90_exceptions_icinga2.conf dest="{{ modsecurity_active }}/modsecurity_crs_90_exceptions_icinga2.conf" mode=0644
+
+- name: add custom commands to icinga2
+  copy: src=commands-custom.conf dest=/etc/icinga2/conf.d/commands-custom.conf mode=0644 backup=yes
+  notify:
+    - restart icinga2
+  tags:
+    - configure
+- debug: var=icinga2_servicegroups
+- name: add custom groups to icinga2
+  template: src=groups.conf.j2 dest=/etc/icinga2/conf.d/groups.conf mode=0644 backup=yes
+  notify:
+    - restart icinga2
+  tags:
+    - configure
+## already included
+#- name: add manubulon snmp commands to icinga2
+#  file: src=/usr/share/icinga2/include/command-plugins-manubulon.conf dest=/etc/icinga2/conf.d/command-plugins-manubulon.conf state=link
+#  notify:
+#    - restart icinga2
+#  tags:
+#    - configure
+
+- name: generate a salt with openssl
+  shell: "openssl rand -base64 32 | sed 's@[=\\/\\+]@@g;'"
+  changed_when: False
+  register: salt
+  tags:
+    - configure
+- name: Create salt for pki ticket when registering node
+  replace: dest=/etc/icinga2/constants.conf regexp='{{ item.regexp }}' replace='{{ item.replace }}'
+  with_items:
+    - { regexp: '^const TicketSalt = ""', replace: 'const TicketSalt = "{{ salt.stdout }}"' }
+    - { regexp: '^//const NodeName = "localhost"', replace: 'const NodeName = "{{ ansible_fqdn }}"' }
+  notify:
+    - restart icinga2
+  no_log: true
+  tags:
+    - configure
+
+## conflict with command: icinga2 pki new-ca = Error: stdout: critical/cli: CA directory '/var/lib/icinga2/ca' already exists.
+#- file: dest=/var/lib/icinga2/ca state=directory mode=0755 owner=nagios group=nagios
+- name: ensure right permissions for icinga2 pki dir
+  file: dest={{ icinga2_pki_dir }} state=directory mode=0755 owner="{{ icinga2_pki_userdir }}" group="{{ icinga2_pki_userdir }}"
+- name: check if ca.crt exists
+  stat:
+    path: "{{ icinga2_pki_cadir }}/ca.crt"
+  register: cafile
+  tags:
+    - configure
+- debug: var=icinga2_certificate_cn
+- debug: var=inventory_hostname
+- debug: var=ansible_fqdn
+- name: configure pki
+  command: "{{ item }}"
+  with_items:
+#    - "icinga2 pki new-cert --cn {{ icinga2_certificate_cn }} --key /var/lib/icinga2/ca/ca.key --cert {{ icinga2_pki_cadir }}/ca.crt"
+    - "icinga2 pki new-ca"
+    - "icinga2 pki new-cert --cn {{ icinga2_certificate_cn }} --key {{ icinga2_pki_dir }}/{{ inventory_hostname }}.key --csr {{ icinga2_pki_dir }}/{{ inventory_hostname }}.csr"
+    - "icinga2 pki sign-csr --csr {{ icinga2_pki_dir }}/{{ inventory_hostname }}.csr --cert {{ icinga2_pki_dir }}/{{ inventory_hostname }}.crt"
+  when: not cafile.stat.exists
+  tags:
+    - configure
+  ignore_errors: true
+- stat: path="{{ icinga2_pki_dir }}/{{ icinga2_certificate_cn }}.crt"
+  register: crtf
+- name: "symlink pki files from {{ inventory_hostname }} to {{ icinga2_certificate_cn }}"
+  file: src="{{ icinga2_pki_dir }}/{{ inventory_hostname }}.{{ item }}" dest="{{ icinga2_pki_dir }}/{{ icinga2_certificate_cn }}.{{ item }}" state=link
+#  file: src="{{ icinga2_pki_dir }}/{{ icinga2_certificate_cn }}.{{ item }}" dest="{{ icinga2_pki_dir }}/{{ inventory_hostname }}.{{ item }}" state=link
+  with_items:
+    - key
+    - crt
+  when: inventory_hostname != icinga2_certificate_cn and not crtf.stat.exists
+
+- name: ensure there is no crash report
+  command: "cat /var/log/icinga2/crash/report.*"
+  ignore_errors: true
+#- fail: msg=stop
+
+- name: Ensure ca.crt is replicate in pki directory
+  copy:
+    src: "/var/lib/icinga2/ca/{{ item }}"
+    dest: "{{ icinga2_pki_cadir }}/{{ item }}"
+    remote_src: true
+  with_items:
+    - ca.crt
+  tags:
+    - configure
+
+- include: vim-syntax.yml
+
+- name: remove default example of satellites
+  file: path=/etc/icinga2/conf.d/satellite.conf state=absent
+- name: configure zones
+  template: src=zones.conf.j2 dest="/etc/icinga2/zones.conf" mode=0644 backup=yes
+- name: configure local hosts file
+  template: src=hosts.conf.j2 dest="/etc/icinga2/conf.d/hosts.conf" mode=0644 backup=yes
+- name: configure mysql root config for backup
+  template: src=my.cnf.j2 dest=/root/.my.cnf mode=0400
+
+- file: path={{ scriptsdir }} state=directory mode=0755
+- name: add backup script
+  template: src=backup-icinga2.sh.j2 dest={{ scriptsdir }}/backup-icinga2.sh mode=0755
+- name: add restore script
+  template: src=restore-icinga2.sh.j2 dest={{ scriptsdir }}/restore-icinga2.sh mode=0755
+
+- name: configure backup script 2/m with cron - debian
+  cron: name="icinga2 backup" minute=0 hour=23 day="2,16"
+    user=root job="{{ scriptsdir }}/backup-icinga2.sh"
+    cron_file=ansible_icinga2backup
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+- name: configure backup script 2/m with cron - redhat
+  cron: name="icinga2 backup" minute=0 hour=23 day="2,16"
+    user=root job="{{ scriptsdir }}/backup-icinga2.sh"
+  when: ansible_os_family == "RedHat" or ansible_distribution == 'CentOS' or ansible_distribution == 'Red Hat Enterprise Linux'
+
+### restore existing backup ?
+### failed: [158.69.212.202 -> 127.0.0.1] => {"failed": true, "parsed": false}
+### [sudo via ansible, key=bpnjqugecgiwedfhzjjozeuxttscxgas] password:
+#- local_action: stat path=backup-icinga2.tar.gz
+##- stat: path=backup-icinga2.tar.gz
+#  register: localbackup
+##  sudo: no
+##  delegate_to: localhost
+#- stat: path=/root/.ansible_restore_icinga2backup
+#  register: restored
+#- copy: src=backup-icinga2.tar.gz dest={{ backupdir }}/backup-icinga2.tar.gz
+#  when: localbackup.stat.exists and not restored.stat.exists
+#- command: "{{ scriptsdir }}/restore-icinga2.sh"
+#  when: localbackup.stat.exists and not restored.stat.exists
+#- file: dest=/root/.ansible_restore_icinga2backup state=touch
+#  when: localbackup.stat.exists and not restored.stat.exists
+
+- block:
+    - name: copy extra icinga2 config
+      copy: "src={{ item }} dest=/etc/icinga2/conf.d/ mode=0644"
+      with_items: "{{ icinga2_extra_conf_files }}"
+      notify:
+        - restart icinga2
+  when: icinga2_extra_conf_files is defined and icinga2_extra_conf_files != []
+
+- debug: msg="End configuration by connecting on http://{{ ansible_fqdn}} and entering token {{ token }}"
+  when: not tokenfile.stat.exists
+- debug: var=ansible_fqdn
+  when: not tokenfile.stat.exists
+- debug: var=token
+  when: not tokenfile.stat.exists
+
+## Note: ensure icinga2 bind ip (icingaserver_ip) is correct else icinga2 start/restart will stalled
+- name: Ensure services are started
+  service: name="{{ item }}" state=started
+  with_items:
+    - icinga2
+    - "{{ apache_svc }}"
+    - "{{ mysql_svc }}"
+  when: not (ansible_virtualization_type is defined and ansible_virtualization_type == "docker")
+
+- name: Docker | Manually start services
+  shell: "{{ item }}"
+  with_items:
+    - sudo -H -u mysql mysqld --initialize > /tmp/mysql_install_db.out 2>&1
+    - install -d -o mysql /var/run/mysqld
+    - cd /var/lib/mysql; /usr/bin/mysqld_safe --datadir='/var/lib/mysql' > /tmp/mysqld_safe.out 2>&1 &
+#    - /usr/sbin/httpd -DFOREGROUND > /tmp/httpd.out 2>&1 &
+    - apachectl start > /tmp/httpd.out 2>&1 &
+  ignore_errors: true
+  when: (ansible_virtualization_type is defined and ansible_virtualization_type == "docker")
+
+
+- include: plugins.yml
+
+## Web wizard tasks, https://github.com/Icinga/icingaweb2/blob/master/doc/installation.md
+
+- name: create icingaweb2 mysql user
+  mysql_user: "name={{ icinga2_mysqlwebuser }} password={{ icinga2_mysqlwebpass }} priv='{{ icinga2_mysqlwebdb }}.*:SELECT,INSERT,UPDATE,DELETE,DROP,CREATE VIEW,INDEX,EXECUTE' state=present login_user=root login_password={{ icinga2_mysqlrootpw }}"
+- name: create icingaweb2 mysql db
+  mysql_db: name="{{ icinga2_mysqlwebdb }}" login_user=root login_password="{{ icinga2_mysqlrootpw }}"
+- name: import template in icingaweb2 mysql db
+  mysql_db: name="{{ icinga2_mysqlwebdb }}" state=import target=/usr/share/icingaweb2/etc/schema/mysql.schema.sql login_user=root login_password="{{ icinga2_mysqlrootpw }}"
+  ignore_errors: true
+- name: set icingaweb2 config
+  template: "src={{ item.s }} dest={{ item.d }} mode=0664 owner={{ www_user }} group={{ www_user }} backup=yes"
+  with_items:
+    - { s: 'icingaweb2-config.ini.j2', d: '/etc/icingaweb2/config.ini' }
+    - { s: 'icingaweb2-resources.ini.j2', d: '/etc/icingaweb2/resources.ini' }
+    - { s: 'icingaweb2-authentication.ini.j2', d: '/etc/icingaweb2/authentication.ini' }
+    - { s: 'icingaweb2-roles.ini.j2', d: '/etc/icingaweb2/roles.ini' }
+    - { s: 'icingaweb2-config-monitoring.ini.j2', d: '/etc/icingaweb2/modules/monitoring/config.ini' }
+    - { s: 'icingaweb2-backends.ini.j2', d: '/etc/icingaweb2/modules/monitoring/backends.ini' }
+    - { s: 'icingaweb2-commandtransports.ini.j2', d: '/etc/icingaweb2/modules/monitoring/commandtransports.ini' }
+# groups.ini?
+- name: adding monitoring module to icingaweb2
+  file: src=/usr/share/icingaweb2/modules/monitoring dest=/etc/icingaweb2/enabledModules/monitoring state=link
+
+## FIXME! no pnp4nagios in xenial, http://packages.ubuntu.com/search?suite=xenial&keywords=pnp4nagios
+- include: pnp4nagios.yml
+  when: icinga2_chart_module is defined and icinga2_chart_module == 'pnp4nagios' and (ansible_distribution != 'Ubuntu' or ansible_lsb.major_release|int < 16)
+  tags:
+    - pnp4nagios
+
+- include: graphite.yml
+  when: icinga2_chart_module is defined and icinga2_chart_module == 'graphite'
+  tags:
+    - graphite
+
+- include: nagvis.yml
+  tags:
+    - nagvis
+
+- name: adding nagvis module to icingaweb2
+  file: src=/usr/share/icingaweb2/modules/nagvis dest=/etc/icingaweb2/enabledModules/nagvis state=link
+- name: adding pnp4nagios module to icingaweb2
+  file: src=/usr/share/icingaweb2/modules/pnp4nagios dest=/etc/icingaweb2/enabledModules/pnp4nagios state=link
+  when: chart_module is defined and chart_module == 'pnp4nagios' and (ansible_distribution != 'Ubuntu' or ansible_lsb.major_release|int < 16)
+  tags:
+    - pnp4nagios
+#  when: chart_module is defined and chart_module == 'graphite'
+
+- include: icli.yml
+  when: icinga2_icli is defined and icinga2_icli
+
+- block:
+    - name: ensure aide.conf.d directory exists
+      file: dest=/etc/aide/aide.conf.d state=directory mode=0755
+    - name: add additional aide HIDS configuration
+      copy: src=99_aide_local_icinga2 dest=/etc/aide/aide.conf.d/99_aide_local_icinga2 mode=0644
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+

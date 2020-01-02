@@ -1,0 +1,5 @@
+## aide.conf for icinga2
+/var/lib/icinga2$ VarDir
+/var/lib/icinga2/icinga2.state$ VarFile
+/var/lib/icinga2/modified-attributes.conf$ OwnerMode
+!/var/spool/icinga2

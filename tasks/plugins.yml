@@ -1,0 +1,62 @@
+---
+
+- name: monitoring plugins dependencies install
+  package:
+    name: '{{ item }}'
+    state: present
+  loop:
+    '{{ icinga2_monitoring_plugins }}'
+
+- name: ensure plugins directory exists
+  file:
+    dest: '{{ monitoring_plugins_directory }}'
+    state: directory
+    mode: 0755
+
+- name: create generic link to {{ monitoring_plugins_directory }}
+  file:
+    src: "{{ monitoring_plugins_directory }}"
+    dest: /usr/lib/monitoring-plugins
+    state: link
+
+- name: copy extra check plugins
+  copy:
+    src: 'plugins/{{ item }}'
+    dest: '{{ monitoring_plugins_directory }}'
+    mode: 0755
+  loop:
+    "{{ icinga2_plugins_extra }}"
+  notify:
+    - restart icinga2
+  when: (
+    icinga2_plugins_extra is defined and
+    icinga2_plugins_extra != [])
+  tags:
+    - icinga2
+    - configure
+
+- name: download extra plugins
+  get_url:
+    url: '{{ item.url }}'
+    dest: '{{ monitoring_plugins_directory }}/{{ item.dest }}'
+    mode: '0755'
+    checksum: '{{ item.checksum }}'
+    validate_certs: '{{ item.validate | default(true) }}'
+  with_items:
+    '{{ icinga2_plugins_download }}'
+  when: icinga2_plugins_download is defined and icinga2_plugins_download != []
+
+
+- name: install extra plugins dependency
+  pip:
+    name: '{{ item.dependencies.pip }}'
+#    dest: '{{ monitoring_plugins_directory }}/{{ item.dest }}'
+#    mode: '0755'
+#    checksum: '{{ item.checksum }}'
+#    validate_certs: '{{ item.validate | default(true) }}'
+  with_items:
+    '{{ icinga2_plugins_download }}'
+  when: icinga2_plugins_download is defined and icinga2_plugins_download != []
+    #icinga2_plugins_download.dependencies is defined and
+    #icinga2_plugins_download.dependencies.pip is defined )
+    # icinga2_plugins_download.dependencies.pip != [] )

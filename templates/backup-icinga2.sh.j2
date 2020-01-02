@@ -1,0 +1,41 @@
+#!/bin/bash
+{{ ansible_managed | comment }}
+## backup script for icinga2
+
+# set -e
+
+. /usr/local/etc/backup.config
+
+export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+umask 022
+
+date=$(date +%Y-%m-%d)
+
+backup_directory="${backup_base_directory}/${date}"
+
+[[ -d "${backup_directory}" ]] || mkdir -p "${backup_directory}"
+
+
+f="${backup_directory}/backup-icinga2.tar.bz2"
+
+backup_dirs="${backup_dirs:-/etc/icinga2 /var/lib/icinga2 /var/log/icinga2}"
+
+
+## icingaweb2 backend
+#mysqldump --opt --all-databases > $backup_dest/mysqldumpall.sql
+
+tar \
+  --create \
+  --bzip2 \
+  --file \
+  "${f}" \
+  ${backup_dirs} > /dev/null
+
+## test backup
+tar \
+  --list \
+  --bzip2 \
+  --file \
+  "${f}" > /dev/null
+
+sha512sum "${f}" > "${f}.sha512"

@@ -1,0 +1,62 @@
+#!/bin/bash
+{{ ansible_managed | comment }}
+## restore script for icinga2
+
+set -e
+
+. /usr/local/etc/backup.config
+
+export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+umask 022
+
+tmpdir=$(mktemp --directory || exit 1)
+
+backup_dirs="${backup_dirs:-/etc/icinga2 /var/lib/icinga2 /var/log/icinga2}"
+
+backup_directory="${1}"
+
+sha512sum --check "${backup_directory}/backup-icinga2.tar.bz2.sha512"
+
+
+systemctl stop icinga2
+
+tar \
+  --extract \
+  --bzip2 \
+  --file \
+  "${backup_directory}/backup-icinga2.tar.bz2" \
+  --directory="${tmpdir}"
+
+## icingaweb2 backend
+#mysql < $tmpdir/var/_backup/mysqldumpall.sql
+
+#{% if icinga2_chart_module is defined and icinga2_chart_module == 'pnp4nagios' %}
+#dirs="$dirs /etc/pnp4nagios /var/lib/pnp4nagios"
+#{% else %}
+##dirs="$dirs /etc/pnp4nagios /var/lib/pnp4nagios"
+#{% endif %}
+
+#{% if icinga2_chart_module is defined and icinga2_chart_module == 'graphite' %}
+#dirs="$dirs /etc/graphite /var/lib/graphite"
+
+#{% if icinga2_graphite_backend is defined and icinga2_graphite_backend == 'postgresql' %}
+#sudo -u postgres psql --set ON_ERROR_STOP=on -f $tmpdir/var/_backup/pgdumpall.sql postgres
+#{% endif %}
+#{% else %}
+#dirs="$dirs /etc/graphite /var/lib/graphite"
+#sudo -u postgres psql --set ON_ERROR_STOP=on -f $tmpdir/var/_backup/pgdumpall.sql postgres
+#{% endif %}
+
+for d in ${backup_dirs}
+do
+  rsync \
+    --recursive \
+    --links \
+    --verbose \
+    "${tmpdir}/${d}" \
+    "${d}"
+done
+
+echo "Please make sure that the database has also been successfully restored!"
+
+systemctl start icinga2

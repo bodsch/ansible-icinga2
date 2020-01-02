@@ -1,0 +1,33 @@
+---
+
+- block:
+
+    - name: add backup and restore config
+      template:
+        src: backup-restore.config.j2
+        dest: /usr/local/etc/backup.config
+        mode: 0755
+
+    - name: add backup script
+      template:
+        src: backup-icinga2.sh.j2
+        dest: /usr/local/bin/backup-icinga2.sh
+        mode: 0755
+
+    - name: add restore script
+      template:
+        src: restore-icinga2.sh.j2
+        dest: /usr/local/bin/restore-icinga2.sh
+        mode: 0755
+
+    - name: configure backup script 2/m with cron
+      cron:
+        name: "icinga2 backup"
+        minute: '0'
+        hour: '23'
+        day: 2,16
+        user: root
+        job: /usr/local/bin/backup-icinga2.sh
+        cron_file: backup_icinga2
+
+  when: icinga2_master_backup_enabled is defined and icinga2_master_backup_enabled

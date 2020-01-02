@@ -1,0 +1,82 @@
+{{ ansible_managed | comment('cblock') }}
+/*
+ * Host definitions with object attributes
+ * used for apply rules for Service, Notification,
+ * Dependency and ScheduledDowntime objects.
+ *
+ * Tip: Use `icinga2 object list --type Host` to
+ * list all host objects after running
+ * configuration validation (`icinga2 daemon -C`).
+ */
+
+/*
+ * This is an example host based on your
+ * local host's FQDN. Specify the NodeName
+ * constant in `constants.conf` or use your
+ * own description, e.g. "db-host-1".
+ */
+
+
+// for ... monitored
+object Host "localhost" {
+  /* Import the default host template defined in `templates.conf`. */
+  import "generic-host"
+
+  /* Specify the address attributes for checks e.g. `ssh` or `http`. */
+  address = "127.0.0.1"
+  address6 = "::1"
+
+  /* Set custom attribute `os` for hostgroup assignment in `groups.conf`. */
+  vars.os = "Linux"
+
+  /* Define http vhost attributes for service apply rules in `services.conf`. */
+{% if icinga2_apache_httpsonly %}
+  vars.http_ssl = "1"
+  vars.http_vhosts["https"] = {
+## Putting a full path else might get 'HTTP WARNING: HTTP/1.1 403 Forbidden'
+#    http_uri = "/"
+    http_uri = "/index.html"
+  }
+  vars.http_vhosts["Icinga Web 2"] = {
+#    http_uri = "/icingaweb2"
+    http_uri = "/icingaweb2/error_norewrite.html"
+  }
+{% else %}
+  vars.http_vhosts["http"] = {
+#    http_uri = "/"
+    http_uri = "/index.html"
+  }
+  vars.http_vhosts["Icinga Web 2"] = {
+#    http_uri = "/icingaweb2"
+    http_uri = "/icingaweb2/error_norewrite.html"
+  }
+{% endif %}
+
+  /* Define disks and attributes for service apply rules in `services.conf`. */
+//  vars.disks["disk"] = {
+//    /* No parameters. */
+//  }
+  vars.disks["disk /"] = {
+    disk_partitions = "/"
+  }
+
+  /* Define notification mail attributes for notification apply rules in `notifications.conf`. */
+  vars.notification["mail"] = {
+    /* The UserGroup `icingaadmins` is defined in `users.conf`. */
+    groups = [ "icingaadmins" ]
+  }
+}
+
+/* FIXME! critical/config: Error: Import references unknown template: 'generic-notification'
+   but from http://docs.icinga.org/icinga2/latest/doc/module/icinga2/toc#!/icinga2/latest/doc/module/icinga2/chapter/monitoring-basics#disable-renotification
+apply Notification "notify-once" to Service {
+  import "generic-notification"
+
+  command = "mail-notification"
+  users = [ "icingaadmin" ]
+
+  interval = 0 // disable re-notification
+
+  assign where service.name == "https"
+}
+*/

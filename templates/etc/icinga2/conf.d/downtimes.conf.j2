@@ -1,0 +1,45 @@
+{{ ansible_managed | comment(decoration='// ') }}
+
+{% for i in icinga2_service_downtimes -%}
+apply ScheduledDowntime "{{ i }}" to Service {
+  {% for k,v in icinga2_service_downtimes[i].items() -%}
+  {%- if v is mapping %} # ranges = {}
+  {{ k }} = {
+{% for k2, v2 in v.items() %}
+      {{ k2 }} = {{ v2 }}
+{% endfor %}
+  }
+{% else -%}
+{% if k == 'assign_where' %}
+  assign where {{ v }}
+{% else %}
+  {{ k }} = "{{ v }}"
+{% endif -%}
+  {% endif -%}
+  {% endfor %}
+
+}
+
+{% endfor %}
+// ---
+{% for i in icinga2_host_downtimes -%}
+apply ScheduledDowntime "{{name}}" to Host {
+  {% for k,v in icinga2_host_downtimes[i].items() -%}
+  {%- if v is mapping %}
+  {{ k }} = {
+{% for k2, v2 in v.items() %}
+      {{ k2 }} = {{ v2 }}
+{% endfor %}
+  }
+{% else -%}
+{% if k == 'assign_where' %}
+  assign where {{ v }}
+{% else %}
+  {{ k }} = "{{ v }}"
+{% endif -%}
+  {% endif -%}
+  {% endfor %}
+
+}
+
+{% endfor %}

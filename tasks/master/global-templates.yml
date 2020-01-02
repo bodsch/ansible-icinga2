@@ -1,0 +1,31 @@
+---
+
+- name: create global-templates file for service definitions
+  template:
+    src:   etc/icinga2/zones.d/global-templates/services.conf.j2
+    dest: /etc/icinga2/zones.d/global-templates/services.conf
+    mode: 0644
+
+- name: create global-templates file for template definitions
+  template:
+    src:   etc/icinga2/zones.d/global-templates/templates.conf.j2
+    dest: /etc/icinga2/zones.d/global-templates/templates.conf
+    mode: 0644
+
+- name: create global-templates file for commands definitions
+  template:
+    src:   etc/icinga2/zones.d/global-templates/commands.conf.j2
+    dest: /etc/icinga2/zones.d/global-templates/commands.conf
+    mode: 0644
+
+- name: create global-templates file for functions definitions
+  template:
+    src:   etc/icinga2/zones.d/global-templates/functions.conf.j2
+    dest: /etc/icinga2/zones.d/global-templates/functions.conf
+    mode: 0644
+
+- name: create global-templates file for event commands
+  template:
+    src:   etc/icinga2/zones.d/global-templates/eventcommands.conf.j2
+    dest: /etc/icinga2/zones.d/global-templates/eventcommands.conf
+    mode: 0644

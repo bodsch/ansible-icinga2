@@ -1,0 +1,46 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use IPC::Run qw(run timeout);
+use Getopt::Long;
+
+sub usage {
+	print "usage: $0 [options] [--domain|-d] <domain>
+	
+  Options:
+    [--delv-bin|-c <path-to-delv>]
+    [--dlv|-l]\n\n";
+	exit 1;
+}
+
+my $delv = 'delv';
+my $dlv = 0;
+my $domain;
+
+GetOptions (
+	"delv-bin|c=s"  => \$delv,
+	"domain|d=s"  => \$domain,
+	"dlv|l"  => \$dlv,
+) or usage();
+
+if( ! defined $domain ) {
+	usage;
+}
+
+my @cmd = ( $delv, $dlv ? ('+dlv') : ('+nodlv'),  $domain );
+my ( $in, $out, $err );
+
+run(\@cmd, \$in, \$out, \$err, timeout( 10 ))
+	or die('could not run delv: '.$!);
+
+if( $out =~ /fully validated/) {
+	print "DNSSEC OK - zone validated\n";
+	exit 0;
+}
+
+print "DNSSEC CRITICAL - validation failed\n";
+print "$out\n$err";
+exit 2;
+

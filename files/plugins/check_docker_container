@@ -1,0 +1,74 @@
+#!/bin/bash
+#
+# requirements:
+#  - nc (openbsd-netcat)
+#  - jq
+#  - usermod -a -G docker nagios
+
+E_OK=0
+E_WARNING=1
+E_CRITICAL=2
+E_UNKNOWN=3
+
+must_running=0
+
+while getopts "r:w:c" opt
+do
+  case ${opt} in
+    r)
+      must_running=${OPTARG}
+      ;;
+    c)
+      warning=${OPTARG}
+      ;;
+    w)
+      critical=${OPTARG}
+      ;;
+  esac
+done
+
+running_containers() {
+
+  # Count all running containers
+  running_containers=$(echo -e 'GET /containers/json HTTP/1.0\r\n' | nc -U /var/run/docker.sock | tail -n +9)
+
+  containers=$(echo "${running_containers}" | jq -r '.[].Names | to_entries[].value')
+
+  if [[ ! -z "${containers}" ]]
+  then
+    running=$(echo "${containers}" | wc -l)
+  else
+    running=0
+  fi
+
+  echo "${running} running containers"
+
+  for c in ${containers}
+  do
+    x=$(echo "${running_containers}" | jq -r ".[] | select( .Names[] == \"${c}\")")
+    state=$(echo "${x}" | jq --raw-output .State)
+    status=$(echo "${x}" | jq --raw-output .Status)
+
+    printf "container %-20s (state: %-10s / %s)\n" "${c}" "${state}" "${status}"
+  done
+
+  # Count all containers
+  #total_containers=$(echo -e "GET /containers/json?all=1 HTTP/1.0\r\n" | nc -U /var/run/docker.sock | tail -n +9)
+
+  # Count all images
+  #total_images=$(echo -e "GET /images/json HTTP/1.0\r\n" | nc -U /var/run/docker.sock | tail -n +9)
+
+  if [[ ${running} -lt ${must_running} ]]
+  then
+    exit ${E_CRITICAL}
+  fi
+
+  exit ${E_OK}
+}
+
+run() {
+
+  running_containers
+}
+
+run

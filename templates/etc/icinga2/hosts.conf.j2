@@ -1,0 +1,34 @@
+{{ ansible_managed | comment('cblock') }}
+
+{% if icinga2_hosts is defined and icinga2_hosts | count != 0 %}
+{% for key in icinga2_hosts %}
+object Host "{{ key }}" {
+  {% for ke,ve in icinga2_hosts[key].items() | sort -%}
+  {% if ke == 'import' %}{{ ke }} "{{ ve }}"
+  {% elif ke == 'groups' %}{{ ke }} = ["{{ ve|join('","') }}"]
+  {% elif ke == 'vars' -%}
+  vars = {
+    {{ ve | indent(4) }}
+  }
+  {% else -%}
+  {{ ke }} = "{{ ve }}"
+  {% endif -%}
+{%- endfor -%}
+
+}
+{% endfor %}
+{% endif %}
+
+/* FIXME! critical/config: Error: Import references unknown template: 'generic-notification'
+   but from http://docs.icinga.org/icinga2/latest/doc/module/icinga2/toc#!/icinga2/latest/doc/module/icinga2/chapter/monitoring-basics#disable-renotification
+apply Notification "notify-once" to Service {
+  import "generic-notification"
+
+  command = "mail-notification"
+  users = [ "icingaadmin" ]
+
+  interval = 0 // disable re-notification
+
+  assign where service.name == "https"
+}
+*/

@@ -1,0 +1,16 @@
+---
+
+- name: detect installed icinga2 version
+  shell: "icinga2 --version | head -n1 | awk -F 'version: ' '{printf $2}' | awk -F '-' '{print $1}' | sed 's|r||'"
+  register: __installed_icinga2_version
+
+- name: set icinga2 version
+  set_fact:
+    icinga2_installed_version: "{{ __installed_icinga2_version.stdout }}"
+    cacheable: true
+  when: __installed_icinga2_version is defined and __installed_icinga2_version.rc is defined and __installed_icinga2_version.rc == 0
+
+- name: installed icinga2 version
+  debug:
+    var: icinga2_installed_version
+  when: icinga2_installed_version is defined and icinga2_installed_version | length != 0

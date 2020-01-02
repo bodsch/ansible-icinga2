@@ -1,0 +1,149 @@
+---
+
+#- name: icinga2 client node | adding server to client /etc/hosts
+#  lineinfile: dest=/etc/hosts regexp="{{ icinga2_server_ip }}   {{ icinga2_server }}" line="{{ icinga2_server_ip }}   {{ icinga2_server }}"
+#- name: adding client to server /etc/hosts
+#  lineinfile: dest=/etc/hosts regexp="{{ ipaddr.stdout }}   {{ ansible_fqdn }}" line="{{ ipaddr.stdout }}   {{ ansible_fqdn }}"
+#  delegate_to: "{{ icinga2_server }}"
+
+# TODO
+# copy ca.crt from master to satelite
+# add zone for master
+
+- name: get salt from icinga2 master
+  command: "awk -F'[\"]' '/TicketSalt/ { print $2 }' /etc/icinga2/constants.conf"
+  register: salt
+  delegate_to: "{{ icinga2_server }}"
+  changed_when: False
+
+- name: set icinga2_salt
+  set_fact:
+    icinga2_salt: '{{salt.stdout}}'
+  when: salt.stdout is defined
+
+- name: configure icinga2
+  template:
+    src: '{{item.src}}'
+    dest: "{{ item.dest }}"
+    owner: icinga
+    group: icinga
+    mode: 0644
+  with_items:
+    - src:   etc/icinga2/icinga2.conf.j2
+      dest: /etc/icinga2/icinga2.conf
+    - src:   etc/icinga2/constants.conf.j2
+      dest: /etc/icinga2/constants.conf
+    - src:   etc/icinga2/features/mainlog.conf.j2
+      dest: /etc/icinga2/features-available/mainlog.conf
+  when: icinga2_salt is defined
+
+- name: configure icinga2 api
+  template:
+    src: etc/icinga2/features/api.conf.j2
+    dest: /etc/icinga2/features-available/api.conf
+    owner: icinga
+    group: icinga
+    mode: 0644
+
+- name: "icinga2 client node | create a ticket from icinga2 master for the satellite {{ icinga2_certificate_cn }}"
+  shell: |
+    icinga2 pki ticket --cn {{ icinga2_certificate_cn }} --salt {{ icinga2_salt }}
+  register: ticket
+  delegate_to: "{{ icinga2_server }}"
+  when: icinga2_salt is defined
+
+- block:
+
+  - name: check if existing key
+    stat:
+      path: "{{ icinga2_pki_dir }}/{{ ansible_fqdn }}.key"
+    register: nodekey
+
+  - name: check if existing ca.crt
+    stat:
+      path: "{{ icinga2_pki_dir }}/ca.crt"
+    register: __ca.crt
+
+  - name: copy ca.crt from icinga2 master
+    fetch:
+      src: '{{ icinga2_pki_dir }}/ca.crt'
+      dest: 'files/ca.crt'
+      flat: yes
+    delegate_to: '{{icinga2_server}}'
+
+  - name: copy ca.crt from icinga2 master
+    copy:
+      src: 'files/ca.crt'
+      dest: '{{ icinga2_pki_dir }}/ca.crt'
+      owner: icinga
+      group: icinga
+
+  - name: icinga2 client node | configure icinga2 client pki
+  ## http://lowendbox.com/blog/server-monitoring-with-icinga-2-part-2-the-node-ubuntu-host/
+  ## http://serverfault.com/questions/647805/how-to-set-up-icinga2-remote-client-without-using-cli-wizard
+    command: "{{ item }}"
+    with_items:
+      - "icinga2 pki new-cert --cn {{ icinga2_certificate_cn }} --key {{ icinga2_pki_dir }}/{{ ansible_fqdn }}.key --cert {{ icinga2_pki_dir }}/{{ ansible_fqdn }}.crt"
+      - "icinga2 pki save-cert --key {{ icinga2_pki_dir }}/{{ ansible_fqdn }}.key --cert {{ icinga2_pki_dir }}/{{ ansible_fqdn }}.crt --trustedcert {{ icinga2_pki_dir }}/trusted-master.crt --host {{ icinga2_master }}"
+      - "icinga2 pki request --host {{ icinga2_master }} --port {{ icinga2_master_port }} --ticket {{ ticket.stdout | default('') }} --key {{ icinga2_pki_dir }}/{{ ansible_fqdn }}.key --cert {{ icinga2_pki_dir }}/{{ ansible_fqdn }}.crt --trustedcert {{ icinga2_pki_dir }}/trusted-master.crt --ca {{ icinga2_pki_dir }}/ca.key"
+      - "icinga2 node setup --ticket {{ ticket.stdout | default('') }} --endpoint {{ icinga2_master }} --zone {{ ansible_fqdn }} --master_host {{ icinga2_master }} --trustedcert {{ icinga2_pki_dir }}/trusted-master.crt"
+    become: yes
+    become_user: '{{icinga2_user}}'
+    when: not nodekey.stat.exists and ticket.stdout is defined
+    notify:
+      - restart icinga2
+
+#  - name: "add zone for {{ icinga2_certificate_cn }} to icinga2 master '{{ icinga2_server }}'"
+#    template:
+#      src: etc/icinga2/zones.conf.j2
+#      dest: '/etc/icinga2/zones.conf'
+#    delegate_to: "{{ icinga2_server }}"
+#    notify: restart icinga2 master
+
+  - name: "create zone entry for '{{icinga2_certificate_cn}}' on master '{{ icinga2_server }}'"
+    file:
+      dest: '/etc/icinga2/zones.d/{{icinga2_certificate_cn}}'
+      state: directory
+    delegate_to: "{{ icinga2_server }}"
+
+  - name: "create zone file for '{{icinga2_certificate_cn}}' on master '{{ icinga2_server }}'"
+    template:
+      src: etc/icinga2/satellite.conf.j2
+      dest: '/etc/icinga2/satellites.d/{{icinga2_certificate_cn}}.conf'
+    delegate_to: "{{ icinga2_server }}"
+    notify: restart icinga2 master
+
+  - name: "create host object file for '{{icinga2_certificate_cn}}' on master '{{ icinga2_server }}'"
+    template:
+      src: etc/icinga2/satellite-zone.conf.j2
+      dest: '/etc/icinga2/zones.d/{{icinga2_certificate_cn}}/{{icinga2_certificate_cn}}.conf'
+    delegate_to: "{{ icinga2_server }}"
+    notify: restart icinga2 master
+
+  when: ticket.stdout != ''
+
+- name: ensure that satellite has api connetions
+  stat:
+    path: "/var/lib/icinga2/api/zones/{{icinga2_certificate_cn}}/_etc/{{icinga2_certificate_cn}}.conf"
+  register: __satellite_api_connections
+
+- debug:
+    var: "{{item}}"
+  when: item is defined
+  loop:
+    - __satellite_api_connections.stat.exists
+
+- name: create static zone file on icinga2 satellite
+  template:
+    src: etc/icinga2/zones.conf.j2
+    dest: '/etc/icinga2/zones.conf'
+  when: __satellite_api_connections.stat.exists == false
+  notify: restart icinga2
+
+#- name: remove static zone file on icinga2 satellite
+#  file:
+#    dest: '/etc/icinga2/zones.conf'
+#  when: __satellite_api_connections.stat.exists == true
+#  notify:
+#    - restart icinga2
+#    - restart icinga2 master
