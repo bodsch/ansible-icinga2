@@ -1,0 +1,67 @@
+
+
+object CheckCommand "check-docker" {
+
+  import "plugin-check-command"
+  command = [ PluginDir + "/check_docker_container" ]
+  arguments += {
+    "-r" = {
+      order = 0
+      required = true
+      value = "$docker_containers$"
+    }
+  }
+}
+
+
+object CheckCommand "check_memory" {
+  import "plugin-check-command"
+
+  command = [ PluginDir + "/check_mem" ]
+
+  arguments = {
+    "-w" = {
+      description = "Your warning %. 20 means 20% of your memory can remain before a warning alarm. Do not use the % sign."
+      value  = "$mem_warning$"
+      set_if = bool("$mem_warning$")
+    }
+    "-c" = {
+      description = "Your critical %. 10 means 10% of your memory can remain before a critical alarm. Do not use the % sign."
+      value  = "$mem_critical$"
+      set_if = bool("$mem_critical$")
+    }
+/*
+    "-d" = {
+      description = "divider K=kilobytes, M=megabytes, G=gigabytes, T=terabytes"
+      value = "M"
+    }
+    "-f" = {
+      description = "Include cached memory as free memory when calculating your percentage free"
+      value  = "$mem_cached_memory$"
+      set_if = bool("$mem_cached_memory$")
+    }
+*/
+  }
+}
+
+object CheckCommand "hostname" {
+  import "plugin-check-command"
+  command = [ PluginDir + "/check_hostname" ]
+}
+
+
+object CheckCommand "check_redis" {
+  import "plugin-check-command"
+  command = [ PluginDir + "/check_redis" ]
+}
+
+object CheckCommand "system_uptime" {
+  import "plugin-check-command"
+  command = [ PluginDir + "/check_uptime.sh" ]
+}
+
+object CheckCommand "arch" {
+  import "plugin-check-command"
+  command = [ PluginDir + "/check_arch_updates" ]
+  timeout = 2m
+}

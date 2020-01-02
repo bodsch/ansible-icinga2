@@ -1,0 +1,26 @@
+{{ ansible_managed | comment(decoration='// ') }}
+
+template Host "generic-host" {
+  max_check_attempts = 3
+  check_interval = 1m
+  retry_interval = 30s
+
+  check_command = "hostalive"
+}
+
+
+template Service "generic-service" {
+  max_check_attempts = 5
+  check_interval = 1m
+  retry_interval = 30s
+}
+
+template User "generic-user" {
+
+}
+
+template Service "icinga-satellite-service" {
+  import "generic-service"
+  command_endpoint    = host.vars.remote_endpoint
+  zone                = host.vars.remote_endpoint
+}

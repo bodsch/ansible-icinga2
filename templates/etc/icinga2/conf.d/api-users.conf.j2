@@ -1,0 +1,10 @@
+// {{ ansible_managed }}
+
+{% if icinga2_api_user is defined and icinga2_api_user | count != 0 -%}
+{% for key  in icinga2_api_user -%}
+object ApiUser "{{ key }}" { {% for k,v in icinga2_api_user[key].items() -%} {% if k == 'permissions' %}{{ k }} = ["{{ v|join('","') }}"]; {% else %}{{ k }} = "{{ v }}"; {% endif -%} {% endfor %} }
+{% endfor %}
+{% endif %}
+
+/** generated at 2019-01-29 06:25:50 +0100 with certificate service for Icinga2 0.18.3.
+object ApiUser "icinga2-satellite-2.matrix.lan" { client_cn = "icinga2-satellite-2.matrix.lan" ; permissions = [ "*" ] } */

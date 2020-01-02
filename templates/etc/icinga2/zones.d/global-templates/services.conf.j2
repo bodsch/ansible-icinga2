@@ -1,0 +1,593 @@
+{{ ansible_managed | comment('cblock') }}
+
+apply Service "ping4" {
+  import "generic-service"
+  check_command = "ping4"
+  assign where host.address
+}
+
+apply Service "ping6" {
+  import "generic-service"
+  check_command = "ping6"
+  assign where host.address6
+}
+
+apply Service "ssh" {
+  import "generic-service"
+
+  check_command = "ssh"
+
+  assign where (host.address || host.address6) && host.vars.os == "Linux"
+}
+
+apply Service "HTTP: " for (http_vhost => config in host.vars.http_vhosts) {
+  import "generic-service"
+
+  check_command = "http"
+
+  check_interval = 3m
+
+  vars += config
+}
+
+apply Service "HTTPS: " for (https_vhost => config in host.vars.https_vhosts) {
+  import "generic-service"
+
+  check_command = "http"
+
+  check_interval = 3m
+
+  vars += config
+
+  vars += {
+    "http_vhost" = host.name
+    // "http_certificate" = "15"
+    // "http_sni" = true
+    "http_ssl" = true
+    // "notify" = "true"
+  }
+
+  assign where host.vars.https_vhosts
+}
+
+apply Service "cert: " for (https_vhost => config in host.vars.https_vhosts) {
+  import "generic-service"
+
+  check_command = "http"
+
+  check_interval = 1h
+
+  vars += config
+
+  vars += {
+    "http_vhost" = host.name
+    "http_certificate" = "15"
+    "http_sni" = true
+    "http_ssl" = true
+    // "notify" = "true"
+  }
+
+  assign where host.vars.https_vhosts
+}
+
+apply Service "dnssec " for (zone => config in host.vars.zones) {
+  import "generic-service"
+  check_command = "delv"
+  check_interval = 2h
+  vars += config
+  assign where host.vars.zones
+}
+
+apply Service "dns" {
+  import "generic-service"
+  check_command = "dns"
+  check_interval = 1m
+  event_command = "restart_service"
+
+  max_check_attempts = 2
+
+  vars = {
+    "dns_server" = "192.168.0.5"
+    "dns_lookup" = "dunkelzahn.matrix.lan"
+    "dns_timeout" = 2
+    "procs_command" = "bind9"
+  }
+
+  assign where host.vars.zones
+}
+
+apply Service "rbl" {
+  import "generic-service"
+
+  check_command = "check_rbl"
+
+  vars = {
+    rbl_address = host.vars.rbl
+  }
+
+  assign where host.vars.rbl
+}
+
+apply Service "diskstat " for (device => config in host.vars.diskstat) {
+  import "generic-service"
+  check_command = "check_diskstat"
+  check_interval = 2m
+
+  vars = {
+    "diskstat_dev" = device
+  }
+  vars += config
+  assign where host.vars.diskstat
+}
+
+apply Service "smart " for (device => config in host.vars.smart) {
+  import "generic-service"
+  check_command = "check_smart"
+  check_interval = 15m
+
+  vars = {
+    "smart_device" = device
+  }
+  vars += config
+  assign where host.vars.smart
+}
+
+/**
+  *  generic SSL Certificate check for all vhosts in vars.https_vhost
+  */
+/*
+apply Service "SSL CERT: " for (https_vhost => config in host.vars.https_vhosts) {
+
+  import "generic-service"
+
+  display_name = "SSL Certificate"
+  // notes        = "check ssl certificate"
+  // notes_url    = "/doc/operations/http-certificate.html"
+
+  check_command = "http"
+
+  vars = {
+    "http_vhost" = https_vhost
+    "http_certificate" = "15"
+    "http_port" = config.https_port
+    "http_sni" = true
+    "http_ssl" = true
+  }
+
+  max_check_attempts = 2
+  check_interval = 10m
+  retry_interval = 2
+  enable_notifications = true
+
+  assign where host.vars.https_vhosts
+}
+*/
+
+apply Service for (disk => config in host.vars.disks) {
+  import "generic-service"
+
+  check_command = "disk"
+
+  vars += config
+}
+
+apply Service "icinga" {
+  import "generic-service"
+
+  check_command = "icinga"
+
+  assign where host.name == NodeName || host.vars.satellite
+}
+
+apply Service "load" {
+  import "generic-service"
+
+  check_command = "load"
+
+  /* Used by the ScheduledDowntime apply rule in `downtimes.conf`. */
+  if( host.vars.downtime ) {
+    vars.backup_downtime = host.vars.downtime
+  }
+
+  assign where host.name == NodeName || host.vars.satellite
+}
+
+apply Service "procs" {
+  import "generic-service"
+
+  check_command = "procs"
+
+  assign where host.name == NodeName
+}
+
+{% if ansible_swaptotal_mb != 0 %}
+/*
+  we need an better implementation
+
+    - ansible_swaptotal_mb = 0
+    - ansible_system_vendor = NA
+    - ansible_virtualization_type = openvz
+    - ansible_virtualization_role = guest
+*/
+apply Service "swap" {
+  import "generic-service"
+
+  check_command = "swap"
+
+  assign where host.name == NodeName
+}
+{% endif %}
+
+apply Service "users" {
+  import "generic-service"
+
+  check_command = "users"
+
+  assign where host.name == NodeName
+}
+
+apply Service "speedtest" {
+  import "generic-service"
+
+  check_command = "command-check-speedtest"
+
+  max_check_attempts = 2
+  check_interval = 15m
+  retry_interval = 2
+
+  assign where host.vars.speedtest
+}
+
+apply Service "DNS resolution - google" {
+  import "generic-service"
+
+  check_command = "dns"
+  vars.dns_lookup = "$host_name$"
+  vars.dns_server = "8.8.8.8"
+
+  assign where "DNS-check" in host.groups
+}
+
+apply Service "DNS resolution - OpenDNS" {
+  import "generic-service"
+
+  check_command = "dns"
+  vars.dns_lookup = "$host_name$"
+  vars.dns_server = "208.67.222.222"
+
+  assign where "DNS-check" in host.groups
+}
+
+apply Service "snmp " for (c => config in host.vars.snmp) {
+  import "generic-service"
+
+  var oid  = check_dictionary( config, "oid" )
+  var warn = check_dictionary( config, "warn" )
+  var crit = check_dictionary( config, "crit" )
+  var description = check_dictionary( config, "description" )
+
+  check_command = "snmp"
+
+  if( description ) {
+    display_name = description
+  } else {
+    display_name = "SNMP for " + c
+  }
+  notes        = "snmp check"
+
+  vars = {
+    snmp_oid = oid
+    snmp_label = c
+  }
+
+  if( warn && crit ) {
+    vars += {
+      "snmp_warn"  = warn
+      "snmp_crit " = crit
+    }
+  }
+
+/*  vars.snmp_oid = "1.3.6.1.2.1.1.3.0"
+  vars.snmp_miblist = "DISMAN-EVENT-MIB"
+*/
+  assign where host.vars.snmp
+}
+
+
+apply Service "fritzbox " for (fritz => config in host.vars.fritz_box) {
+  import "generic-service"
+
+  check_command = "fritz"
+
+  vars += config
+}
+
+apply Service "imap" to Host {
+  import "generic-service"
+
+  display_name = "Mail IMAP"
+
+  assign where "imap" in host.vars.services
+
+  check_command = "imap"
+
+  #max_check_attempts = 5
+  #retry_interval = 10
+  #enable_notifications = false
+  #enable_flapping = true
+  # enable_perfdata = true
+}
+
+apply Service "pop" to Host {
+  import "generic-service"
+
+  display_name = "Mail POP3"
+
+  assign where "pop3" in host.vars.services || "pop" in host.vars.services
+
+  check_command = "pop"
+}
+
+apply Service "smtp" to Host {
+  import "generic-service"
+
+  display_name = "Mail SMTP"
+
+  assign where "smtp" in host.vars.services
+
+  check_command = "smtp"
+}
+
+apply Service "sensors" to Host {
+  import "generic-service"
+
+  display_name = "sensors"
+
+  assign where "sensors" in host.vars.services
+
+  check_command = "sensors"
+}
+
+apply Service "redis" to Host {
+  import "generic-service"
+
+  display_name = "redis"
+
+  assign where "redis" in host.vars.services
+
+  check_command = "check_redis"
+}
+
+apply Service "mysql" to Host {
+  import "generic-service"
+
+  display_name = "MySQL"
+
+  assign where "mysql" in host.vars.services
+
+  check_command = "mysql"
+
+  vars += {
+    "mysql_hostname" = "127.0.0.1"
+    "mysql_file" = "/usr/local/etc/.my.cnf"
+  }
+}
+
+apply Service "proc_icinga2" to Host {
+  import "generic-service"
+
+  display_name = "icinga2"
+
+  assign where "icinga2" in host.vars.services
+
+  check_command = "procs"
+
+  vars = {
+    "procs_warning" = 2
+    "procs_critical" = 2
+    "procs_timeout" = 3
+    "procs_command" = "icinga2"
+  }
+
+  #max_check_attempts = 5
+  #retry_interval = 10
+  #enable_notifications = false
+  #enable_flapping = true
+  # enable_perfdata = true
+}
+
+apply Service "apt" {
+  import "generic-service"
+
+  check_command = "apt"
+
+  assign where host.vars.os == "Linux" && (host.vars.dist == "Debian" || host.vars.dist == "Ubuntu")
+}
+
+apply Service "arch" {
+  import "generic-service"
+
+  check_command = "arch"
+
+  assign where host.vars.os == "Linux" && host.vars.dist == "Archlinux"
+}
+
+apply Service "dhcp" to Host {
+  import "generic-service"
+
+  display_name = "DHCP"
+
+  assign where "dhcp" in host.vars.services
+
+  check_command = "dhcp"
+
+  vars += {
+    "dhcp_unicast" = "true"
+    "dhcp_serverip" = "192.168.0.5"
+  }
+}
+
+apply Service "ntp" to Host {
+  import "generic-service"
+
+  display_name = "NTP"
+
+  assign where "ntp" in host.vars.services
+
+  check_command = "ntp_time"
+
+  vars += {
+    "ntp_address" = "192.168.0.5"
+    "ntp_quiet" = "true"
+    "ntp_warning" = "0.5"
+    "ntp_critical" = "1"
+    "ntp_ipv4" = "true"
+  }
+}
+
+apply Service "cups" to Host {
+  import "generic-service"
+
+  display_name = "Cups"
+
+  assign where "cups" in host.vars.services
+
+  check_command = "cups"
+
+  vars += {
+    "cups_host" = "192.168.0.5"
+    "cups_warning" = "2"
+    "cups_critical" = "4"
+  }
+}
+
+
+apply Service "docker-containers" to Host {
+  import "generic-service"
+
+  display_name = "docker containers"
+
+  assign where host.vars.docker
+
+  check_command = "check-docker"
+
+  vars += {
+    "docker_containers" = host.vars.docker
+  }
+}
+
+
+apply Service "memory" {
+  import "generic-service"
+  # import "icinga-satellite-service"
+  check_command = "check_memory"
+
+  check_interval = 45s
+  retry_interval = 10s
+
+  command_endpoint = host.vars.remote_endpoint
+  assign where host.vars.satellite && host.vars.memory
+  ignore where host.vars.os == "Windows"
+}
+
+
+apply Service "file_" for ( file => config in host.vars.file_age) {
+  import "generic-service"
+  # import "icinga-satellite-service"
+  check_command = "file_age"
+
+  var warn_time = check_dictionary( config, "warning_time" )
+  var crit_time = check_dictionary( config, "critical_time" )
+  var warn_size = check_dictionary( config, "warning_size" )
+  var crit_size = check_dictionary( config, "critical_size" )
+  var description = check_dictionary( config, "description" )
+
+  if( description ) {
+    display_name = description
+  } else {
+    display_name = "File Age for " + file
+  }
+  notes        = "check a file age"
+
+  vars = {
+    "file_age_file" = file
+  }
+
+  if( warn_time && crit_time ) {
+    vars += {
+      "file_age_warning_time"  = config.warning_time
+      "file_age_critical_time" = config.critical_time
+    }
+  }
+
+  if( warn_size && crit_size ) {
+    vars += {
+      "file_age_warning_size"  = config.warning_size
+      "file_age_critical_size" = config.critical_size
+    }
+  }
+
+/*    "file_age_ignoremissing" = config.ignoremissing*/
+
+  max_check_attempts = 5
+  check_interval = 10m
+  retry_interval = 2
+  enable_notifications = true
+
+
+  assign where host.vars.file_age
+}
+
+apply Service "mailqueue" to Host {
+  import "generic-service"
+
+  display_name = "mailqueue size"
+
+  assign where host.vars.mailqueue
+
+  check_command = "postfix_queue"
+}
+
+apply Service "uptime" to Host {
+  import "generic-service"
+
+  display_name = "system uptime"
+
+  assign where "uptime" in host.vars.services
+
+  check_command = "system_uptime"
+}
+
+
+apply Service "amavis" to Host {
+  import "generic-service"
+
+  display_name = "check mail scanner"
+
+  assign where "amavis" in host.vars.services
+
+  check_command = "amavis"
+}
+
+apply Service "proc_sqlgrey" to Host {
+  import "generic-service"
+
+  display_name = "sqlgrey process"
+
+  assign where "sqlgrey" in host.vars.services
+
+  check_command = "procs"
+
+  vars = {
+    "procs_warning" = 2
+    "procs_critical" = 2
+    "procs_timeout" = 3
+    "procs_command" = "sqlgrey"
+  }
+
+  #max_check_attempts = 5
+  #retry_interval = 10
+  #enable_notifications = false
+  #enable_flapping = true
+  # enable_perfdata = true
+}

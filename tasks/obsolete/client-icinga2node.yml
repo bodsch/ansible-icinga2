@@ -1,0 +1,86 @@
+---
+## configure client monitoring on server
+## http://docs.icinga.org/icinga2/latest/doc/module/icinga2/chapter/icinga2-client
+## https://github.com/Icinga/icinga2/blob/master/lib/cli/nodewizardcommand.cpp
+
+#- name: icinga2 client node | adding server to client /etc/hosts
+#  lineinfile: dest=/etc/hosts regexp="{{ icinga2_server_ip }}   {{ icinga2_server }}" line="{{ icinga2_server_ip }}   {{ icinga2_server }}"
+#- name: adding client to server /etc/hosts
+#  lineinfile: dest=/etc/hosts regexp="{{ ipaddr.stdout }}   {{ ansible_fqdn }}" line="{{ ipaddr.stdout }}   {{ ansible_fqdn }}"
+#  delegate_to: "{{ icinga2_server }}"
+
+- name: icinga2 client node | get salt from server
+  command: "awk -F'[\"]' '/TicketSalt/ { print $2 }' /etc/icinga2/constants.conf"
+  register: salt
+  delegate_to: "{{ icinga2_server }}"
+  changed_when: False
+
+#- stat: path=/etc/icinga2/pki/trusted-master.crt
+#  register: trustedcrt
+#
+#- name: get master certificate from server
+#  fetch: src=/etc/icinga2/pki/{{ icinga2_server }}.crt dest=/tmp/{{ icinga2_server }}.crt mode=0400
+#  delegate_to: "{{ icinga2_server }}"
+#  when: not trustedcrt.stat.exists
+#
+#- name: upload master certificate to client
+#  copy: src=/tmp/{{ icinga2_server }}.crt dest=/etc/icinga2/pki/trusted-master.crt force=yes
+#  when: not trustedcrt.stat.exists
+
+- name: icinga2 client node | get a ticket from icinga2 server
+  shell: icinga2 pki ticket --cn {{ icinga2_certificate_cn }} --salt {{ salt.stdout }}
+  register: ticket
+  delegate_to: "{{ icinga2_server }}"
+
+#- debug: var=ansible_fqdn
+#- debug: var=pki_dir
+
+- name: icinga2 client node | accept remote commands
+  lineinfile: dest=/etc/icinga2/features-available/api.conf regexp="^  accept_commands =" line="  accept_commands = true" insertafter="ticket_salt = "
+  notify:
+    - restart icinga2
+
+- name: configure icinga2 zones.conf
+  template: src=zones.conf dest="/etc/icinga2/zones.conf" mode=0644 backup=yes
+
+#- template: src=zones-append.conf dest="/etc/icinga2/zones-append.conf" mode=0644
+#  delegate_to: "{{ icinga2_server }}"
+#- shell: grep {{ ansible_fqdn }} /etc/icinga2/zones.conf
+#  register: zonesready
+#  ignore_errors: true
+#  changed_when: False
+#  delegate_to: "{{ icinga2_server }}"
+#- name: On server | append zones.conf
+#  shell: cat /etc/icinga2/zones-append.conf >> /etc/icinga2/zones.conf
+#  when: zonesready.stdout.find({{ ansible_fqdn }}) == -1
+#  delegate_to: "{{ icinga2_server }}"
+
+- name: check permissions of icinga2 pki directory
+  file: dest="{{ icinga2_pki_dir }}" state=directory mode=0700 owner=nagios
+- name: check if existing key
+  stat: path="{{ icinga2_pki_dir }}/{{ inventory_hostname }}.key"
+  register: nodekey
+- name: icinga2 client node | configure icinga2 client pki
+## http://lowendbox.com/blog/server-monitoring-with-icinga-2-part-2-the-node-ubuntu-host/
+## http://serverfault.com/questions/647805/how-to-set-up-icinga2-remote-client-without-using-cli-wizard
+  command: "{{ item }}"
+  with_items:
+    - "icinga2 pki new-cert --cn {{ icinga2_certificate_cn }} --key {{ icinga2_pki_dir }}/{{ inventory_hostname }}.key --cert {{ icinga2_pki_dir }}/{{ inventory_hostname }}.crt"
+    - "icinga2 pki save-cert --key {{ icinga2_pki_dir }}/{{ inventory_hostname }}.key --cert {{ icinga2_pki_dir }}/{{ inventory_hostname }}.crt --trustedcert {{ icinga2_pki_dir }}/trusted-master.crt --host {{ icinga2_server }}"
+    - "icinga2 pki request --host {{ icinga2_server }} --port {{ icinga2_master_port }} --ticket {{ ticket.stdout | default('') }} --key {{ icinga2_pki_dir }}/{{ inventory_hostname }}.key --cert {{ icinga2_pki_dir }}/{{ inventory_hostname }}.crt --trustedcert {{ icinga2_pki_dir }}/trusted-master.crt --ca {{ icinga2_pki_dir }}/ca.key"
+    - "icinga2 node setup --ticket {{ ticket.stdout | default('') }} --endpoint {{ icinga2_server }} --zone {{ inventory_hostname }} --master_host {{ icinga2_server }} --trustedcert {{ icinga2_pki_dir }}/trusted-master.crt"
+  become: yes
+  become_user: nagios
+  when: not nodekey.stat.exists and ticket.stdout is defined
+  notify:
+    - restart icinga2
+
+
+- name: icinga2 client node | check node is referenced on server
+  command: icinga2 node list
+  delegate_to: "{{ icinga2_server }}"
+  register: nodelist
+
+#- fail: msg="Error! new node {{ ansible_fqdn }} not listed on server {{ icinga2_server }}... something bad happened."
+#  when: nodelist.stdout.find({{ ansible_fqdn }}) == -1
+

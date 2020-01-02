@@ -1,0 +1,16 @@
+{{ ansible_managed | comment(decoration='// ') }}
+
+include "constants.conf"
+{% if icinga2_mode == 'master' %}
+include_recursive "satellites.d"
+{% endif %}
+include "zones.conf"
+
+include <itl>
+include <plugins>
+include <plugins-contrib>
+include <manubulon>
+// include <windows-plugins>
+// include <nscp>
+include "features-enabled/*.conf"
+include_recursive "conf.d"

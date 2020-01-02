@@ -1,0 +1,16 @@
+---
+
+#
+### template as ansible template conf file?
+### (old nagios/nrpe client way)
+#
+
+- debug: var=ansible_fqdn
+- debug: var=inventory_hostname
+- debug: var=icinga2_server
+- template: src=hosts-template.conf dest="/etc/icinga2/conf.d/hosts-icinga2server-{{ ansible_fqdn }}.conf" mode=0644
+  delegate_to: "{{ icinga2_server }}"
+  notify:
+    - restart icinga2
+  when: nrpe_mode is defined and nrpe_mode and inventory_hostname != icinga2_server
+

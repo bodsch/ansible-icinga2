@@ -1,0 +1,57 @@
+#!/bin/bash
+#
+
+# exit codes
+E_OK=0
+E_WARNING=1
+E_CRITICAL=2
+E_UNKNOWN=3
+
+# regular expression that matches queue IDs (e.g. D71EF7AC80F8)
+queue_id='^[A-F0-9][A-F0-9][A-F0-9][A-F0-9][A-F0-9][A-F0-9][A-F0-9][A-F0-9][A-F0-9][A-F0-9]'
+
+usage() {
+  echo "$0 -w warning -c critical"
+
+  echo "Example: "
+  echo "    $0 -c 10 -w 5"
+  echo ""
+  # echo "Invalid command line usage"
+}
+
+if [ -z ${1} ]
+then
+  usage
+  exit "${E_UNKNOWN}"
+fi
+
+while getopts ":w:c:" options
+do
+  case $options in
+    w ) warning=${OPTARG} ;;
+    c ) critical=${OPTARG} ;;
+    * ) usage ; exit "${E_UNKNOWN}" ;;
+  esac
+done
+
+# determine queue size
+qsize=$(mailq | egrep -c "${queue_id}")
+
+if [ -z "${qsize}" ]
+then
+  exit "${E_UNKNOWN}"
+fi
+
+if [ "${qsize}" -ge "${critical}" ]
+then
+  retval="${E_CRITICAL}"
+elif [ "${qsize}" -ge "${warning}" ]
+then
+  retval="${E_WARNING}"
+elif [ "${qsize}" -lt "${warning}" ]
+then
+  retval="${E_OK}"
+fi
+
+echo "${qsize} mail(s) in queue | mail_queue=${qsize}"
+exit "${retval}"

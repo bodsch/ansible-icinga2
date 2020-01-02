@@ -1,0 +1,11 @@
+{{ ansible_managed | comment(decoration='// ') }}
+
+library "db_ido_mysql"
+
+object IdoMysqlConnection "ido-mysql" {
+  user     = "{{ icinga2_feature.ido_mysql.username }}"
+  password = "{{ icinga2_feature.ido_mysql.password }}"
+  host     = "{{ icinga2_feature.ido_mysql.host }}"
+  database = "{{ icinga2_feature.ido_mysql.database }}"
+  port     = "{{ icinga2_feature.ido_mysql.port | default('3306') }}"
+}

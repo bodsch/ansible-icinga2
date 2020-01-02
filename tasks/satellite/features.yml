@@ -1,0 +1,35 @@
+---
+
+- name: disable icinga2 features
+  command: >
+    icinga2 feature disable {{ item }}
+  with_items:
+    - perfdata
+    - notification
+    - livestatus
+    - ido-mysql
+  notify:
+    - restart icinga2
+  tags:
+    - configure
+
+# configure API
+- block:
+
+  - name: configure api feature
+    template:
+      src: etc/icinga2/features/api.conf.j2
+      dest: /etc/icinga2/features-available/api.conf
+      owner: root
+      group: root
+      mode: 0644
+
+  - name: enable api feature
+    command: >
+      icinga2 feature enable api
+    notify:
+      - restart icinga2
+    tags:
+      - configure
+
+#  when: icinga2_server_enabled_features | join('|') | regex_search('api')

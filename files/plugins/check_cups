@@ -1,0 +1,58 @@
+#!/bin/bash
+# check_cups monitoring plugin for linuxmuster
+#   December 2006 Frank Schiebel <schiebel@lmz-bw.de>
+#   June 2019 Bodo Schulz <bodo@boone-schulz.de>
+# This software is GPL
+
+warn=
+critical=
+server=
+details=
+
+thishelp () {
+  echo "Usage check_cups -w <warn> -c <critical> "
+  exit 0
+}
+
+while getopts w:c:h:v opt
+do
+  case $opt in
+  w)  warn=$OPTARG
+       ;;
+  c)  critical=$OPTARG
+    ;;
+  h)  host=$OPTARG
+    ;;
+  v)      thishelp
+    ;;
+   esac
+done
+shift $((OPTIND-1))
+
+[[ $warn -gt $critical ]] && thishelp
+
+
+if $(lpstat -r -h $host > /dev/null 2>&1)
+then
+
+  QUEUE_LENGTH=$(lpstat | wc -l)
+  PRINTERS=$(lpstat -p | grep ^printer | awk '{print $2}')
+
+  for printer in $PRINTERS
+  do
+    details_printer=$printer
+    details_queue=$(lpstat $printer | wc -l)
+    details="${details} [${details_printer} ${details_queue}]"
+  done
+
+  echo "Cups server on ${host} running. (${QUEUE_LENGTH} jobs queued.${details})"
+
+  [ $QUEUE_LENGTH -lt $warn ] && exit 0
+  [ $QUEUE_LENGTH -lt $critical ] && exit 1
+
+  exit 2
+
+else
+  # cups ist not running
+  exit 2
+fi

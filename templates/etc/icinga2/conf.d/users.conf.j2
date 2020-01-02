@@ -1,0 +1,29 @@
+{{ ansible_managed | comment('cblock') }}
+/**
+ * The example user 'icingaadmin' and the example
+ * group 'icingaadmins'.
+ */
+
+{% for u in icinga2_notification_user | sort %}
+{% for k,v in u.iteritems() | sort %}
+object User "{{k}}" {
+  {% for ke,ve in v.iteritems() | sort -%}
+  {% if ke == 'import' %}{{ ke }} "{{ ve }}"
+  {% elif ke == 'groups' %}{{ ke }} = ["{{ ve|join('","') }}"]
+  {% else -%}
+  {{ ke }} = "{{ ve }}"
+  {% endif -%}
+{%- endfor -%}
+}
+{% endfor %}
+{%- endfor -%}
+
+{% for u in icinga2_notification_usergroups | sort %}
+{% for k,v in u.iteritems() | sort %}
+object UserGroup "{{k}}" {
+  {% for ke,ve in v.iteritems() -%}
+{{ ke }} = "{{ ve }}"
+  {% endfor -%}
+}
+{% endfor %}
+{%- endfor -%}

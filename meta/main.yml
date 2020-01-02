@@ -1,0 +1,21 @@
+---
+
+dependencies: []
+
+
+galaxy_info:
+  author: Bodo Schulz
+  description: icinga2
+  company: ''
+  license: "BSD"
+  min_ansible_version: 2.2
+  platforms:
+    - name: Ubuntu
+      versions:
+        - 16.04
+        - 18.04
+    - name: Debian
+      versions:
+        - 8
+        - 9
+        - 10

@@ -1,0 +1,16 @@
+---
+
+- name: create static zone file on icinga2 satellite
+  template:
+    src: etc/icinga2/zones.conf.j2
+    dest: '/etc/icinga2/zones.conf'
+  when: __satellite_api_connections.stat.exists == false
+  notify: restart icinga2
+
+#- name: remove static zone file on icinga2 satellite
+#  file:
+#    dest: '/etc/icinga2/zones.conf'
+#  when: __satellite_api_connections.stat.exists == true
+#  notify:
+#    - restart icinga2
+#    - restart icinga2 master

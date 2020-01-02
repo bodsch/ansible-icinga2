@@ -1,0 +1,15 @@
+---
+
+- name: restart icinga2
+  service:
+    name: icinga2
+    state: restarted
+
+- name: restart icinga2 master
+  service:
+    name: icinga2
+    state: restarted
+  delegate_to: "{{ icinga2_server }}"
+
+- name: update rpm cache
+  command: yum clean metadata

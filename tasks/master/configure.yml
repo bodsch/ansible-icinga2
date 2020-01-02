@@ -1,0 +1,49 @@
+---
+
+- name: remove default example of satellites
+  file:
+    path: /etc/icinga2/conf.d/satellite.conf
+    state: absent
+
+- name: configure icinga2
+  template:
+    src: '{{ item.src }}'
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - src: etc/icinga2/icinga2.conf.j2
+      dest: /etc/icinga2/icinga2.conf
+    - src: etc/icinga2/constants.conf.j2
+      dest: /etc/icinga2/constants.conf
+    - src: etc/icinga2/features/mainlog.conf.j2
+      dest: /etc/icinga2/features-available/mainlog.conf
+
+- name: create configuration files
+  template:
+    src: "etc/icinga2/conf.d/{{ item }}.j2"
+    dest: "/etc/icinga2/conf.d/{{ item }}"
+    owner: root
+    group: root
+    mode: 0644
+  loop:
+    - notifications.conf
+    - api-users.conf
+    - users.conf
+    - downtimes.conf
+
+- name: create global-templates directory
+  file:
+    name: /etc/icinga2/zones.d/global-templates
+    state: directory
+
+- name: create master directory
+  file:
+    name: /etc/icinga2/zones.d/master
+    state: directory
+
+- name: create satellite directory
+  file:
+    name: /etc/icinga2/satellites.d
+    state: directory

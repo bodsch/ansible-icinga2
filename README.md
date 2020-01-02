@@ -8,10 +8,12 @@ Ansible role to setup Icinga2 server with optional plugins like pnp4nagios, grap
 ### Ansible
 It was tested on the following versions:
  * 2.7
+ * 2.8
+ * 2.9
 
 ### Operating systems
 
-Tested on Ubuntu 18.04 ans 18.10
+Tested on Ubuntu 18.04 and 18.10, Debian 8, 9 and 10, CentOS 7
 
 ## Example Playbook
 
@@ -83,7 +85,6 @@ object Host "mail.boone-schulz.de" {
     os = "Linux"
     dist = "Arch"
     zone = "mail.boone-schulz.de"
-//    remote_endpoint = "icinga.boone-schulz.de"
     satellite = "true"
     disks = {
       "disk /" = { disk_partitions = "/" }
@@ -93,7 +94,7 @@ object Host "mail.boone-schulz.de" {
 ```
 
 # satellite
-
+```
 zones.conf
 /*
  * Endpoint and Zone configuration for a cluster setup
@@ -129,6 +130,4 @@ object Zone "global-templates" {
 object Zone "director-global" {
   global = true
 }
-
-
-
+```
