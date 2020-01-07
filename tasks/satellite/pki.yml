@@ -42,13 +42,13 @@
   wait_for:
     host: '{{ icinga2_master }}'
     port: 5665
-    delay: 2              # No wait before first check (sec)
+    delay: 4              # No wait before first check (sec)
     timeout: 5            # Stop checking after timeout (sec)
   ignore_errors: false
   retries: 10
   delay: 10
 
-- name: "icinga2 client node | create a ticket from icinga2 master for the satellite {{ icinga2_certificate_cn }}"
+- name: "create a ticket from icinga2 master for the satellite {{ icinga2_certificate_cn }}"
   shell: |
     icinga2 pki ticket --cn {{ icinga2_certificate_cn }} --salt {{ icinga2_salt }}
   register: ticket
