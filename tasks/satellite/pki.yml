@@ -48,7 +48,7 @@
   retries: 10
   delay: 10
 
-- name: "create a ticket from icinga2 master for the satellite {{ icinga2_certificate_cn }}"
+- name: "create a ticket from icinga2 master for the satellite '{{ icinga2_certificate_cn }}'"
   shell: |
     icinga2 pki ticket --cn {{ icinga2_certificate_cn }} --salt {{ icinga2_salt }}
   register: ticket
