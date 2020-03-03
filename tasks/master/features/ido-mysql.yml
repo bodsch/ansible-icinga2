@@ -47,14 +47,6 @@
   no_log: true
   when: not _mysql_ido_schema.failed | bool
 
-
-- debug:
-    var: "{{ item }}"
-  when: item is defined
-  loop:
-    - _mysql_ido_version
-
-
 - name: create the mysql ido schema
   mysql_db:
     name: "{{ icinga2_ido_database }}"
