@@ -3,6 +3,6 @@
 //  https://www.icinga.com/docs/icinga2/latest/doc/09-object-types/#objecttype-filelogger
 
 object FileLogger "main-log" {
-  severity = "{{ icinga2_feature.mainlog.severity }}"
-  path     = "{{ icinga2_feature.mainlog.path }}"
+  severity = "{{ icinga2_mainlog_severity }}"
+  path     = "{{ icinga2_mainlog_path }}"
 }

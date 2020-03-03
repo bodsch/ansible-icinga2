@@ -1,26 +1,26 @@
 ---
 
 - name: get salt from icinga2 master
-  command: "awk -F'[\"]' '/TicketSalt/ { print $2 }' /etc/icinga2/constants.conf"
+  command: awk -F'[\"]' '/TicketSalt/ { print $2 }' /etc/icinga2/constants.conf
   register: salt
   delegate_to: "{{ icinga2_server }}"
   changed_when: false
 
 - name: set icinga2_salt
   set_fact:
-    icinga2_salt: '{{salt.stdout}}'
+    icinga2_salt: "{{ salt.stdout }}"
   when: salt.stdout is defined
 
 - name: assert missing salt
   assert:
     that:
       - icinga2_salt | length != 0
-    msg: "icinga2 salt is missing"
+    msg: icinga2 salt is missing
     quiet: true
 
 - name: configure icinga2
   template:
-    src: '{{ item.src }}'
+    src: "{{ item.src }}"
     dest: "{{ item.dest }}"
     mode: 0644
   with_items:
@@ -40,7 +40,7 @@
 
 - name: check if the icinga master {{ icinga2_master }} are available
   wait_for:
-    host: '{{ icinga2_master }}'
+    host: "{{ icinga2_master }}"
     port: 5665
     delay: 4              # No wait before first check (sec)
     timeout: 5            # Stop checking after timeout (sec)
@@ -120,23 +120,23 @@
       with_items:
         - chown -R {{ icinga2_user }}:{{ icinga2_user }} {{ icinga2_pki_dir }}
 
-    - name: "create zone entry on master '{{ icinga2_server }}'"
+    - name: create zone entry on master '{{ icinga2_server }}'
       file:
-        dest: '/etc/icinga2/zones.d/{{ icinga2_certificate_cn }}'
+        dest: /etc/icinga2/zones.d/{{ icinga2_certificate_cn }}
         state: directory
       delegate_to: "{{ icinga2_server }}"
 
-    - name: "create zone file on master '{{ icinga2_server }}'"
+    - name: create zone file on master '{{ icinga2_server }}'
       template:
         src: etc/icinga2/satellite.conf.j2
-        dest: '/etc/icinga2/satellites.d/{{ icinga2_certificate_cn }}.conf'
+        dest: /etc/icinga2/satellites.d/{{ icinga2_certificate_cn }}.conf
       delegate_to: "{{ icinga2_server }}"
       notify: restart icinga2 master
 
-    - name: "create host object file on master '{{ icinga2_server }}'"
+    - name: create host object file on master '{{ icinga2_server }}'
       template:
         src: etc/icinga2/satellite-zone.conf.j2
-        dest: '/etc/icinga2/zones.d/{{ icinga2_certificate_cn }}/{{ icinga2_certificate_cn }}.conf'
+        dest: /etc/icinga2/zones.d/{{ icinga2_certificate_cn }}/{{ icinga2_certificate_cn }}.conf
       delegate_to: "{{ icinga2_server }}"
       notify: restart icinga2 master
 

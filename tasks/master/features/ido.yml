@@ -1,0 +1,7 @@
+---
+
+- include: ido-mysql.yml
+  when: icinga2_ido_enabled | bool and icinga2_master_features_enabled | join('|') | regex_search('ido-mysql')
+
+- include: ido-pgsql.yml
+  when: icinga2_ido_enabled | bool and icinga2_master_features_enabled | join('|') | regex_search('ido-pgsql')

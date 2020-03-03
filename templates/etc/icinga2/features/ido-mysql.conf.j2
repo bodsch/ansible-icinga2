@@ -3,9 +3,9 @@
 library "db_ido_mysql"
 
 object IdoMysqlConnection "ido-mysql" {
-  user     = "{{ icinga2_feature.ido_mysql.username }}"
-  password = "{{ icinga2_feature.ido_mysql.password }}"
-  host     = "{{ icinga2_feature.ido_mysql.host }}"
-  database = "{{ icinga2_feature.ido_mysql.database }}"
-  port     = "{{ icinga2_feature.ido_mysql.port | default('3306') }}"
+  user     = "{{ icinga2_ido_username }}"
+  password = "{{ icinga2_ido_password }}"
+  host     = "{{ icinga2_ido_host }}"
+  database = "{{ icinga2_ido_database }}"
+  port     = "{{ icinga2_ido_port | default('3306') }}"
 }

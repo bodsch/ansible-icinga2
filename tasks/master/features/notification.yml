@@ -1,0 +1,21 @@
+---
+
+# configure notification
+- block:
+    - name: configure notification feature
+      template:
+        src: etc/icinga2/features/notification.conf.j2
+        dest: /etc/icinga2/features-available/notification.conf
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: enable notification feature
+      command: >
+        icinga2 feature enable notification
+      notify:
+        - restart icinga2
+      tags:
+        - configure
+
+  when: icinga2_master_features_enabled | join('|') | regex_search('notification')

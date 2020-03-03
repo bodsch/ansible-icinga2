@@ -1,15 +1,5 @@
 ---
 
-- name: Include OS-specific variables.
-  include_vars:
-    file: "{{ item }}"
-  with_first_found:
-    - "{{ ansible_distribution | lower }}-{{ ansible_distribution_major_version }}.yml"
-    - "{{ ansible_distribution | lower }}-{{ ansible_distribution_release | lower }}.yml"
-    - "{{ ansible_distribution | lower }}.yml"
-    - "{{ ansible_os_family | lower }}.yml"
-    - default.yml
-
 - include: preparations.yml
   become: true
   tags:
@@ -31,6 +21,4 @@
 - include: custom_checks.yml
   when: icinga2_mode == 'master'
 
-
-#
-#
+- include: service.yml

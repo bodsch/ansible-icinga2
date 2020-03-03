@@ -1,7 +1,7 @@
 {{ ansible_managed | comment(decoration='// ') }}
 
 object ApiListener "api" {
-  accept_config   = {{ icinga2_feature.api.accept_config | bool | ternary('true', 'false') }}
-  accept_commands = {{ icinga2_feature.api.accept_commands | bool | ternary('true', 'false') }}
-  ticket_salt     = {{ icinga2_feature.api.ticket_salt }}
+  accept_config   = {{ icinga2_api_accept_config | bool | ternary('true', 'false') }}
+  accept_commands = {{ icinga2_api_accept_commands | bool | ternary('true', 'false') }}
+  ticket_salt     = {{ icinga2_api_ticket_salt }}
 }

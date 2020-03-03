@@ -7,30 +7,30 @@
   loop:
     - "{{ icinga2_requirements }}"
 
-- name: 'make sure ansible local facts directory exists'
+- name: make sure ansible local facts directory exists
   file:
-    dest: '/etc/ansible/facts.d'
-    state: 'directory'
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
+    dest: /etc/ansible/facts.d
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
 
 - block:
-      - name: add icinga2 repo GPG key
-        apt_key:
-          # F51A 91A5 EE00 1AA5 D77D  53C4 C6E3 19C3 3441 0682
-          id: F51A91A5EE001AA5D77D53C4C6E319C334410682
-          url: https://packages.icinga.com/icinga.key
+    - name: add icinga2 repo GPG key
+      apt_key:
+        # F51A 91A5 EE00 1AA5 D77D  53C4 C6E3 19C3 3441 0682
+        id: F51A91A5EE001AA5D77D53C4C6E319C334410682
+        url: https://packages.icinga.com/icinga.key
 
-      - name: add icinga2 repo sources
-        template:
-          src:   etc/apt/icinga2.list.j2
-          dest: /etc/apt/sources.list.d/icinga2.list
-          mode: 0644
+    - name: add icinga2 repo sources
+      template:
+        src: etc/apt/icinga2.list.j2
+        dest: /etc/apt/sources.list.d/icinga2.list
+        mode: 0644
 
-      - name: update apt cache
-        apt:
-          update_cache: yes
+    - name: update apt cache
+      apt:
+        update_cache: true
 
   when: ansible_os_family | lower == 'debian' and icinga2_use_external_repo | bool
 
@@ -67,8 +67,11 @@
         gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-ICINGA
         gpgcheck: 1
         enabled: 1
-      notify:
-        - update rpm cache
+
+    - name: update rpm cache  # noqa 303
+      command: yum clean metadata
+      args:
+        warn: false
 
   when: ansible_os_family | lower == 'redhat' and icinga2_use_external_repo | bool
 
@@ -76,7 +79,7 @@
 
     - name: install build tools
       package:
-        name: '{{item}}'
+        name: "{{ item }}"
         state: present
       loop:
         - base-devel
@@ -86,7 +89,7 @@
       copy:
         content: '%aur_builder ALL=(ALL) NOPASSWD: ALL'
         dest: /etc/sudoers.d/aur
-        validate: 'visudo -cf %s'
+        validate: visudo -cf %s
 
     - name: create build group
       group:

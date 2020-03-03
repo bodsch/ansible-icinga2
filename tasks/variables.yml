@@ -3,8 +3,8 @@
 ## to avoid dns issue (used in both client and server mode)
 # get the IP address of the primary network interface
 # this can be confused by multiple networks and schould testet !
-- name: get icinga2 server ip address
-  shell: "ip route get 1 | sed -n 's/^.*src \\([0-9.]*\\) .*$/\\1/p'"
+- name: get icinga2 server ip address  # noqa 306
+  shell: ip route get 1 | sed -n 's/^.*src \\([0-9.]*\\) .*$/\\1/p'
   changed_when: false
   register: _ipaddr
 

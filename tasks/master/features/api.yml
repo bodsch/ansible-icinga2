@@ -1,14 +1,5 @@
 ---
 
-- name: disable icinga2 features  # noqa 301
-  command: icinga2 feature disable {{ item }}
-  with_items:
-    "{{ icinga2_master_features_disabled }}"
-  notify:
-    - restart icinga2
-  tags:
-    - configure
-
 # configure API
 - block:
 
@@ -20,8 +11,9 @@
         group: root
         mode: 0644
 
-    - name: enable api feature  # noqa 301
-      command: icinga2 feature enable api
+    - name: enable api feature
+      command: >
+        icinga2 feature enable api
       notify:
         - restart icinga2
       tags:

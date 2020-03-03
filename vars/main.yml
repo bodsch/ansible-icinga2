@@ -1,3 +1,76 @@
 ---
 
 icinga2_installed_version: ''
+
+_monitoring_plugins_directory:
+  default: /usr/lib/nagios/plugins
+  debian: /usr/lib/nagios/plugins
+  redhat: /usr/lib64/nagios/plugins
+  archlinux: /usr/lib/monitoring-plugins
+
+_icinga2_user:
+  default: nagios
+  debian: nagios
+  redhat: icinga
+  archlinux: icinga
+
+_icinga2_pki_userdir:
+  default: nagios
+  debian: nagios
+  redhat: icinga
+  archlinux: icinga
+
+_icinga2_monitoring_plugins:
+  default:
+    - monitoring-plugins-standard
+    - monitoring-plugins-basic
+    - monitoring-plugins-common
+    - libipc-run-perl
+    - dnsutils
+    - lynx
+    # required for snmpget/check_snmp
+    - snmp
+    # To ensure ansible_default_ipv4 is populated
+    - iproute2
+  debian:
+    - monitoring-plugins-standard
+    - monitoring-plugins-basic
+    - monitoring-plugins-common
+    - libipc-run-perl
+    - dnsutils
+    - lynx
+    # required for snmpget/check_snmp
+    - snmp
+    # To ensure ansible_default_ipv4 is populated
+    - iproute2
+  redhat:
+    - nagios-plugins-all
+    - lynx
+    # required for snmpget/check_snmp
+    - net-snmp
+    # To ensure ansible_default_ipv4 is populated
+    - iproute
+    # for dig
+    - bind-utils
+  archlinux:
+    - monitoring-plugins
+    - lynx
+    # required for snmpget/check_snmp
+    - net-snmp
+    # To ensure ansible_default_ipv4 is populated
+    - iproute2
+    # for dig
+    - bind-tools
+
+
+monitoring_plugins_directory: "{{ _monitoring_plugins_directory[ansible_os_family | lower] |
+  default(_monitoring_plugins_directory['default']) }}"
+
+icinga2_user: "{{ _icinga2_user[ansible_os_family | lower] |
+  default(_icinga2_user['default']) }}"
+
+icinga2_pki_userdir: "{{ _icinga2_pki_userdir[ansible_os_family | lower] |
+  default(_icinga2_pki_userdir['default']) }}"
+
+icinga2_monitoring_plugins: "{{ _icinga2_monitoring_plugins[ansible_os_family | lower] |
+  default(_icinga2_monitoring_plugins['default']) }}"

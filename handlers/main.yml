@@ -10,6 +10,3 @@
     name: icinga2
     state: restarted
   delegate_to: "{{ icinga2_server }}"
-
-- name: update rpm cache
-  command: yum clean metadata

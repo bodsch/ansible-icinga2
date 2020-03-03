@@ -1,0 +1,86 @@
+---
+# configure ido-mysql
+#
+- name: create database upgrade script
+  template:
+    src: database-upgrade.sh.j2
+    dest: /usr/local/bin/database-upgrade.sh
+    owner: root
+    group: root
+    mode: 0750
+
+# # needs root rights
+# - name: ensure database {{ icinga2_ido_database }} is created
+#   shell: >
+#     mysql \
+#       --host {{ icinga2_ido_host }} \
+#       --user {{ icinga2_ido_mysql_user }} \
+#       --password {{ icinga2_ido_mysql_password }} \
+#       --batch \
+#       --skip-column-names \
+#       --execute \
+#       "SELECT count(TABLE_NAME) FROM information_schema.tables where TABLE_SCHEMA = '{{ icinga2_ido_database }}';"
+#   register: mysql_ido_schema
+#   changed_when: false
+#   check_mode: false
+#   # no_log: true
+
+- name: Create a new database with name '{{ icinga2_ido_database }}'
+  mysql_db:
+    name: '{{ icinga2_ido_database }}'
+    state: present
+  register: _mysql_ido_schema
+
+- name: check mysql database version
+  shell: >
+    mysql \
+      --host={{ icinga2_ido_host }} \
+      --user={{ icinga2_ido_mysql_user }} \
+      --password={{ icinga2_ido_mysql_password }} \
+      --batch \
+      --skip-column-names \
+      --execute \
+      "select version from {{ icinga2_ido_database }}.icinga_dbversion"
+  register: _mysql_ido_version
+  changed_when: false
+  ignore_errors: true
+  no_log: true
+  when: not _mysql_ido_schema.failed | bool
+
+
+- debug:
+    var: "{{ item }}"
+  when: item is defined
+  loop:
+    - _mysql_ido_version
+
+
+- name: create the mysql ido schema
+  mysql_db:
+    name: "{{ icinga2_ido_database }}"
+    state: import
+    target: "{{ icinga2_ido_mysql_schema_file }}"
+  register: mysql_create_ido_schema
+  changed_when: false
+  check_mode: false
+  when: ( not _mysql_ido_schema.failed and _mysql_ido_version.stdout | string | length == 0 )
+
+# TODO
+# update database schema
+- name: update database schema  # noqa 305
+  shell: /usr/local/bin/database-upgrade.sh
+  changed_when: false
+  no_log: false
+
+- name: configure ido-mysql feature
+  template:
+    src: etc/icinga2/features/ido-mysql.conf.j2
+    dest: /etc/icinga2/features-available/ido-mysql.conf
+    owner: root
+    group: root
+    mode: 0644
+
+- name: enable ido-mysql feature  # noqa 301
+  command: icinga2 feature enable ido-mysql
+  notify:
+    - restart icinga2

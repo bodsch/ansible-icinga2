@@ -1,0 +1,86 @@
+#!/bin/bash
+{{ ansible_managed | comment }}
+## database upgrades
+
+export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+umask 022
+
+MYSQL_OPTS="--host={{ icinga2_ido_host }} --user={{ icinga2_ido_mysql_user }} --password={{ icinga2_ido_mysql_password }}"
+
+
+date=$(date +%Y-%m-%d)
+
+# Version compare function
+# 'stolen' from https://github.com/psi-4ward/docker-icinga2/blob/master/rootfs/init/mysql_setup.sh
+# but modifyed for /bin/sh support
+version_compare () {
+
+  if [[ ${1} == ${2} ]]
+  then
+    echo '='
+    return 0
+  fi
+
+  left="$(echo ${1} | sed 's/\.//g')"
+  right="$(echo ${2} | sed 's/\.//g')"
+
+  if [[ ${left} -gt ${right} ]]
+  then
+    echo ">"
+    return 0
+  elif [[ ${left} -lt ${right} ]]
+  then
+    echo "<"
+    return 0
+  else
+    echo "="
+    return 0
+  fi
+}
+
+# update database schema
+#
+update_schema() {
+
+  # Database already created
+  #
+  # check database version
+  # and install the update, when it needed
+  #
+  query="select version from {{ icinga2_ido_database }}.icinga_dbversion"
+  db_version=$(mysql ${MYSQL_OPTS}  --batch --execute="${query}" | tail -n1)
+
+  if [[ -z "${db_version}" ]]
+  then
+    echo "no database version found. skip database upgrade."
+    exit 1
+#    insert_schema
+#    update_schema
+  else
+
+    upgrape_directory="{{ icinga2_ido_mysql_schema_updates }}"
+
+    echo "IDO database version: ${db_version}"
+
+    for DB_UPDATE_FILE in $(ls -1 ${upgrape_directory}/*.sql)
+    do
+      FILE_VER=$(grep icinga_dbversion ${DB_UPDATE_FILE} | grep idoutils | cut -d ',' -f 5 | sed -e "s| ||g" -e "s|'||g")
+
+      if [[ "$(version_compare ${db_version} ${FILE_VER})" = "<" ]]
+      then
+        echo "apply database update '${FILE_VER}' from '${DB_UPDATE_FILE}'"
+
+        mysql ${MYSQL_OPTS} --force {{ icinga2_ido_database }}  < ${DB_UPDATE_FILE}
+
+        if [[ $? -gt 0 ]]
+        then
+          echo "database update ${DB_UPDATE_FILE} failed"
+          exit 1
+        fi
+      fi
+    done
+  fi
+}
+
+update_schema
+

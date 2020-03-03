@@ -5,7 +5,7 @@
 - name: install icinga2 packages
   package:
     name: "{{ item }}"
-    state: latest
+    state: present
   loop:
     - icinga2-ido-mysql
     - "{{ icinga2_dependencies }}"
@@ -16,137 +16,49 @@
   command: |
     mv /etc/icinga2/conf.d/{{ item }}.conf /etc/icinga2/conf.d/{{ item }}.disabled
   args:
-    creates: "/etc/icinga2/conf.d/{{ item }}.disabled"
     removes: "/etc/icinga2/conf.d/{{ item }}.conf"
   loop:
     - templates
     - apt
 
-# - name: rename some static files
-#   command: |
-#     mv /etc/icinga2/conf.d/{{ item }}.conf /etc/icinga2/conf.d/{{ item }}.disabled
-#   args:
-#     creates: "/etc/icinga2/conf.d/{{ item }}.disabled"
-#     removes: "/etc/icinga2/conf.d/{{ item }}.conf"
-#   loop:
-#     - hosts
-#     - services
-#     - templates
-#     - users
-#     - apt
-
 - include_tasks: master/backup.yml
 - include_tasks: master/pki.yml
 - include_tasks: master/configure.yml
 - include_tasks: master/features.yml
-
 - include_tasks: master/global-templates.yml
-
-#- name: add custom commands to icinga2
-#  copy:
-#    src: commands-custom.conf
-#    dest: /etc/icinga2/conf.d/commands-custom.conf
-#    mode: 0644
-#    backup: yes
-#  notify:
-#    - restart icinga2
-#  tags:
-#    - configure
-#
-#- name: add custom templates to icinga2
-#  copy:
-#    src: templates.conf
-#    dest: /etc/icinga2/conf.d/templates.conf
-#    mode: 0644
-#    backup: yes
-#  notify:
-#    - restart icinga2
-#  tags:
-#    - configure
-#
-#- name: add custom notification templates to icinga2
-#  copy:
-#    src: notification_templates.conf
-#    dest: /etc/icinga2/conf.d/notification_templates.conf
-#    mode: 0644
-#    backup: yes
-#  notify:
-#    - restart icinga2
-#  tags:
-#    - configure
 
 - name: configure zones
   template:
-    src:   etc/icinga2/zones.conf.j2
+    src: etc/icinga2/zones.conf.j2
     dest: /etc/icinga2/zones.conf
     mode: 0644
-    backup: yes
+    backup: true
 
 - name: configure local hosts file
   template:
-    src:   etc/icinga2/hosts.conf.j2
+    src: etc/icinga2/hosts.conf.j2
     dest: /etc/icinga2/conf.d/hosts.conf
     mode: 0644
-    backup: yes
+    backup: true
 
 - name: add custom groups to icinga2
   template:
     src: etc/icinga2/conf.d/groups.conf.j2
     dest: /etc/icinga2/conf.d/groups.conf
     mode: 0644
-    backup: yes
+    backup: true
   notify:
     - restart icinga2
   tags:
     - configure
 
-
-
-# TODO
-# move this to /etc/icinga2/zones.d/global-templates/services.conf
 - name: remove static services file
   file:
-    #src:   etc/icinga2/conf.d/services.conf.j2
     name: /etc/icinga2/conf.d/services.conf
-#    mode: 0644
-#    backup: yes
     state: absent
 
 - name: create {{ icinga2_local_scriptsdir }} directory
   file:
-    path: '{{ icinga2_local_scriptsdir }}'
+    path: "{{ icinga2_local_scriptsdir }}"
     state: directory
     mode: 0755
-
-# static config are obsolete and removed
-# - name: copy extra icinga2 config
-#   copy:
-#     src: 'icinga2/conf.d/{{ item }}'
-#     dest: /etc/icinga2/conf.d/
-#     mode: 0644
-#   with_items:
-#     "{{ icinga2_extra_conf_files }}"
-#   notify:
-#     - restart icinga2
-#   when: (
-#     icinga2_extra_conf_files is defined and
-#     icinga2_extra_conf_files != [])
-#   tags:
-#     - icinga2
-#     - configure
-
-# - name: create icinga2 zone config files
-#   copy:
-#     src: 'icinga2/zones.d/{{ item }}'
-#     dest: '/etc/icinga2/zones.d/{{ item }}'
-#     mode: 0644
-#   with_items:
-#     "{{ icinga2_zone_files }}"
-#   notify:
-#     - restart icinga2
-#   when: (
-#     icinga2_zone_files is defined and
-#     icinga2_zone_files != [])
-#   tags:
-#     - icinga2
-#     - configure

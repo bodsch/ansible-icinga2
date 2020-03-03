@@ -1,50 +1,41 @@
 ---
-dependency:
-  name: galaxy
 
 driver:
   name: docker
 
-lint:
-  name: yamllint
-  options:
-    config-file: molecule/default/yaml-lint.yml
+lint: |
+    yamllint .
+    ansible-lint
 
 platforms:
-#   - name: centos-7
-#     image: paulfantom/centos-molecule:7
-#     docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
-#     privileged: true
-#     volumes:
-#       - /sys/fs/cgroup:/sys/fs/cgroup:ro
-#
-#   - name: centos-8
-#     image: paulfantom/centos-molecule:8
-#     docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
-#     privileged: true
-#     volumes:
-#       - /sys/fs/cgroup:/sys/fs/cgroup:ro
-#
-#   - name: ubuntu-16
-#     image: paulfantom/ubuntu-molecule:16.04
-#     docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
-#     privileged: true
-#     volumes:
-#       - /sys/fs/cgroup:/sys/fs/cgroup:ro
 
-  - name: ubuntu-18
-    image: paulfantom/ubuntu-molecule:18.04
-    docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
-    privileged: true
-    volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+  # - name: centos-7
+  #   image: paulfantom/centos-molecule:7
+  #   docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
+  #   privileged: true
+  #   volumes:
+  #     - /sys/fs/cgroup:/sys/fs/cgroup:ro
 
-#   - name: debian-9
-#     image: paulfantom/debian-molecule:9
-#     docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
-#     privileged: true
-#     volumes:
-#       - /sys/fs/cgroup:/sys/fs/cgroup:ro
+  # - name: centos-8
+  #   image: paulfantom/centos-molecule:8
+  #   docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
+  #   privileged: true
+  #   volumes:
+  #     - /sys/fs/cgroup:/sys/fs/cgroup:ro
+
+  # - name: ubuntu-18
+  #   image: paulfantom/ubuntu-molecule:18.04
+  #   docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
+  #   privileged: true
+  #   volumes:
+  #     - /sys/fs/cgroup:/sys/fs/cgroup:ro
+
+  # - name: debian-9
+  #   image: paulfantom/debian-molecule:9
+  #   docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
+  #   privileged: true
+  #   volumes:
+  #     - /sys/fs/cgroup:/sys/fs/cgroup:ro
 
   - name: debian-10
     image: paulfantom/debian-molecule:10
@@ -53,9 +44,18 @@ platforms:
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
 
-
 provisioner:
   name: ansible
+  # ansible_args:
+  #  - --diff
+  #   - -vvv
+  config_options:
+    defaults:
+      host_key_checking: False
+      deprecation_warnings: True
+      # callback_whitelist: profile_tasks
+      # gather_subset: '!hardware'
+
   lint:
     name: ansible-lint
   playbooks:
@@ -65,7 +65,6 @@ provisioner:
     destroy: destroy.yml
 
 scenario:
-  name: default
   test_sequence:
     # - lint
     - destroy
@@ -74,13 +73,8 @@ scenario:
     - create
     - prepare
     - converge
-    # - idempotence
-    # - side_effect
     - verify
     - destroy
 
 verifier:
   name: testinfra
-  lint:
-    name: flake8
-    enabled: true

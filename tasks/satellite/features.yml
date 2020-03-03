@@ -1,8 +1,7 @@
 ---
 
-- name: disable icinga2 features
-  command: >
-    icinga2 feature disable {{ item }}
+- name: disable icinga2 features  # noqa 301
+  command: icinga2 feature disable {{ item }}
   with_items:
     - perfdata
     - notification
@@ -16,20 +15,17 @@
 # configure API
 - block:
 
-  - name: configure api feature
-    template:
-      src: etc/icinga2/features/api.conf.j2
-      dest: /etc/icinga2/features-available/api.conf
-      owner: root
-      group: root
-      mode: 0644
+    - name: configure api feature
+      template:
+        src: etc/icinga2/features/api.conf.j2
+        dest: /etc/icinga2/features-available/api.conf
+        owner: root
+        group: root
+        mode: 0644
 
-  - name: enable api feature
-    command: >
-      icinga2 feature enable api
-    notify:
-      - restart icinga2
-    tags:
-      - configure
-
-#  when: icinga2_server_enabled_features | join('|') | regex_search('api')
+    - name: enable api feature  # noqa 303
+      command: icinga2 feature enable api
+      notify:
+        - restart icinga2
+      tags:
+        - configure

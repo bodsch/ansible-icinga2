@@ -6,31 +6,12 @@
 
     - name: install icinga2 packages
       package:
-        name: '{{ item }}'
-        state: latest
+        name: "{{ item }}"
+        state: present
       loop:
-        '{{ icinga2_dependencies }}'
-  when: ansible_os_family | lower != 'archlinux'
+        "{{ icinga2_dependencies }}"
 
-# - block:
-#   - name: add icinga2 repo GPG key
-#     apt_key:
-#       # F51A 91A5 EE00 1AA5 D77D  53C4 C6E3 19C3 3441 0682
-#       id: F51A91A5EE001AA5D77D53C4C6E319C334410682
-#       url: https://packages.icinga.com/icinga.key
-#
-#   - name: add icinga2 repo sources
-#     apt_repository:
-#       filename: icinga2
-#       repo: deb http://packages.icinga.com/ubuntu icinga-{{ ansible_lsb.codename }} main
-#   when: (
-#     icinga2_use_external_repo | bool and
-#     ansible_os_family | lower == 'debian')
-#
-# - include_tasks: check_installed.yml
-#
-# - name: Gather Facts
-#   setup:
+  when: ansible_os_family | lower != archlinux
 
 # TODO
 # check for updates
@@ -60,7 +41,7 @@
     #     group: aur_builder
 
     - name: download icinga2 package
-      become: yes
+      become: true
       become_user: aur_builder
       shell: |
         cd ~
@@ -69,7 +50,7 @@
         git pull
 
     - name: get package version
-      become: yes
+      become: true
       become_user: aur_builder
       shell: |
         cd ~/icinga2/
@@ -84,17 +65,16 @@
 
     - block:
 
-      - name: compare versiones
-        debug:
-          msg: 'current installed version {{icinga2_version}} - we need an update to version {{packaged_icinga2_version}}'
-        #when: packaged_icinga2_version is version( icinga2_version ,'>')
+        - name: compare versiones
+          debug:
+            msg: current installed version {{ icinga2_version }} - we need an update to version {{ packaged_icinga2_version }}
 
-      - name: build icinga2 package
-        become: yes
-        become_user: aur_builder
-        shell: |
-          cd ~/icinga2/
-          makepkg --syncdeps --install --noprogressbar --noconfirm
+        - name: build icinga2 package
+          become: true
+          become_user: aur_builder
+          shell: |
+            cd ~/icinga2/
+            makepkg --syncdeps --install --noprogressbar --noconfirm
       when: packaged_icinga2_version is version( icinga2_version ,'>')
 
   when: (

@@ -1,8 +1,8 @@
 {{ ansible_managed | comment(decoration='// ') }}
 
-const PluginDir          = "{{monitoring_plugins_directory}}"
-const ManubulonPluginDir = "{{monitoring_plugins_directory}}"
-const PluginContribDir   = "{{monitoring_plugins_directory}}"
+const PluginDir          = "{{ monitoring_plugins_directory }}"
+const ManubulonPluginDir = "{{ monitoring_plugins_directory }}"
+const PluginContribDir   = "{{ monitoring_plugins_directory }}"
 {% if icinga2_installed_version is version( '2.11.2', '<' ) %}
 const NodeName           = "{{ icinga2_certificate_cn }}"
 const ZoneName           = NodeName
