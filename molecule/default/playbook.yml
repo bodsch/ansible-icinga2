@@ -26,8 +26,8 @@
 
     icinga2_mode: master
 
-    icinga2_ido_mysql_user: icinga2_ido
-    icinga2_ido_mysql_password: icinga2
+    icinga2_ido_username: icinga2_ido
+    icinga2_ido_password: icinga2
     icinga2_ido_socket: /var/lib/mysql/mysql.sock
 
     icinga2_mainlog_severity: warning

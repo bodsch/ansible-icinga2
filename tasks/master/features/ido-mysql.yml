@@ -14,8 +14,8 @@
 #   shell: >
 #     mysql \
 #       --host {{ icinga2_ido_host }} \
-#       --user {{ icinga2_ido_mysql_user }} \
-#       --password {{ icinga2_ido_mysql_password }} \
+#       --user {{ icinga2_ido_username }} \
+#       --password {{ icinga2_ido_password }} \
 #       --batch \
 #       --skip-column-names \
 #       --execute \
@@ -35,8 +35,8 @@
   shell: >
     mysql \
       --host={{ icinga2_ido_host }} \
-      --user={{ icinga2_ido_mysql_user }} \
-      --password={{ icinga2_ido_mysql_password }} \
+      --user={{ icinga2_ido_username }} \
+      --password={{ icinga2_ido_password }} \
       --batch \
       --skip-column-names \
       --execute \
