@@ -1,0 +1,5 @@
+---
+
+- name: mariadb
+  src: https://github.com/bodsch/ansible-mariadb.git
+  version: master

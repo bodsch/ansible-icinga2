@@ -11,7 +11,7 @@
       loop:
         "{{ icinga2_dependencies }}"
 
-  when: ansible_os_family | lower != archlinux
+  when: ansible_os_family | lower != 'archlinux'
 
 # TODO
 # check for updates
