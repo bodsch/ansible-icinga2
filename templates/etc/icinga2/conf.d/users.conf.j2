@@ -1,29 +1,23 @@
-{{ ansible_managed | comment('cblock') }}
-/**
- * The example user 'icingaadmin' and the example
- * group 'icingaadmins'.
- */
+// {{ ansible_managed }}
 
-{% for u in icinga2_notification_user | sort %}
-{% for k,v in u.iteritems() | sort %}
-object User "{{k}}" {
-  {% for ke,ve in v.iteritems() | sort -%}
-  {% if ke == 'import' %}{{ ke }} "{{ ve }}"
-  {% elif ke == 'groups' %}{{ ke }} = ["{{ ve|join('","') }}"]
-  {% else -%}
-  {{ ke }} = "{{ ve }}"
+{% for u in icinga2_notification_user | sort -%}
+object User "{{ u }}" {
+{% for k,v in icinga2_notification_user[u].items() | sort %}
+
+  {%- if k == 'import' %}{{ k }} "{{ v }}"
+  {% elif k == 'groups' %}{{ k }} = ["{{ v|join('","') }}"]
+  {% else %}
+  {{ k }} = "{{ v }}"
   {% endif -%}
-{%- endfor -%}
+{% endfor %}
 }
 {% endfor %}
-{%- endfor -%}
+
 
 {% for u in icinga2_notification_usergroups | sort %}
-{% for k,v in u.iteritems() | sort %}
-object UserGroup "{{k}}" {
-  {% for ke,ve in v.iteritems() -%}
-{{ ke }} = "{{ ve }}"
-  {% endfor -%}
+object UserGroup "{{ u }}" {
+{% for k,v in icinga2_notification_usergroups[u].items() | sort %}
+{{ k }} = "{{ v }}"
 }
 {% endfor %}
 {%- endfor -%}

@@ -164,28 +164,22 @@ icinga2_notification: []
 #    assign_where: host.vars.notification.mail
 
 
-icinga2_notification_user: []
-# - icingaadmin:
-#     import: generic-user
-#     display_name: "Icinga 2 Admin"
-#     groups:
-#       - icingaadmins
-# - bodsch:
-#     import: generic-user
-#     display_name: Bodo Schulz
-#     groups:
-#       - icingaadmins
-#     email: bodo@boone-schulz.de
-# - vonhorn:
-#     import: generic-user
-#     display_name: Egbert von Horn
-#     groups:
-#       - icingaadmins
-#     email: egbert@vonhorn.de
+icinga2_notification_user: {}
+# icingaadmin:
+#   import: generic-user
+#   display_name: "Icinga2 Admin"
+#   groups:
+#     - icingaadmins
+# bodsch:
+#   import: generic-user
+#   display_name: Bodo Schulz
+#   groups:
+#     - icingaadmins
+#   email: bodo@boone-schulz.de
 
-icinga2_notification_usergroups: []
-# - icingaadmins:
-#     display_name: "Icinga 2 Admin Group"
+icinga2_notification_usergroups: {}
+# icingaadmins:
+#   display_name: "Icinga2 Admin Group"
 
 icinga2_ido_mysql_schema_file: /usr/share/icinga2-ido-mysql/schema/mysql.sql
 icinga2_ido_mysql_schema_updates: /usr/share/icinga2-ido-mysql/schema/upgrade

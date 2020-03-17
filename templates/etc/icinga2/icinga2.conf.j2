@@ -3,6 +3,7 @@
 include "constants.conf"
 {% if icinga2_mode == 'master' %}
 include_recursive "satellites.d"
+include_recursive "notifications"
 {% endif %}
 include "zones.conf"
 
