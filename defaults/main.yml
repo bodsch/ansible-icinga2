@@ -34,7 +34,6 @@ icinga2_master: '{{ ansible_fqdn }}'
 
 icinga2_master_features_disabled:
   - perfdata
-  - notification
   - livestatus
 
 icinga2_master_features_enabled:
@@ -42,6 +41,7 @@ icinga2_master_features_enabled:
   - api
   - ido-mysql
   - mainlog
+  - notification
 
 icinga2_api_enabled: true
 icinga2_api_accept_config: true
