@@ -1,5 +1,18 @@
 ---
 - name: Prepare
   hosts: all
-  gather_facts: false
-  tasks: []
+  gather_facts: true
+  become: true
+  tasks:
+    - name: clean caches for debian based
+      command: apt clean
+      args:
+        warn: false
+      when: ansible_os_family | lower == 'debian'
+    - name: update instance
+      shell: |
+        apt update
+        apt dist-upgrade
+      args:
+        warn: false
+      when: ansible_os_family | lower == 'debian'

@@ -165,21 +165,75 @@ icinga2_notification: []
 
 
 icinga2_notification_user: {}
-# icingaadmin:
-#   import: generic-user
-#   display_name: "Icinga2 Admin"
-#   groups:
-#     - icingaadmins
-# bodsch:
-#   import: generic-user
-#   display_name: Bodo Schulz
-#   groups:
-#     - icingaadmins
-#   email: bodo@boone-schulz.de
+#  icingaadmin:
+#    import: generic-user
+#    display_name: "Icinga2 Admin"
+#    groups:
+#      - icingaadmins
+#  bodsch:
+#    import: generic-user
+#    display_name: Bodo Schulz
+#    groups:
+#      - icingaadmins
+#    email: bodo@boone-schulz.de
 
 icinga2_notification_usergroups: {}
-# icingaadmins:
-#   display_name: "Icinga2 Admin Group"
+#  icingaadmins:
+#    display_name: "Icinga2 Admin Group"
+
+icinga2_checkcommands: {}
+#   check-docker:
+#     import: plugin-check-command
+#     command: '[ PluginDir + "/check_docker_container" ]'
+#     arguments: |
+#       "-r" = {
+#         order = 0
+#         required = true
+#         value = "$docker_containers$"
+#       }
+#   arch:
+#     import: plugin-check-command
+#     command: '[ PluginDir + "/check_arch_updates" ]'
+#     timeout: 2m
+#   check_memory:
+#     import: plugin-check-command
+#     command: '[ PluginDir + "/check_mem" ]'
+#     arguments: |
+#       "-w" = {
+#         description = "Your warning %. 20 means 20% of your memory can remain before a warning alarm. Do not use the % sign."
+#         value  = "$mem_warning$"
+#         set_if = bool("$mem_warning$")
+#       }
+#       "-c" = {
+#         description = "Your critical %. 10 means 10% of your memory can remain before a critical alarm. Do not use the % sign."
+#         value  = "$mem_critical$"
+#         set_if = bool("$mem_critical$")
+#       }
+#       # "-d" = {
+#       #   description = "divider K=kilobytes, M=megabytes, G=gigabytes, T=terabytes"
+#       #   value = "M"
+#       # }
+#       # "-f" = {
+#       #   description = "Include cached memory as free memory when calculating your percentage free"
+#       #   value  = "$mem_cached_memory$"
+#       #   set_if = bool("$mem_cached_memory$")
+#       # }
+
+icinga2_apply_service: {}
+#   https_for_host:
+#     import: generic-service
+#     check_command: http
+#     check_interval: 3m
+#     extra_parameters: |
+#       vars += config
+#       vars += {
+#         "http_vhost" = host.name
+#         "http_certificate" = "15"
+#         "http_sni" = true
+#         "http_ssl" = true
+#         "notify" = "true"
+#       }
+#     assign_where: 'host.vars.https_vhosts'
 
 icinga2_ido_mysql_schema_file: /usr/share/icinga2-ido-mysql/schema/mysql.sql
 icinga2_ido_mysql_schema_updates: /usr/share/icinga2-ido-mysql/schema/upgrade

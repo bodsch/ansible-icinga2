@@ -106,8 +106,10 @@
       with_items:
         - "icinga2 pki new-cert --cn {{ icinga2_certificate_cn }} --key {{ icinga2_pki_fqdn_key }} --cert {{ icinga2_pki_fqdn_cert }}"
         - "icinga2 pki save-cert --key {{ icinga2_pki_fqdn_key }} --cert {{ icinga2_pki_fqdn_cert }} --trustedcert {{ icinga2_pki_master_cert }} --host {{ icinga2_master }}"
-        - "icinga2 pki request --host {{ icinga2_master }} --port {{ icinga2_master_port }} --ticket {{ icinga2_fqdn_ticket }} --key {{ icinga2_pki_fqdn_key }} --cert {{ icinga2_pki_fqdn_cert }} --trustedcert {{ icinga2_pki_master_cert }} --ca {{ icinga2_pki_ca_key }}"
-        - "icinga2 node setup --ticket {{ icinga2_fqdn_ticket }} --endpoint {{ icinga2_master }} --zone {{ ansible_fqdn }} --parent_host {{ icinga2_master }} --trustedcert {{ icinga2_pki_master_cert }}"
+        - "icinga2 pki request --host {{ icinga2_master }} --port {{ icinga2_master_port }} --ticket {{ icinga2_fqdn_ticket }} --key {{ icinga2_pki_fqdn_key }}
+          --cert {{ icinga2_pki_fqdn_cert }} --trustedcert {{ icinga2_pki_master_cert }} --ca {{ icinga2_pki_ca_key }}"
+        - "icinga2 node setup --ticket {{ icinga2_fqdn_ticket }} --endpoint {{ icinga2_master }} --zone {{ ansible_fqdn }} --parent_host {{ icinga2_master }}
+          --trustedcert {{ icinga2_pki_master_cert }}"
       become: true
       when: not __satellite_key.stat.exists and ticket.stdout is defined
       notify:

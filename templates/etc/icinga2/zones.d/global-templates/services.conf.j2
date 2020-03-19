@@ -1,24 +1,39 @@
-{{ ansible_managed | comment('cblock') }}
+// {{ ansible_managed }}
 
-apply Service "ping4" {
-  import "generic-service"
-  check_command = "ping4"
-  assign where host.address
+{% if icinga2_apply_service %}
+{%- for c, v in icinga2_apply_service.items() -%}
+{%- if v['name'] is defined and v['for'] is defined -%}
+{%- set _name = '"%s" for %s' % (v['name'], v['for']) -%}
+{%- set _v = v.pop('name') -%}
+{%- set _v = v.pop('for') -%}
+{%- elif v['name'] is defined -%}
+{%- set _name = '"%s"' % (v['name']) -%}
+{%- set _v = v.pop('name') -%}
+{%- else -%}
+{%- set _name = '"%s"' % (c) -%}
+{%- endif -%}
+
+apply Service {{ _name }} {
+{% for k, ve in icinga2_apply_service[c].items() %}
+{% if k == 'import' %}
+  {{ k }} "{{ ve }}"
+{% elif k == 'extra_parameters' %}
+  {{ ve | indent(2) }}
+{% elif k == 'check_command' or k == 'display_name' %}
+  {{ k }} = "{{ ve }}"
+{% elif k == 'assign_where' %}
+  assign where {{ ve }}
+{% else %}
+  {{ k }} = {{ ve }}
+{%- endif %}
+{%- endfor %}
 }
 
-apply Service "ping6" {
-  import "generic-service"
-  check_command = "ping6"
-  assign where host.address6
-}
+{% endfor -%}
 
-apply Service "ssh" {
-  import "generic-service"
+{% endif %}
 
-  check_command = "ssh"
-
-  assign where (host.address || host.address6) && host.vars.os == "Linux"
-}
+// --------------------------------------------------------------------------------------
 
 apply Service "HTTP: " for (http_vhost => config in host.vars.http_vhosts) {
   import "generic-service"
@@ -171,34 +186,6 @@ apply Service for (disk => config in host.vars.disks) {
   vars += config
 }
 
-apply Service "icinga" {
-  import "generic-service"
-
-  check_command = "icinga"
-
-  assign where host.name == NodeName || host.vars.satellite
-}
-
-apply Service "load" {
-  import "generic-service"
-
-  check_command = "load"
-
-  /* Used by the ScheduledDowntime apply rule in `downtimes.conf`. */
-  if( host.vars.downtime ) {
-    vars.backup_downtime = host.vars.downtime
-  }
-
-  assign where host.name == NodeName || host.vars.satellite
-}
-
-apply Service "procs" {
-  import "generic-service"
-
-  check_command = "procs"
-
-  assign where host.name == NodeName
-}
 
 {% if ansible_swaptotal_mb != 0 %}
 /*
@@ -218,13 +205,6 @@ apply Service "swap" {
 }
 {% endif %}
 
-apply Service "users" {
-  import "generic-service"
-
-  check_command = "users"
-
-  assign where host.name == NodeName
-}
 
 apply Service "speedtest" {
   import "generic-service"

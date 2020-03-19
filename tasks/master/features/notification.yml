@@ -1,5 +1,10 @@
 ---
 
+- name: create notifications directory
+  file:
+    name: /etc/icinga2/notifications
+    state: directory
+
 # configure notification
 - block:
     - name: configure notification feature

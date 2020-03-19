@@ -1,9 +1,12 @@
 ---
 
-- name: restart icinga2
+- name: restart icinga2  # noqa 301
   service:
     name: icinga2
     state: restarted
+  when: (
+    icinga2_validate_config is defined and
+    not icinga2_validate_config.failed )
 
 - name: restart icinga2 master
   service:

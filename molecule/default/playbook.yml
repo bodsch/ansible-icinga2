@@ -7,6 +7,8 @@
 
     ansible_python_interpreter: python3
 
+    mariadb_use_external_repo: false
+
     mariadb_bind_address: 127.0.0.1
     mariadb_root_password: root
     mariadb_max_connections: 20
@@ -36,6 +38,13 @@
       - url: 'https://raw.githubusercontent.com/bodsch/check_arch_updates/1.0/check_arch_updates'
         dest: 'check_arch_updates'
         checksum: 'sha256:7afa562aaedb63f6e93cfebfa4a9a3ea49fecda62d4dae3d8ff919b76c117c41'
+
+  pre_tasks:
+    - name: clean caches for debian based
+      command: apt clean
+      args:
+        warn: false
+      when: ansible_os_family | lower == 'debian'
 
   roles:
     # - role: mariadb

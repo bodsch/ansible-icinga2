@@ -1,7 +1,22 @@
 ---
 
+- name: check configuration  # noqa 301
+  shell: >
+    icinga2 daemon --validate --log-level debug --config /etc/icinga2/icinga2.conf
+  register: icinga2_validate_config
+
+- name: validated config
+  debug:
+    var: icinga2_validate_config.stdout
+  when: (
+    icinga2_validate_config is defined and
+    icinga2_validate_config.failed )
+
 - name: ensure services are started
   service:
     name: icinga2
     state: started
     enabled: true
+  when: (
+    icinga2_validate_config is defined and
+    not icinga2_validate_config.failed )
