@@ -19,6 +19,8 @@
       dest: /etc/icinga2/constants.conf
     - src: etc/icinga2/features/mainlog.conf.j2
       dest: /etc/icinga2/features-available/mainlog.conf
+  notify:
+    - restart icinga2
 
 - name: create configuration files
   template:
@@ -32,6 +34,8 @@
     - api-users.conf
     - users.conf
     - downtimes.conf
+  notify:
+    - restart icinga2
 
 - name: create global-templates directory
   file:

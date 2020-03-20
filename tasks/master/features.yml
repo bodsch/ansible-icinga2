@@ -1,13 +1,16 @@
 ---
 
-- name: disable icinga2 features  # noqa 301
-  command: icinga2 feature disable {{ item }}
-  with_items:
+- name: disable icinga2 features
+  icinga2_feature:
+    name: "{{ item }}"
+    state: absent
+  loop:
     "{{ icinga2_master_features_disabled }}"
   notify:
     - restart icinga2
   tags:
-    - configure
+    - icinga2
+    - features
 
 - include: features/api.yml
 - include: features/notification.yml

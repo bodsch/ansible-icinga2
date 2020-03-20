@@ -16,11 +16,13 @@
         mode: 0644
 
     - name: enable notification feature
-      command: >
-        icinga2 feature enable notification
+      icinga2_feature:
+        name: notification
+        state: present
       notify:
         - restart icinga2
       tags:
-        - configure
+        - icinga2
+        - features
 
   when: icinga2_master_features_enabled | join('|') | regex_search('notification')

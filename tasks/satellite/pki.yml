@@ -41,7 +41,7 @@
 - name: check if the icinga master {{ icinga2_master }} are available
   wait_for:
     host: "{{ icinga2_master }}"
-    port: 5665
+    port: "{{ icinga2_master_port | default(5665) }}"
     delay: 4              # No wait before first check (sec)
     timeout: 5            # Stop checking after timeout (sec)
   ignore_errors: false

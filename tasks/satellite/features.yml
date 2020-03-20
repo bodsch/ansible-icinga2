@@ -1,8 +1,10 @@
 ---
 
-- name: disable icinga2 features  # noqa 301
-  command: icinga2 feature disable {{ item }}
-  with_items:
+- name: disable icinga2 features
+  icinga2_feature:
+    name: "{{ item }}"
+    state: absent
+  loop:
     - perfdata
     - notification
     - livestatus
@@ -10,7 +12,8 @@
   notify:
     - restart icinga2
   tags:
-    - configure
+    - icinga2
+    - features
 
 # configure API
 - block:
@@ -23,9 +26,12 @@
         group: root
         mode: 0644
 
-    - name: enable api feature  # noqa 303
-      command: icinga2 feature enable api
+    - name: enable api feature
+      icinga2_feature:
+        name: api
+        state: present
       notify:
         - restart icinga2
       tags:
-        - configure
+        - icinga2
+        - features

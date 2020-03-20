@@ -12,11 +12,13 @@
         mode: 0644
 
     - name: enable api feature
-      command: >
-        icinga2 feature enable api
+      icinga2_feature:
+        name: api
+        state: present
       notify:
         - restart icinga2
       tags:
-        - configure
+        - icinga2
+        - features
 
   when: icinga2_master_features_enabled | join('|') | regex_search('api')
