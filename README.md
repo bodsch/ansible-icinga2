@@ -1,19 +1,18 @@
 # Icinga2 ansible role
 
-Ansible role to setup Icinga2 server with optional plugins like pnp4nagios, graphite or nagvis
-
+Ansible role to setup Icinga2 master or satellite.
 
 ## Requirements & Dependencies
 
-### Ansible
-It was tested on the following versions:
- * 2.7
- * 2.8
- * 2.9
+ - ansible role to deploy a mariadb
 
 ### Operating systems
 
-Tested on Ubuntu 18.04 and 18.10, Debian 8, 9 and 10, CentOS 7
+Tested on
+
+* Debian 9 / 10
+* Ubuntu 16.04 / 18.04 / 18.10
+* CentOS 7
 
 ## Example Playbook
 
@@ -21,78 +20,42 @@ Just include this role in your list.
 For example
 
 ```
-- host: myserver
+- host: icinga-master
   roles:
-    - { role: icinga2 }
+    - role: icinga2
+
+- host: icinga-satellite
+  roles:
+    - role: icinga2
+      vars:
+        icinga2_mode: satellite
+        icinga2_server: icinga-master
+        icinga2_master: icinga.foo-bar.com
 ```
 
+## example configurations
 
-## Variables
-
-```
-
-tz: America/New_York
-scriptsdir: /usr/local/scripts
-backupdir: /srv/backup/{{ inventory_hostname }}
-
-icinga2_mode: server
-## server conf
-
-## Client conf
-
-#icinga2_mode: client
-icinga2_server: monserver
-icinga2_server_ip: 192.168.0.100
-
-icinga2_master_port: 5665
-
-icinga2_if: eth0
-```
-
-You can also used group 'monitored' inside inventory to apply basic alive monitoring.
-
-## Troubleshooting & Known issues
+### create API user
 
 ```
-# icinga2 feature list
-Disabled features: api command compatlog debuglog gelf graphite icingastatus opentsdb statusdata syslog
-Enabled features: checker ido-mysql livestatus mainlog notification perfdata
+icinga2_api_user:
+  root:
+    password: seCr3t
+    client_cn: NodeName
+    permissions: '*'
+  icingaweb:
+    password: seCr3t_t00
+    client_cn: NodeName
+    permissions: '*'
 ```
 
-try to restart service
+### servicegroups
 
-
-## License
-
-BSD 2-clause
-
-
-
-# master:
 ```
-zones.d/mail.boone-schulz.de/mail.boone-schulz.de.conf
-
-
-object Endpoint "mail.boone-schulz.de" { host = "185.244.193.175"; port = "5665" }
-object Zone "mail.boone-schulz.de" { parent = "icinga.boone-schulz.de" ; endpoints = [ "mail.boone-schulz.de" ] }
-
-object Host "mail.boone-schulz.de" {
-  address = "185.244.193.175"
-  import "generic-host"
-  command_endpoint = "icinga.boone-schulz.de"
-  zone = "icinga.boone-schulz.de"
-  vars = {
-    os = "Linux"
-    dist = "Arch"
-    zone = "mail.boone-schulz.de"
-    satellite = "true"
-    disks = {
-      "disk /" = { disk_partitions = "/" }
-    }
-  }
-}
+icinga2_servicegroups:
+  - { name: ping      , displayname: 'Ping Checks', conditions: 'assign where match("ping*", service.name)' }
+  - { name: disk      , displayname: 'Disk Checks', conditions: 'assign where match("disk*", service.name)' }
 ```
-
 ### create CheckCommands
 
 to create an `object CheckCommand "service" { ... }` block, use the `icinga2_checkcommands` dictionary.
@@ -195,43 +158,121 @@ icinga2_apply_service_default:
     assign_where: 'host.vars.file_age'
 ```
 
+### notification
 
-# satellite
 ```
-zones.conf
-/*
- * Endpoint and Zone configuration for a cluster setup
- * This local example requires `NodeName` defined in
- * constants.conf.
- */
-/*
-object Endpoint NodeName {
-  host = NodeName
-}
+icinga2_notification_user:
+  icinga_admin:
+    import: generic-user
+    display_name: "Icinga2 Admin"
+    groups:
+      - icinga_admins
 
-object Zone ZoneName {
-  parent = "icinga.boone-schulz.de"
-  endpoints = [ NodeName ]
-}
-*/
-
-object Endpoint "icinga.boone-schulz.de" {
-  host = "icinga.boone-schulz.de"
-  port = "5665"
-}
-
-object Zone "icinga.boone-schulz.de" {
-  //this is the local node master named  = "master"
-  endpoints = [ "icinga.boone-schulz.de" ]
-}
+icinga2_notification_usergroups:
+  icinga_admins:
+    display_name: "Icinga2 Admin Group"
 
 
-object Zone "global-templates" {
-  global = true
-}
-
-object Zone "director-global" {
-  global = true
-}
+icinga2_notification_apply:
+  host_notification:
+    import: slack-host-notification
+    # interval: 2h
+    users:
+      - icinga_admin
+    vars.notification_logtosyslog: true
+    assign_where: host.vars.notification.slack
+  service_notification:
+    import: slack-service-notification
+    # interval: 2h
+    users:
+      - icinga_admin
+    vars.notification_logtosyslog: true
+    assign_where: host.vars.notification.slack
 ```
 
+### add host to icinga
+
+```
+icinga2_hosts:
+  localhost:
+    import: generic-host
+    address: '{{ ansible_default_ipv4.address }}'
+    vars: |
+      os = "Linux"
+      dist = "{{ ansible_distribution }}"
+      dist_ver = "{{ ansible_distribution_version }}"
+      disks = {
+        "disk /" = {
+          disk_partitions = "/"
+        }
+        "disk /opt" = {
+          disk_partitions = "/opt"
+        }
+      }
+      http_vhosts = {
+        "/" = {
+          http_uri = "/"
+        }
+      }
+```
+
+### add satellite
+
+```
+icinga2_satellite:
+
+  mars.icinga.local:
+    import: generic-host
+    vars: |
+      os = "Linux"
+      dist = "{{ ansible_distribution }}"
+      dist_ver = "{{ ansible_distribution_version }}"
+      environment = "solarsystem"
+      satellite = true
+
+      disks = {
+        "disk /" = {
+          disk_partitions = "/"
+        }
+      }
+```
+
+## tests
+
+for testing
+
+```
+tox -e py38-ansible29 -- molecule
+
+tox -e py38-ansible29 -- molecule -s icinga2-satellite
+```
+
+## Troubleshooting & Known issues
+
+```
+# icinga2 feature list
+Disabled features: api command compatlog debuglog gelf graphite icingastatus opentsdb statusdata syslog
+Enabled features: checker ido-mysql livestatus mainlog notification perfdata
+```
+
+# Contribution
+
+Please read [Contribution](CONTRIBUTIONG.md)
+
+# Development,  Branches (Git Tags)
+
+The `master` Branch is my *Working Horse* includes the "latest, hot shit" and can be complete broken!
+
+If you want to use something stable, please use a [Tagged Version](https://gitlab.com/bodsch/ansible-icinga2/-/tags)!
+
+
+# Credits
+
+- Michael 'dnsmichi' Friedrich
+- Nikolai Buchwitz
+- Julien Tognazzi
+- and many others to make the icinga2 what it is
+
+## License
+
+BSD 2-clause
