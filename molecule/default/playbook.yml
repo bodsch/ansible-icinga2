@@ -47,5 +47,5 @@
       when: ansible_os_family | lower == 'debian'
 
   roles:
-    # - role: mariadb
+    - role: mariadb
     - role: ansible-icinga2
