@@ -28,6 +28,12 @@
 
     icinga2_mode: master
 
+    icinga2_api_user:
+      root:
+        password: foo
+        client_cn: NodeName
+        permissions: '*'
+
     icinga2_ido_username: icinga2_ido
     icinga2_ido_password: icinga2
     icinga2_ido_socket: /var/lib/mysql/mysql.sock
@@ -39,6 +45,21 @@
         dest: 'check_arch_updates'
         checksum: 'sha256:7afa562aaedb63f6e93cfebfa4a9a3ea49fecda62d4dae3d8ff919b76c117c41'
 
+
+    icinga2_hosts:
+      localhost:
+        import: generic-host
+        address: '{{ ansible_default_ipv4.address }}'
+        vars: |
+          os = "Linux"
+          dist = "{{ ansible_distribution }}"
+          dist_ver = "{{ ansible_distribution_version }}"
+          disks = {
+            "disk /" = {
+              disk_partitions = "/"
+            }
+          }
+
   pre_tasks:
     - name: clean caches for debian based
       command: apt clean
@@ -49,3 +70,20 @@
   roles:
     - role: mariadb
     - role: ansible-icinga2
+
+  tasks:
+    # - include: ../../tasks/master/features.yml
+    #   tags:
+    #     - features
+    - include: ../../tasks/downtime.yml
+      vars:
+        icinga2_master: '{{ ansible_default_ipv4.address }}'
+        icinga2_api_user: root
+        icinga2_api_password: foo
+        icinga2_downtime_comment: Downtime for deployment
+        icinga2_downtime_system_name: localhost
+        icinga2_downtime_duration: 120
+
+      tags:
+        - downtime_schedule
+

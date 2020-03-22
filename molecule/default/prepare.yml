@@ -12,7 +12,7 @@
     - name: update instance
       shell: |
         apt update
-        apt dist-upgrade
+        apt -y dist-upgrade
       args:
         warn: false
       when: ansible_os_family | lower == 'debian'

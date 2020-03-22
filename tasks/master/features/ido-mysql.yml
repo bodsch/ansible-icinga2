@@ -72,7 +72,12 @@
     group: root
     mode: 0644
 
-- name: enable ido-mysql feature  # noqa 301
-  command: icinga2 feature enable ido-mysql
+- name: enable ido-mysql feature
+  icinga2_feature:
+    name: ido-mysql
+    state: present
   notify:
     - restart icinga2
+  tags:
+    - icinga2
+    - features
