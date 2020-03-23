@@ -45,8 +45,8 @@
       author: "ansible"
       fixed: true
       comment: "{{ icinga2_downtime_comment }}"
-      start_time : "{{ downtime_start }}"
-      end_time : "{{ downtime_end }}"
+      start_time: "{{ downtime_start }}"
+      end_time: "{{ downtime_end }}"
       duration: "{{ icinga2_downtime_duration }}"
   vars:
     downtime_start: "{{ ansible_date_time.epoch }}"

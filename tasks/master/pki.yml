@@ -2,6 +2,7 @@
 # create salt if they not exists
 #
 - block:
+
     - name: generate a salt
       shell: "cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 64 | head -n 1"
       register: _salt
