@@ -5,10 +5,10 @@
   tags:
     - preparations
 
-- include: variables.yml
-  become: true
-  tags:
-    - preparations
+#- include: variables.yml
+#  become: true
+#  tags:
+#    - preparations
 
 - include_tasks: master.yml
   when: icinga2_mode == 'master'

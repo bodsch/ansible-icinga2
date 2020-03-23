@@ -5,7 +5,7 @@
 # this can be confused by multiple networks and schould testet !
 
 - name: get icinga2 server ip address  # noqa 306
-  shell: ip route ls | awk '/scope/ { print $9 }'
+  shell: ip route ls | grep default | awk '{ print $3 }'
   changed_when: false
   register: _ipaddr
 

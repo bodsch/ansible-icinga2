@@ -22,7 +22,8 @@
     dest: /etc/icinga2/zones.d/global-templates/services.conf
     mode: 0644
     backup: true
-    # validate: 'icinga2 daemon -C %s'
+  notify:
+    - restart icinga2
 
 - name: create global-templates file for template definitions
   template:
@@ -30,6 +31,8 @@
     dest: /etc/icinga2/zones.d/global-templates/templates.conf
     mode: 0644
     backup: true
+  notify:
+    - restart icinga2
 
 - name: create global-templates file for commands definitions
   template:
@@ -37,6 +40,8 @@
     dest: /etc/icinga2/zones.d/global-templates/commands.conf
     mode: 0644
     backup: true
+  notify:
+    - restart icinga2
 
 - name: create global-templates file for functions definitions
   template:
@@ -44,6 +49,8 @@
     dest: /etc/icinga2/zones.d/global-templates/functions.conf
     mode: 0644
     backup: true
+  notify:
+    - restart icinga2
 
 - name: create global-templates file for event commands
   template:
@@ -51,3 +58,5 @@
     dest: /etc/icinga2/zones.d/global-templates/eventcommands.conf
     mode: 0644
     backup: true
+  notify:
+    - restart icinga2
