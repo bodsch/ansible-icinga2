@@ -14,6 +14,26 @@ Tested on
 * Ubuntu 16.04 / 18.04 / 18.10
 * CentOS 7
 
+## Contribution
+
+Please read [Contribution](CONTRIBUTIONG.md)
+
+## Development,  Branches (Git Tags)
+
+The `master` Branch is my *Working Horse* includes the "latest, hot shit" and can be complete broken!
+
+If you want to use something stable, please use a [Tagged Version](https://gitlab.com/bodsch/ansible-icinga2/-/tags)!
+
+
+## Credits
+
+- Michael 'dnsmichi' Friedrich
+- Nikolai Buchwitz
+- Julien Tognazzi
+- and many others to make icinga2 what it is
+
+---
+
 ## Example Playbook
 
 Just include this role in your list.
@@ -56,6 +76,61 @@ icinga2_servicegroups:
   - { name: ping      , displayname: 'Ping Checks', conditions: 'assign where match("ping*", service.name)' }
   - { name: disk      , displayname: 'Disk Checks', conditions: 'assign where match("disk*", service.name)' }
 ```
+
+### icinga features
+
+
+```
+icinga2_master_features_disabled:
+  - perfdata
+  - livestatus
+
+icinga2_master_features_enabled:
+  - checker
+  - graphite
+```
+
+#### config graphite
+
+```
+icinga2_features:
+  graphite:
+    graphite_host: graphite.fqdn
+```
+
+### create Downtimes
+
+```
+icinga2_service_downtimes:
+  backup-downtime:
+    author: "icingaadmin"
+    comment: "Scheduled downtime for backup"
+    ranges:
+      monday: service.vars.backup_downtime
+      tuesday: service.vars.backup_downtime
+      wednesday: service.vars.backup_downtime
+      thursday: service.vars.backup_downtime
+      friday: service.vars.backup_downtime
+      saturday: service.vars.backup_downtime
+      sunday: service.vars.backup_downtime
+    assign_where: service.vars.backup_downtime != ""
+
+icinga2_host_downtimes:
+  nas-downtime:
+    author: "icingaadmin"
+    comment: "Scheduled downtime for NAS"
+    ranges
+      monday: "21:00-24:00,00:00-07:00"
+      tuesday: "21:00-24:00,00:00-07:00"
+      wednesday: "21:00-24:00,00:00-07:00"
+      thursday: "21:00-24:00,00:00-07:00"
+      friday: "21:00-24:00,00:00-07:00"
+      saturday:"21:00-24:00,00:00-07:00"
+      sunday: "21:00-24:00,00:00-07:00"
+    assign_where: host.name == "nas.matrix.local"
+
+```
+
 ### create CheckCommands
 
 to create an `object CheckCommand "service" { ... }` block, use the `icinga2_checkcommands` dictionary.
@@ -94,6 +169,11 @@ icinga2_apply_service_default:
     check_command: ping4
     assign_where: host.address
 ```
+
+With `event_command` an EventCommand can be defined.
+
+It is important that the EndPoint and the corresponding host definition match! ([See here](README.md#endpoint_name))
+
 
 for create an apply rule with `$keyword for (...)` you can enhance the cictionary with a `for` key:
 
@@ -221,7 +301,7 @@ icinga2_hosts:
 ```
 icinga2_satellite:
 
-  mars.icinga.local:
+  mars.matrix.local:
     import: generic-host
     vars: |
       os = "Linux"
@@ -235,6 +315,20 @@ icinga2_satellite:
           disk_partitions = "/"
         }
       }
+```
+
+<a name="endpoint_name"></a>
+When using an event handler, the `endpoint_name` must be set if necessary.
+
+You can then use `display_name` to restore the desired display name.
+
+```
+icinga2_satellite:
+
+  mars.matrix.local:
+    endpoint_name: dba.int.matrix.lan
+    display_name: mars.matrix.local
+    import: generic-host
 ```
 
 ## tests
@@ -255,23 +349,7 @@ Disabled features: api command compatlog debuglog gelf graphite icingastatus ope
 Enabled features: checker ido-mysql livestatus mainlog notification perfdata
 ```
 
-# Contribution
 
-Please read [Contribution](CONTRIBUTIONG.md)
-
-# Development,  Branches (Git Tags)
-
-The `master` Branch is my *Working Horse* includes the "latest, hot shit" and can be complete broken!
-
-If you want to use something stable, please use a [Tagged Version](https://gitlab.com/bodsch/ansible-icinga2/-/tags)!
-
-
-# Credits
-
-- Michael 'dnsmichi' Friedrich
-- Nikolai Buchwitz
-- Julien Tognazzi
-- and many others to make the icinga2 what it is
 
 ## License
 
