@@ -21,7 +21,7 @@ apply Service {{ _name }} {
 {% for k, ve in icinga2_apply_service[c].items()  %}
 {% if k == 'import' %}
   {{ k }} "{{ ve }}"
-{% elif k in ['check_command', 'display_name', 'notes', 'notes_url'] %}
+  {% elif k in ['check_command', 'display_name', 'notes', 'notes_url','event_command'] %}
 {% if k == 'display_name' and '+' in ve %}
   {{ k }} = {{ ve }}
 {% else %}
@@ -32,7 +32,7 @@ apply Service {{ _name }} {
 {% elif k == 'assign_where' %}
   assign where {{ ve }}
 {% else %}
-{% if ve in ['true', 'True', 'false', 'False', True, False] %}
+{% if ve is sameas true or ve is sameas false %}
   {{ k }} = {{ ve | bool | ternary( 'true', 'false') }}
 {% else %}
   {{ k }} = {{ ve }}
