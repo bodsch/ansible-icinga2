@@ -15,3 +15,4 @@
 - include: features/api.yml
 - include: features/notification.yml
 - include: features/ido.yml
+- include: features/graphite.yml

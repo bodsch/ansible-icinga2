@@ -43,6 +43,14 @@ icinga2_master_features_enabled:
   - mainlog
   - notification
 
+# if add 'graphite' to icinga2_master_features_enabled above,
+# you can her configure this feature:
+icinga2_features: {}
+#   graphite:
+#     graphite_host: localhost
+
+
+
 icinga2_api_enabled: true
 icinga2_api_accept_config: true
 icinga2_api_accept_commands: true

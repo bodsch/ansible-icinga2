@@ -40,6 +40,17 @@
 
     icinga2_mainlog_severity: warning
 
+    icinga2_master_features_enabled:
+      - checker
+      - api
+      - ido-mysql
+      - mainlog
+      - graphite
+
+    icinga2_features:
+      graphite:
+        graphite_host: localhost
+
     icinga2_plugins_download:
       - url: 'https://raw.githubusercontent.com/bodsch/check_arch_updates/1.0/check_arch_updates'
         dest: 'check_arch_updates'
@@ -60,12 +71,12 @@
             }
           }
 
-  pre_tasks:
-    - name: clean caches for debian based
-      command: apt clean
-      args:
-        warn: false
-      when: ansible_os_family | lower == 'debian'
+  # pre_tasks:
+  #   - name: clean caches for debian based
+  #     command: apt clean
+  #     args:
+  #       warn: false
+  #     when: ansible_os_family | lower == 'debian'
 
   roles:
     - role: mariadb
