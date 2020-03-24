@@ -23,6 +23,9 @@ icinga2_backupdir: /srv/backup/icinga2/{{ inventory_hostname }}
 
 icinga2_rootdir: /usr/share/icinga2
 
+icinga2_sudo_cmd: []
+#  - /sbin/service foo restart
+
 # 'master' or 'satellite'
 icinga2_mode: master
 

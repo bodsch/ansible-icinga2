@@ -10,14 +10,29 @@ object Zone "{{ ansible_fqdn }}" { parent = "{{ icinga2_master }}" ; endpoints =
 */
 
 {% if icinga2_satellite is defined and icinga2_satellite | count != 0 %}
-{% for key in icinga2_satellite -%}
-object Host "{{ key }}" {
-  address = "{{satellite_ip}}"
+{% for key, v in icinga2_satellite.items() -%}
+{%- if v['endpoint_name'] is defined %}
+{%- set _name = v['endpoint_name'] -%}
+{%- set _v = v.pop('endpoint_name') -%}
+{%- else -%}
+{%- set _name = key -%}
+{% endif %}
+
+{%- if v['display_name'] is defined %}
+{%- set display_name = v['display_name'] %}
+{%- set _v = v.pop('display_name') -%}
+{%- endif %}
+
+object Host "{{ _name }}" {
+  address = "{{ satellite_ip }}"
+  {% if display_name is defined %}
+  display_name = "{{ display_name }}"
+  {% endif -%}
   command_endpoint = "{{ ansible_fqdn }}"
   zone = "{{ ansible_fqdn }}"
-  {% for ke,ve in icinga2_satellite[key].items() | sort -%}
+  {% for ke,ve in v.items() | sort -%}
   {% if ke == 'import' -%}{{ ke }} "{{ ve }}"
-  {% elif ke == 'groups' -%}{{ ke }} = ["{{ ve|join('","') }}"]
+  {% elif ke == 'groups' -%}{{ ke }} = ["{{ ve | join('","') }}"]
   {% elif ke == 'vars' -%}
   vars = {
     {{ ve | indent(4) }}

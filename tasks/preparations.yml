@@ -102,3 +102,14 @@
         group: aur_builder
 
   when: ansible_os_family | lower == 'archlinux' and icinga2_use_external_repo | bool
+
+- name: create sudo rules for icinga
+  lineinfile:
+    path: /etc/sudoers.d/icinga
+    line: 'icinga ALL=(ALL) NOPASSWD: {{ item }}'
+    state: present
+    mode: 0440
+    create: yes
+  loop:
+    "{{ icinga2_sudo_cmd }}"
+  validate: 'visudo -cf %s'
