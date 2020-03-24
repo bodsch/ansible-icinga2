@@ -1,7 +1,6 @@
 #!/bin/bash
 
-log_dir="/var/log/icinga2"
-log_file="restart_service.log"
+LOGFILE="/var/log/icinga2/restart_service.log"
 
 show_help() {
   echo
@@ -20,16 +19,29 @@ show_help() {
   echo
 }
 
+redirectIO() {
+  # IO redirection for logging task management tool.
+  touch ${LOGFILE}
+  exec 6>&1          # Link file descriptor #6 with stdout.
+                     # Saves stdout.
+  exec >> ${LOGFILE}   # stdout replaced with file ${LOGFILE}.
+}
+
+cleanRedirectIO() {
+  # Clean up IO redirection
+  exec 1>&6 6>&-      # Restore stdout and close file descriptor #6.
+}
+
 # process args
 while [ ! -z "$1" ]; do
-    case $1 in
-        -s|--state)      shift; service_state=${1} ;;
-        -t|--state-type) shift; service_state_type=${1} ;;
-        -a|--attempt)    shift; service_attempt=${1} ;;
-        -S|--service)    shift; service=${1} ;;
-        -h|--help)       show_help; exit 1 ;;
-    esac
-    shift
+  case $1 in
+    -s|--state)      shift; service_state=${1} ;;
+    -t|--state-type) shift; service_state_type=${1} ;;
+    -a|--attempt)    shift; service_attempt=${1} ;;
+    -S|--service)    shift; service=${1} ;;
+    -h|--help)       show_help; exit 1 ;;
+  esac
+  shift
 done
 
 if ( [ -z "${service_state}" ] || [ -z "${service_state_type}" ] || [ -z "${service_attempt}" ] || [ -z "${service}" ] )
@@ -41,22 +53,25 @@ then
   [ -z "${service}" ] && echo "  missing service"
   exit 3
 else
-  echo "$(date "+%d.%m.%Y %H:%M:%S") ${0}" >> "${log_dir}/${log_file}"
-  echo "$(date "+%d.%m.%Y %H:%M:%S") service_state     : ${service_state}"      >> "${log_dir}/${log_file}"
-  echo "$(date "+%d.%m.%Y %H:%M:%S") service_state_type: ${service_state_type}" >> "${log_dir}/${log_file}"
-  echo "$(date "+%d.%m.%Y %H:%M:%S") service_attempt   : ${service_attempt}"    >> "${log_dir}/${log_file}"
-  echo "$(date "+%d.%m.%Y %H:%M:%S") service           : ${service}"            >> "${log_dir}/${log_file}"
+  redirectIO
+
+  logger -t restart_service "${service} ${service_state} ${service_state_type} ${service_attempt}"
+  echo "$(date "+%d.%m.%Y %H:%M:%S") ${0}"
+  echo "$(date "+%d.%m.%Y %H:%M:%S") service_state     : ${service_state}"
+  echo "$(date "+%d.%m.%Y %H:%M:%S") service_state_type: ${service_state_type}"
+  echo "$(date "+%d.%m.%Y %H:%M:%S") service_attempt   : ${service_attempt}"
+  echo "$(date "+%d.%m.%Y %H:%M:%S") service           : ${service}"
 
   if ( [ "${service_state}" = "CRITICAL" ] && [ "${service_state_type}" = "HARD" ] )
   then
     sudo $(command -v service) ${service} restart
-    result=${?}
-    echo "$(date "+%d.%m.%Y %H:%M:%S") result: ${result}"
+    [[ $? -ne 0 ]] && logger -t restart_service "fail to restart service ${service}"
   # only restart on the third attempt of a critical event
   elif ( [ "${service_state}" = "CRITICAL" ] && [ "${service_state_type}" = "SOFT" ] && [ ${service_attempt} -eq 2 ] )
   then
     sudo $(command -v service) ${service} restart
-    result=${?}
-    echo "$(date "+%d.%m.%Y %H:%M:%S") result: ${result}"
+    [[ $? -ne 0 ]] && logger -t restart_service "fail to restart service ${service}"
   fi
+
+  cleanRedirectIO
 fi

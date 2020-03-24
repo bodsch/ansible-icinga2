@@ -104,12 +104,8 @@
   when: ansible_os_family | lower == 'archlinux' and icinga2_use_external_repo | bool
 
 - name: create sudo rules for icinga
-  lineinfile:
-    path: /etc/sudoers.d/icinga
-    line: 'icinga ALL=(ALL) NOPASSWD: {{ item }}'
-    state: present
+  template:
+    src: etc/sudo.j2
+    dest: /etc/sudoers.d/icinga
     mode: 0440
-    create: yes
-  loop:
-    "{{ icinga2_sudo_cmd }}"
-  validate: 'visudo -cf %s'
+    validate: 'visudo -cf %s'

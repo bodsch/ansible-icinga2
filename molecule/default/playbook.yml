@@ -28,6 +28,9 @@
 
     icinga2_mode: master
 
+    icinga2_sudo_cmd:
+      - /sbin/service foo restart
+
     icinga2_api_user:
       root:
         password: foo

@@ -1,0 +1,5 @@
+{%- if icinga2_sudo_cmd is defined and icinga2_sudo_cmd | count > 0 -%}
+{%- for value in icinga2_sudo_cmd -%}
+icinga ALL=(ALL) NOPASSWD: {{ value }}
+{% endfor -%}
+{%- endif -%}
