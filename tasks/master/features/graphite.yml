@@ -1,0 +1,31 @@
+---
+
+# configure graphite writer
+- name: define graphite feature state
+  set_fact:
+    feature_graphite_state: "{{ 'present' if icinga2_master_features_enabled | join('|') | regex_search('graphite') else 'absent' }}"
+
+# - debug:
+#     var: "{{item}}"
+#   when: item is defined
+#   loop:
+#     - icinga2_master_features_enabled
+#     - feature_graphite_state
+
+- name: configure graphite feature
+  template:
+    src: etc/icinga2/features/graphite.conf.j2
+    dest: /etc/icinga2/features-available/graphite.conf
+    owner: root
+    group: root
+    mode: 0644
+
+- name: enable graphite feature
+  icinga2_feature:
+    name: graphite
+    state: "{{ feature_graphite_state }}"
+  notify:
+    - restart icinga2
+  tags:
+    - icinga2
+    - features

@@ -1,0 +1,8 @@
+// {{ ansible_managed }}
+
+{% if icinga2_features.graphite.graphite_host is defined %}
+object GraphiteWriter "graphite" {
+  host = "{{ icinga2_features.graphite.graphite_host }}"
+  port = {{ icinga2_features.graphite.graphite_port | default('2003') }}
+}
+{% endif %}
