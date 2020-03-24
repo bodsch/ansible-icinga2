@@ -16,7 +16,7 @@ Tested on
 
 ## Contribution
 
-Please read [Contribution](CONTRIBUTIONG.md)
+Please read [Contribution](CONTRIBUTING.md)
 
 ## Development,  Branches (Git Tags)
 
