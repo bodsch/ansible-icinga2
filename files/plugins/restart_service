@@ -39,9 +39,9 @@ while [ ! -z "$1" ]; do
     --state-type)       shift; service_state_type=${1} ;;
     --attempt)          shift; service_attempt=${1} ;;
     --restart-service)  shift; restart_service=${1} ;;
-    --host-name)        shift; host_name={1} ;;
-    --host-state)       shift; host_state={1} ;;
-    --host-state-type)  shift; host_state_type={1} ;;
+    --host-name)        shift; host_name=${1} ;;
+    --host-state)       shift; host_state=${1} ;;
+    --host-state-type)  shift; host_state_type=${1} ;;
     -h|--help)          show_help; exit 1 ;;
   esac
   shift
