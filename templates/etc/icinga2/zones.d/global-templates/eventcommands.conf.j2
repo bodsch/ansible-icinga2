@@ -4,11 +4,30 @@ object EventCommand "restart_service" {
   command = [ PluginDir + "/restart_service" ]
 
   arguments = {
-    "-s" = "$service.state$"
-    "-t" = "$service.state_type$"
-    "-a" = "$service.check_attempt$"
-    "-S" = "$restart_service$"
+
+    "--state" = {
+      value = "$service.state$"
+    }
+    "--state-type" = {
+      value = "$service.state_type$"
+    }
+    "--attempt" = {
+      value = "$service.check_attempt$"
+    }
+    "--restart-service" = {
+      value = "$restart_service$"
+    }
+    "--host-name" = {
+       value = "$host.name$"
+    }
+    "--host-state" = {
+       value = "$host.state$"
+    }
+    "--host-state-type" = {
+       value = "$host.state_type$"
+    }
+
   }
 
-  vars.restart_service = "$procs_command$"
+  vars.restart_service = "$restart_service$"
 }
