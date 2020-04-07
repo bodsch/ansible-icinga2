@@ -1,4 +1,4 @@
-{{ ansible_managed | comment(decoration='// ') }}
+// {{ ansible_managed }}
 
 {% for i in icinga2_service_downtimes -%}
 apply ScheduledDowntime "{{ i }}" to Service {

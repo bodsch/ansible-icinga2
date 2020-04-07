@@ -74,6 +74,8 @@
             }
           }
 
+    icinga2_salt: tmpams80tqx
+
   # pre_tasks:
   #   - name: clean caches for debian based
   #     command: apt clean
@@ -82,22 +84,22 @@
   #     when: ansible_os_family | lower == 'debian'
 
   roles:
-    - role: mariadb
+    # - role: mariadb
     - role: ansible-icinga2
 
-  tasks:
-    # - include: ../../tasks/master/features.yml
-    #   tags:
-    #     - features
-    - include: ../../tasks/downtime.yml
-      vars:
-        icinga2_master: '{{ ansible_default_ipv4.address }}'
-        icinga2_api_user: root
-        icinga2_api_password: foo
-        icinga2_downtime_comment: Downtime for deployment
-        icinga2_downtime_system_name: localhost
-        icinga2_downtime_duration: 120
-
-      tags:
-        - downtime_schedule
+  # tasks:
+  #   # - include: ../../tasks/master/features.yml
+  #   #   tags:
+  #   #     - features
+  #   - include: ../../tasks/downtime.yml
+  #     vars:
+  #       icinga2_master: '{{ ansible_default_ipv4.address }}'
+  #       icinga2_api_user: root
+  #       icinga2_api_password: foo
+  #       icinga2_downtime_comment: Downtime for deployment
+  #       icinga2_downtime_system_name: localhost
+  #       icinga2_downtime_duration: 120
+  #
+  #     tags:
+  #       - downtime_schedule
 

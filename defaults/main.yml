@@ -16,8 +16,7 @@ icinga2_dependencies:
 # distribution dependent
 # monitoring_plugins_directory: /usr/lib/nagios/plugins
 
-#tz: America/New_York
-tz: UTC
+tz: Etc/UTC
 icinga2_local_scriptsdir: /usr/local/scripts
 icinga2_backupdir: /srv/backup/icinga2/{{ inventory_hostname }}
 
@@ -52,8 +51,6 @@ icinga2_features: {}
 #   graphite:
 #     graphite_host: localhost
 
-
-
 icinga2_api_enabled: true
 icinga2_api_accept_config: true
 icinga2_api_accept_commands: true
@@ -73,7 +70,13 @@ icinga2_ido_database: 'icinga2_ido'
 icinga2_ido_port: 3306
 icinga2_ido_socket: /run/mysqld.sock
 
+# https://www.icinga.com/docs/icinga2/latest/doc/09-object-types/#objecttype-filelogger
+# Can be “debug”, “notice”, “information”, “warning” or “critical”.
 icinga2_mainlog_severity: warning
+icinga2_mainlog_logfile: icinga2.log
+icinga2_mainlog_directory: /var/log/icinga2
+
+# backward compatibility
 icinga2_mainlog_path: /var/log/icinga2/icinga2.log
 
 # master check definitions:

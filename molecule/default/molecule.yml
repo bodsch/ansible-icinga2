@@ -46,8 +46,8 @@ platforms:
 
 provisioner:
   name: ansible
-  ansible_args:
-    - --diff
+  # ansible_args:
+  #   - --diff
   #   - -vvv
   config_options:
     defaults:

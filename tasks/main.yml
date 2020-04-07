@@ -13,12 +13,13 @@
 - include_tasks: master.yml
   when: icinga2_mode == 'master'
 
-- include_tasks: satellite.yml
-  when: icinga2_mode == 'satellite'
-
-- include_tasks: plugins.yml
-
-- include: custom_checks.yml
-  when: icinga2_mode == 'master'
-
-- include: service.yml
+# - include_tasks: satellite.yml
+#   when: icinga2_mode == 'satellite'
+#
+# - include_tasks: plugins.yml
+#
+# - include: custom_checks.yml
+#   when: icinga2_mode == 'master'
+#
+# - include: service.yml
+#

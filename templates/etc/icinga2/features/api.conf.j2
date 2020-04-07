@@ -1,4 +1,4 @@
-{{ ansible_managed | comment(decoration='// ') }}
+// {{ ansible_managed }}
 
 object ApiListener "api" {
   accept_config   = {{ icinga2_api_accept_config | bool | ternary('true', 'false') }}

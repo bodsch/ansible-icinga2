@@ -1,4 +1,12 @@
 ---
+
+# - debug:
+#     var: "{{item}}"
+#   when: item is defined
+#   loop:
+#     - icinga2_salt
+#     - ansible_local
+
 # create salt if they not exists
 #
 - block:
@@ -30,18 +38,36 @@
     - name: do facts module to get latest information
       setup:
 
+    - name: set fact for salt
+      set_fact:
+        icinga2_salt: "{{ ansible_local.icinga2.salt }}"
+      when:
+        ansible_local.icinga2.salt is defined
+
   when: (
+    (icinga2_salt is not defined or
+    icinga2_salt is defined and icinga2_salt | length == 0) and (
     ansible_local.icinga2 is not defined or
-    ansible_local.icinga2.salt is not defined)
+    ansible_local.icinga2.salt is not defined))
 
-- name: set fact for salt
-  set_fact:
-    icinga2_salt: "{{ ansible_local.icinga2.salt }}"
-  when:
-    ansible_local.icinga2.salt is defined
+# - debug:
+#     var: "{{item}}"
+#   when: item is defined
+#   loop:
+#     - icinga2_salt
 
-- name: do facts module to get latest information
-  setup:
+- name: create icinga2 constants.conf
+  template:
+    src: etc/icinga2/constants.conf.j2
+    dest: /etc/icinga2/constants.conf
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - restart icinga2
+
+# - name: do facts module to get latest information
+#   setup:
 
 - name: ensure right permissions for icinga2 pki dir
   file:
@@ -56,20 +82,24 @@
     path: "{{ icinga2_pki_cadir }}/ca.crt"
   register: _icinga2_ca_file
   tags:
-    - configure
+    - icinga2
 
-- name: configure pki
+- name: create icinga2 CA
   command: "{{ item }}"
   with_items:
     - icinga2 pki new-ca
-    - icinga2 pki new-cert --cn {{ icinga2_certificate_cn }} --key {{ icinga2_pki_dir }}/{{ inventory_hostname }}.key --csr {{ icinga2_pki_dir }}/{{ inventory_hostname }}.csr
-    - icinga2 pki sign-csr --csr {{ icinga2_pki_dir }}/{{ inventory_hostname }}.csr --cert {{ icinga2_pki_dir }}/{{ inventory_hostname }}.crt
+    - icinga2 pki new-cert
+      --cn {{ icinga2_certificate_cn }}
+      --key {{ icinga2_pki_dir }}/{{ inventory_hostname }}.key
+      --csr {{ icinga2_pki_dir }}/{{ inventory_hostname }}.csr
+    - icinga2 pki sign-csr
+      --csr {{ icinga2_pki_dir }}/{{ inventory_hostname }}.csr
+      --cert {{ icinga2_pki_dir }}/{{ inventory_hostname }}.crt
   when:
     not _icinga2_ca_file.stat.exists
   tags:
-    - configure
-  ignore_errors: true
-
+    - icinga2
+  ignore_errors: false
 
 # renew stat with the ca and cert files
 #
@@ -85,13 +115,11 @@
 
 - name: ensure ca.crt is replicate in pki directory
   copy:
-    src: "{{ icinga2_pki_cadir }}/{{ item }}"
-    dest: "{{ icinga2_pki_dir }}/{{ item }}"
+    src: "{{ icinga2_pki_cadir }}/ca.crt"
+    dest: "{{ icinga2_pki_dir }}/ca.crt"
     remote_src: true
-  with_items:
-    - ca.crt
   tags:
-    - configure
+    - icinga2
   when:
     _icinga2_ca_file.stat.exists
 

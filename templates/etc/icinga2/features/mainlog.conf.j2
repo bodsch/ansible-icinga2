@@ -1,8 +1,6 @@
-{{ ansible_managed | comment(decoration='// ') }}
-
-//  https://www.icinga.com/docs/icinga2/latest/doc/09-object-types/#objecttype-filelogger
+// {{ ansible_managed }}
 
 object FileLogger "main-log" {
   severity = "{{ icinga2_mainlog_severity }}"
-  path     = "{{ icinga2_mainlog_path }}"
+  path     = LogDir + "/{{ icinga2_mainlog_logfile }}"
 }

@@ -15,8 +15,8 @@
   with_items:
     - src: etc/icinga2/icinga2.conf.j2
       dest: /etc/icinga2/icinga2.conf
-    - src: etc/icinga2/constants.conf.j2
-      dest: /etc/icinga2/constants.conf
+#    - src: etc/icinga2/constants.conf.j2
+#      dest: /etc/icinga2/constants.conf
     - src: etc/icinga2/features/mainlog.conf.j2
       dest: /etc/icinga2/features-available/mainlog.conf
   notify:
