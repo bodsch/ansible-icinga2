@@ -7,6 +7,14 @@
 #     - icinga2_salt
 #     - ansible_local
 
+- name: set fact for salt
+  set_fact:
+    icinga2_salt: "{{ ansible_local.icinga2.salt }}"
+  when: (
+    ansible_local.icinga2 is defined and
+    ansible_local.icinga2.salt is defined and
+    ansible_local.icinga2.salt | length != 0)
+
 # create salt if they not exists
 #
 - block:
