@@ -51,6 +51,7 @@
   vars:
     downtime_start: "{{ ansible_date_time.epoch }}"
     downtime_end: "{{ downtime_start | int + icinga2_downtime_duration * 60 }}"
+  become: false
   loop:
     - { type: "Service", filter: "host.name == \"{{ icinga2_downtime_system_name }}\"" }
     - { type: "Host", filter: "host.name==\"{{ icinga2_downtime_system_name }}\"" }
@@ -74,6 +75,7 @@
     body:
       type: "Downtime"
       filter: "host.name==\"{{ icinga2_downtime_system_name }}\" && downtime.author == \"ansible\""
+  become: false
   delegate_to: localhost
   tags:
     - icinga2

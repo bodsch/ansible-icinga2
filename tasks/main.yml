@@ -18,6 +18,13 @@
 
 - include_tasks: plugins.yml
 
+- include_tasks: downtime.yml
+  when: icinga2_mode == 'master'
+  tags:
+    - icinga2
+    - downtime_schedule
+    - downtime_remove
+
 - include: custom_checks.yml
   when: icinga2_mode == 'master'
 
