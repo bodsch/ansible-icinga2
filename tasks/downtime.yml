@@ -25,7 +25,7 @@
     - downtime_remove
 
 # thanks to @nbuchwitz for using his code!
-- name: schedule downtime
+- name: schedule downtime for {{ icinga2_downtime_system_name }} with comment '{{ icinga2_downtime_comment }}'
   uri:
     url: "https://{{ icinga2_master }}:{{ icinga2_master_port | default(5665) }}/v1/actions/schedule-downtime"
     url_username: "{{ icinga2_api_user }}"
@@ -50,12 +50,12 @@
       duration: "{{ icinga2_downtime_duration }}"
   vars:
     downtime_start: "{{ ansible_date_time.epoch }}"
-    downtime_end: "{{ downtime_start | int + icinga2_downtime_duration * 60 }}"
-  become: false
+    downtime_end: "{{ downtime_start | int + icinga2_downtime_duration | int * 60 }}"
   loop:
     - { type: "Service", filter: "host.name == \"{{ icinga2_downtime_system_name }}\"" }
     - { type: "Host", filter: "host.name==\"{{ icinga2_downtime_system_name }}\"" }
-  delegate_to: localhost
+  become: false
+  delegate_to: "{{ icinga2_master }}"
   tags:
     - icinga2
     - downtime_schedule
@@ -76,7 +76,7 @@
       type: "Downtime"
       filter: "host.name==\"{{ icinga2_downtime_system_name }}\" && downtime.author == \"ansible\""
   become: false
-  delegate_to: localhost
+  delegate_to: "{{ icinga2_master }}"
   tags:
     - icinga2
     - downtime_remove

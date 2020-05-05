@@ -341,6 +341,18 @@ tox -e py38-ansible29 -- molecule
 tox -e py38-ansible29 -- molecule -s icinga2-satellite
 ```
 
+## downtimes
+
+### create
+```
+ansible-playbook -i inventories/ downtime.yml -e icinga2_set_downtime=True -e icinga2_downtime_comment=test -e icinga2_downtime_duration=10 -e icinga2_downtime_system_name=$HOSTNAME -e icinga2_api_user=root -e icinga2_api_password=icinga2 -e icinga2_master=$ICINGA2_MASTER --tags downtime_schedule
+```
+
+### remove
+```
+ansible-playbook -i inventories/ downtime.yml -e icinga2_set_downtime=True -e icinga2_downtime_system_name=$HOSTNAME -e icinga2_api_user=root -e icinga2_api_password=icinga2 -e icinga2_master=$ICINGA2_MASTER --tags downtime_remove
+```
+
 ## Troubleshooting & Known issues
 
 ```
