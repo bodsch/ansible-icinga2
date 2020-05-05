@@ -24,9 +24,10 @@
 - include: service.yml
 
 - include_tasks: downtime.yml
-  when: icinga2_mode == 'master'
   tags:
     - icinga2
     - downtime_schedule
     - downtime_remove
-  when: icinga2_set_downtime | default(False)
+  when:
+    icinga2_set_downtime | default(False) and
+    icinga2_mode == 'master'
