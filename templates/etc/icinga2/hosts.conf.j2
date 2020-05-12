@@ -11,8 +11,6 @@
 {%- if v['zone'] is defined %}
 {%- set _zone = v['zone'] -%}
 {%- set _v = v.pop('zone') -%}
-{%- else -%}
-{%- set _zone = ansible_fqdn -%}
 {% endif %}
 {% if icinga2_masters[_name] is defined and icinga2_masters[_name]['ip'] is defined %}
 {% set _ip = icinga2_masters[_name]['ip'] %}
@@ -33,7 +31,9 @@ object Host "{{ _name }}" {
   display_name = "{{ display_name }}"
 {% endif %}
   command_endpoint = "{{ ansible_fqdn }}"
+{% if _zone is defined %}
   zone = "{{ _zone }}"
+{% endif %}
   {% for ke,ve in v.items() | sort -%}
   {% if ke == 'import' -%}{{ ke }} "{{ ve }}"
   {% elif ke == 'groups' -%}{{ ke }} = ["{{ ve | join('","') }}"]
