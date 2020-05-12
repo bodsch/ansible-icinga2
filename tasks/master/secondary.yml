@@ -1,0 +1,186 @@
+---
+
+# secondary master
+#
+
+- name: set facts
+  set_fact:
+    icinga2_pki_ca_key: "{{ icinga2_pki_dir }}/ca.key"
+    icinga2_pki_ca_cert: "{{ icinga2_pki_dir }}/ca.crt"
+    icinga2_pki_fqdn_key: "{{ icinga2_pki_dir }}/{{ ansible_fqdn }}.key"
+    icinga2_pki_fqdn_cert: "{{ icinga2_pki_dir }}/{{ ansible_fqdn }}.crt"
+    icinga2_pki_master_cert: "{{ icinga2_pki_dir }}/trusted-master.crt"
+
+- name: "create '{{ icinga2_pki_dir }}'"
+  file:
+    dest: "{{ icinga2_pki_dir }}"
+    state: directory
+    owner: "{{ icinga2_user }}"
+
+- name: "check for existing '{{ icinga2_pki_fqdn_key }}'"
+  stat:
+    path: "{{ icinga2_pki_fqdn_key }}"
+  register: __fqdn_key
+
+- name: "check for existing '{{ icinga2_pki_ca_cert }}'"
+  stat:
+    path: "{{ icinga2_pki_ca_cert }}"
+  register: __ca_crt
+
+- block:
+    #
+    - name: "create a ticket from icinga2 master for the secondary master '{{ ansible_fqdn }}'"
+      shell: |
+        icinga2 pki ticket --cn {{ icinga2_certificate_cn }}
+      register: ticket
+      delegate_to: "{{ icinga2_primary_master }}"
+      when: icinga2_salt is defined
+
+    - name: set facts
+      set_fact:
+        icinga2_fqdn_ticket: "{{ ticket.stdout }}"
+
+    - name: copy ca.crt from primary icinga2 master
+      fetch:
+        src: "{{ icinga2_pki_ca_cert }}"
+        dest: files/ca.crt
+        flat: true
+      delegate_to: '{{ icinga2_primary_master }}'
+
+    - name: "copy ca.crt to '{{ ansible_fqdn }}'"
+      copy:
+        src: files/ca.crt
+        dest: "{{ icinga2_pki_ca_cert }}"
+        owner: "{{ icinga2_user }}"
+        group: "{{ icinga2_user }}"
+
+    - name: configure icinga2 secondary master pki
+    ## http://lowendbox.com/blog/server-monitoring-with-icinga-2-part-2-the-node-ubuntu-host/
+    ## http://serverfault.com/questions/647805/how-to-set-up-icinga2-remote-client-without-using-cli-wizard
+      command: "{{ item }}"
+      with_items:
+        - icinga2 pki new-cert
+          --cn {{ icinga2_certificate_cn }}
+          --key {{ icinga2_pki_fqdn_key }}
+          --cert {{ icinga2_pki_fqdn_cert }}
+
+        - icinga2 pki save-cert
+          --key {{ icinga2_pki_fqdn_key }}
+          --cert {{ icinga2_pki_fqdn_cert }}
+          --trustedcert {{ icinga2_pki_master_cert }}
+          --host {{ icinga2_primary_master }}
+
+        - icinga2 pki request
+          --host {{ icinga2_primary_master }}
+          --port {{ icinga2_master_port | default(5665) }}
+          --ticket {{ icinga2_fqdn_ticket }}
+          --key {{ icinga2_pki_fqdn_key }}
+          --cert {{ icinga2_pki_fqdn_cert }}
+          --trustedcert {{ icinga2_pki_master_cert }}
+          --ca {{ icinga2_pki_ca_key }}
+
+        - icinga2 node setup
+          --ticket {{ icinga2_fqdn_ticket }}
+          --endpoint {{ icinga2_primary_master }}
+          --zone {{ ansible_fqdn }}
+          --parent_host {{ icinga2_primary_master }}
+          --trustedcert {{ icinga2_pki_master_cert }}
+      become: true
+      when: not __fqdn_key.stat.exists and ticket.stdout is defined
+      notify:
+        - check configuration
+        - restart icinga2
+
+    - name: fix permissions for icinga2 pki directory
+      file:
+        path: "{{ icinga2_pki_dir }}"
+        owner: "{{ icinga2_user }}"
+        group: "{{ icinga2_user }}"
+        recurse: true
+
+    - name: configure zones
+      template:
+        src: etc/icinga2/zones.conf.j2
+        dest: /etc/icinga2/zones.conf
+        mode: 0644
+        backup: true
+
+
+  when: ( not __fqdn_key.stat.exists and
+    icinga2_primary_master is defined and
+    icinga2_primary_master != ansible_fqdn)
+
+- block:
+
+#    - name: create zone entry under '/etc/icinga2/zones.d' on master '{{ icinga2_primary_master }}'
+#      file:
+#        dest: /etc/icinga2/zones.d/{{ ansible_fqdn }}
+#        state: directory
+#      delegate_to: "{{ icinga2_primary_master }}"
+
+    # - name: create zone file on master '{{ icinga2_primary_master }}'
+    #   template:
+    #     src: etc/icinga2/hosts.conf.j2
+    #     dest: /etc/icinga2/zones.d/master/{{ ansible_fqdn }}.conf
+    #   delegate_to: "{{ icinga2_primary_master }}"
+    #   notify:
+    #     - restart icinga2 master
+
+    - name: create host object file for secondary master on master '{{ icinga2_primary_master }}'
+      template:
+        src: etc/icinga2/satellite-zone.conf.j2
+        dest: /etc/icinga2/zones.d/master/{{ ansible_fqdn }}.conf
+      delegate_to: "{{ icinga2_primary_master }}"
+      notify:
+        - restart icinga2 master
+
+    # - name: fix permissions for icinga2 pki directory  # noqa 301
+    #   command: "{{ item }}"
+    #   args:
+    #     warn: false
+    #   with_items:
+    #     - chown -R {{ icinga2_user }}:{{ icinga2_user }} {{ icinga2_pki_dir }}
+
+    # - name: create zone entry on master '{{ icinga2_primary_master }}'
+    #   file:
+    #     dest: /etc/icinga2/zones.d/{{ icinga2_certificate_cn }}
+    #     state: directory
+    #   delegate_to: "{{ icinga2_primary_master }}"
+
+    # - name: create zone file on master '{{ icinga2_primary_master }}'
+    #   template:
+    #     src: etc/icinga2/satellite.conf.j2
+    #     dest: /etc/icinga2/satellites.d/{{ icinga2_certificate_cn }}.conf
+    #   delegate_to: "{{ icinga2_primary_master }}"
+    #   notify:
+    #     - restart icinga2 master
+
+    # - name: create host object file on master '{{ icinga2_primary_master }}'
+    #   template:
+    #     src: etc/icinga2/satellite-zone.conf.j2
+    #     dest: /etc/icinga2/zones.d/{{ icinga2_certificate_cn }}/{{ icinga2_certificate_cn }}.conf
+    #   delegate_to: "{{ icinga2_primary_master }}"
+    #   notify:
+    #     - restart icinga2 master
+
+    # en: icinga2_fqdn_ticket is defined and icinga2_fqdn_ticket | length != 0
+
+    # - name: ensure that satellite has api connetions
+    #   stat:
+    #     path: "{{ icinga2_certificate_cn }}/_etc/{{ icinga2_certificate_cn }}.conf"
+    #   register: __satellite_api_connections
+
+
+  when: icinga2_primary_master is defined and icinga2_primary_master != ansible_fqdn
+
+- name: create icinga2 constants.conf
+  template:
+    src: etc/icinga2/constants.conf.j2
+    dest: /etc/icinga2/constants.conf
+    # owner: root
+    # group: root
+    mode: 0644
+  notify:
+    - check configuration
+
+- include_tasks: features.yml

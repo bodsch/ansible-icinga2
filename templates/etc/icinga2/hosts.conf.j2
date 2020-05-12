@@ -1,34 +1,52 @@
-{{ ansible_managed | comment('cblock') }}
+// {{ ansible_managed }}
 
-{% if icinga2_hosts is defined and icinga2_hosts | count != 0 %}
-{% for key in icinga2_hosts %}
-object Host "{{ key }}" {
-  {% for ke,ve in icinga2_hosts[key].items() | sort -%}
-  {% if ke == 'import' %}{{ ke }} "{{ ve }}"
-  {% elif ke == 'groups' %}{{ ke }} = ["{{ ve|join('","') }}"]
+{% if icinga2_host_object is defined and icinga2_host_object | count != 0 %}
+{% for key, v in icinga2_host_object.items() -%}
+{%- if v['endpoint_name'] is defined %}
+{%- set _name = v['endpoint_name'] -%}
+{%- set _v = v.pop('endpoint_name') -%}
+{%- else -%}
+{%- set _name = key -%}
+{% endif %}
+{%- if v['zone'] is defined %}
+{%- set _zone = v['zone'] -%}
+{%- set _v = v.pop('zone') -%}
+{%- else -%}
+{%- set _zone = ansible_fqdn -%}
+{% endif %}
+{% if icinga2_masters[_name] is defined and icinga2_masters[_name]['ip'] is defined %}
+{% set _ip = icinga2_masters[_name]['ip'] %}
+{%- set _v = v.pop('address') -%}
+{% else %}
+{% set _ip = lookup('pipe', 'host ' + ansible_fqdn   + ' | grep "has address" | cut -d" " -f4') %}
+{% endif %}
+{%- if v['display_name'] is defined %}
+{%- set display_name = v['display_name'] %}
+{%- set _v = v.pop('display_name') -%}
+{%- endif %}
+
+object Host "{{ _name }}" {
+{% if _ip is defined and _ip | length != 0 %}
+  address = "{{ _ip }}"
+{% endif %}
+{% if display_name is defined %}
+  display_name = "{{ display_name }}"
+{% endif %}
+  command_endpoint = "{{ ansible_fqdn }}"
+  zone = "{{ _zone }}"
+  {% for ke,ve in v.items() | sort -%}
+  {% if ke == 'import' -%}{{ ke }} "{{ ve }}"
+  {% elif ke == 'groups' -%}{{ ke }} = ["{{ ve | join('","') }}"]
   {% elif ke == 'vars' -%}
   vars = {
     {{ ve | indent(4) }}
   }
-  {% else -%}
+  {%- else -%}
   {{ ke }} = "{{ ve }}"
-  {% endif -%}
-{%- endfor -%}
+{% endif %}
+{% endfor %}
 
 }
+
 {% endfor %}
 {% endif %}
-
-/* FIXME! critical/config: Error: Import references unknown template: 'generic-notification'
-   but from http://docs.icinga.org/icinga2/latest/doc/module/icinga2/toc#!/icinga2/latest/doc/module/icinga2/chapter/monitoring-basics#disable-renotification
-apply Notification "notify-once" to Service {
-  import "generic-notification"
-
-  command = "mail-notification"
-  users = [ "icingaadmin" ]
-
-  interval = 0 // disable re-notification
-
-  assign where service.name == "https"
-}
-*/

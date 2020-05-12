@@ -4,32 +4,56 @@
 
 # set -e
 
-. /usr/local/etc/backup.config
+CONFIG="/usr/local/etc/backup.config"
 
 export PATH=/usr/sbin:/usr/bin:/sbin:/bin
 umask 022
 
+datenow=$(date +%s)
 date=$(date +%Y-%m-%d)
 
-backup_directory="${backup_base_directory}/${date}"
+mysqlbackup=true
 
-[[ -d "${backup_directory}" ]] || mkdir -p "${backup_directory}"
+if [[ -f ${CONFIG} ]]
+then
+  . ${CONFIG}
+else
+  backup_base_directory=/usr/local/backup/icinga2
+  backup_dirs="
+    /etc/icinga2 \
+    /var/lib/icinga2"
+fi
 
+if [[ ! -d ${backup_base_directory} ]]
+then
+  mkdir -p ${backup_base_directory}
+fi
 
-f="${backup_directory}/backup-icinga2.tar.bz2"
+# ---------------------------------------------------------------------------------------
 
-backup_dirs="${backup_dirs:-/etc/icinga2 /var/lib/icinga2 /var/log/icinga2}"
+f="${backup_base_directory}/${datenow}_backup-icinga2.tar.bz2"
 
+if [[ $mysqlbackup ]]
+then
+  mysqldump \
+    --host={{ icinga2_ido.host }} \
+    --user={{ icinga2_ido.username }} \
+    --password={{ icinga2_ido.password }} \
+    --add-drop-database \
+    --add-drop-table \
+    --opt \
+    --single-transaction \
+    --databases {{ icinga2_ido.database }} \
+    > ${backup_base_directory}/${datenow}_mysqldumpall.sql
+fi
 
-## icingaweb2 backend
-#mysqldump --opt --all-databases > $backup_dest/mysqldumpall.sql
-
+## create backup
 tar \
   --create \
   --bzip2 \
   --file \
   "${f}" \
-  ${backup_dirs} > /dev/null
+  ${backup_dirs} > /dev/null 2>&1
 
 ## test backup
 tar \
@@ -38,4 +62,20 @@ tar \
   --file \
   "${f}" > /dev/null
 
-sha512sum "${f}" > "${f}.sha512"
+return=$?
+if [[ $return != 0 ]]
+then
+  echo "Testing of ${f} failed!"
+  exit 1
+fi
+
+sha512sum ${f} > ${f}.sha512
+
+ln --force --symbolic \
+  ${f} \
+  ${backup_base_directory}/latest.tar.bz2
+
+ln --force --symbolic \
+  ${f}.sha512 \
+  ${backup_base_directory}/latest.tar.bz2.sha512
+

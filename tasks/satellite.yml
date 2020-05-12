@@ -1,7 +1,5 @@
 ---
 
-- include_tasks: check_installed.yml
-
 - block:
 
     - name: install icinga2 packages
@@ -83,19 +81,9 @@
 
 - include_tasks: check_installed.yml
 
-- name: rename some static files
-  command: |
-    mv /etc/icinga2/conf.d/{{ item }}.conf /etc/icinga2/conf.d/{{ item }}.disabled
-  args:
-    creates: "/etc/icinga2/conf.d/{{ item }}.disabled"
-    removes: "/etc/icinga2/conf.d/{{ item }}.conf"
-  loop:
-    - hosts
-    - services
-    - templates
-    - users
-    - apt
-
 - include: satellite/pki.yml
 - include: satellite/configure.yml
 - include: satellite/features.yml
+
+
+# /var/lib/icinga2/api/zones-stage/startup.log

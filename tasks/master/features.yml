@@ -7,6 +7,7 @@
   loop:
     "{{ icinga2_master_features_disabled }}"
   notify:
+    - check configuration
     - restart icinga2
   tags:
     - icinga2
@@ -14,5 +15,5 @@
 
 - include: features/api.yml
 - include: features/notification.yml
-- include: features/ido.yml
 - include: features/graphite.yml
+- include: features/ido.yml

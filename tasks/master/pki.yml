@@ -1,144 +1,65 @@
 ---
 
-# - debug:
-#     var: "{{item}}"
-#   when: item is defined
-#   loop:
-#     - icinga2_salt
-#     - ansible_local
-
-- name: set fact for salt
-  set_fact:
-    icinga2_salt: "{{ ansible_local.icinga2.salt }}"
-  when: (
-    ansible_local.icinga2 is defined and
-    ansible_local.icinga2.salt is defined and
-    ansible_local.icinga2.salt | length != 0)
-
-# create salt if they not exists
+# primary master
 #
 - block:
-
-    - name: generate a salt
-      shell: "cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 64 | head -n 1"
-      register: _salt
-      changed_when: false
+    #
+    - name: check if {{ icinga2_pki_cadir }}/ca.crt exists
+      stat:
+        path: "{{ icinga2_pki_cadir }}/ca.crt"
+      register: _icinga2_ca_file
       tags:
-        - configure
+        - icinga2
 
-    - name: set fact for salt
-      set_fact:
-        icinga2_salt: "{{ _salt.stdout }}"
-      when: (
-        _salt is defined and
-        _salt.stdout is defined)
-
-    - name: create custom fact file
-      template:
-        src: facts.d/icinga2.fact.j2
-        dest: /etc/ansible/facts.d/icinga2.fact
-        owner: root
-        group: root
-        mode: 0755
-      register:
-        register_icinga2_facts
-
-    - name: do facts module to get latest information
-      setup:
-
-    - name: set fact for salt
-      set_fact:
-        icinga2_salt: "{{ ansible_local.icinga2.salt }}"
+    - name: create icinga2 CA
+      command: "{{ item }}"
+      with_items:
+        - icinga2 pki new-ca
+        - icinga2 pki new-cert
+          --cn {{ icinga2_certificate_cn }}
+          --key {{ icinga2_pki_dir }}/{{ inventory_hostname }}.key
+          --csr {{ icinga2_pki_dir }}/{{ inventory_hostname }}.csr
+        - icinga2 pki sign-csr
+          --csr {{ icinga2_pki_dir }}/{{ inventory_hostname }}.csr
+          --cert {{ icinga2_pki_dir }}/{{ inventory_hostname }}.crt
       when:
-        ansible_local.icinga2.salt is defined
+        not _icinga2_ca_file.stat.exists
+      tags:
+        - icinga2
+      ignore_errors: false
 
-  when: (
-    (icinga2_salt is not defined or
-    icinga2_salt is defined and icinga2_salt | length == 0) and (
-    ansible_local.icinga2 is not defined or
-    ansible_local.icinga2.salt is not defined))
+    # renew stat with the ca and cert files
+    #
+    - name: check if {{ icinga2_pki_cadir }}/ca.crt exists
+      stat:
+        path: "{{ icinga2_pki_cadir }}/ca.crt"
+      register: _icinga2_ca_file
 
-# - debug:
-#     var: "{{item}}"
-#   when: item is defined
-#   loop:
-#     - icinga2_salt
+    - name: check if {{ icinga2_pki_cadir }}/{{ icinga2_certificate_cn }}.crt exists
+      stat:
+        path: "{{ icinga2_pki_dir }}/{{ icinga2_certificate_cn }}.crt"
+      register: _icinga2_certificate_file
 
-- name: create icinga2 constants.conf
-  template:
-    src: etc/icinga2/constants.conf.j2
-    dest: /etc/icinga2/constants.conf
-    owner: root
-    group: root
-    mode: 0644
-  notify:
-    - restart icinga2
+    - name: ensure ca.crt is replicate in pki directory
+      copy:
+        src: "{{ icinga2_pki_cadir }}/ca.crt"
+        dest: "{{ icinga2_pki_dir }}/ca.crt"
+        remote_src: true
+      tags:
+        - icinga2
+      when:
+        _icinga2_ca_file.stat.exists
 
-# - name: do facts module to get latest information
-#   setup:
+    - name: symlink pki files from {{ inventory_hostname }} to {{ icinga2_certificate_cn }}
+      file:
+        src: "{{ icinga2_pki_dir }}/{{ inventory_hostname }}.{{ item }}"
+        dest: "{{ icinga2_pki_dir }}/{{ icinga2_certificate_cn }}.{{ item }}"
+        state: link
+      with_items:
+        - key
+        - crt
+      when: (
+        inventory_hostname != icinga2_certificate_cn and
+        not _icinga2_certificate_file.stat.exists)
 
-- name: ensure right permissions for icinga2 pki dir
-  file:
-    dest: "{{ icinga2_pki_dir }}"
-    state: directory
-    mode: 0755
-    owner: "{{ icinga2_pki_userdir }}"
-    group: "{{ icinga2_pki_userdir }}"
-
-- name: check if {{ icinga2_pki_cadir }}/ca.crt exists
-  stat:
-    path: "{{ icinga2_pki_cadir }}/ca.crt"
-  register: _icinga2_ca_file
-  tags:
-    - icinga2
-
-- name: create icinga2 CA
-  command: "{{ item }}"
-  with_items:
-    - icinga2 pki new-ca
-    - icinga2 pki new-cert
-      --cn {{ icinga2_certificate_cn }}
-      --key {{ icinga2_pki_dir }}/{{ inventory_hostname }}.key
-      --csr {{ icinga2_pki_dir }}/{{ inventory_hostname }}.csr
-    - icinga2 pki sign-csr
-      --csr {{ icinga2_pki_dir }}/{{ inventory_hostname }}.csr
-      --cert {{ icinga2_pki_dir }}/{{ inventory_hostname }}.crt
-  when:
-    not _icinga2_ca_file.stat.exists
-  tags:
-    - icinga2
-  ignore_errors: false
-
-# renew stat with the ca and cert files
-#
-- name: check if {{ icinga2_pki_cadir }}/ca.crt exists
-  stat:
-    path: "{{ icinga2_pki_cadir }}/ca.crt"
-  register: _icinga2_ca_file
-
-- name: check if {{ icinga2_pki_cadir }}/{{ icinga2_certificate_cn }}.crt exists
-  stat:
-    path: "{{ icinga2_pki_dir }}/{{ icinga2_certificate_cn }}.crt"
-  register: _icinga2_certificate_file
-
-- name: ensure ca.crt is replicate in pki directory
-  copy:
-    src: "{{ icinga2_pki_cadir }}/ca.crt"
-    dest: "{{ icinga2_pki_dir }}/ca.crt"
-    remote_src: true
-  tags:
-    - icinga2
-  when:
-    _icinga2_ca_file.stat.exists
-
-- name: symlink pki files from {{ inventory_hostname }} to {{ icinga2_certificate_cn }}
-  file:
-    src: "{{ icinga2_pki_dir }}/{{ inventory_hostname }}.{{ item }}"
-    dest: "{{ icinga2_pki_dir }}/{{ icinga2_certificate_cn }}.{{ item }}"
-    state: link
-  with_items:
-    - key
-    - crt
-  when: (
-    inventory_hostname != icinga2_certificate_cn and
-    not _icinga2_certificate_file.stat.exists)
+  when: icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn

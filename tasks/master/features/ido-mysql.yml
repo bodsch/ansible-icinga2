@@ -1,68 +1,97 @@
 ---
-# configure ido-mysql
-#
-- name: create database upgrade script
-  template:
-    src: database-upgrade.sh.j2
-    dest: /usr/local/bin/database-upgrade.sh
-    owner: root
-    group: root
-    mode: 0750
 
-# # needs root rights
-# - name: ensure database {{ icinga2_ido_database }} is created
-#   shell: >
-#     mysql \
-#       --host {{ icinga2_ido_host }} \
-#       --user {{ icinga2_ido_username }} \
-#       --password {{ icinga2_ido_password }} \
-#       --batch \
-#       --skip-column-names \
-#       --execute \
-#       "SELECT count(TABLE_NAME) FROM information_schema.tables where TABLE_SCHEMA = '{{ icinga2_ido_database }}';"
-#   register: mysql_ido_schema
-#   changed_when: false
-#   check_mode: false
-#   # no_log: true
+- block:
+    # configure ido-mysql
+    #
+    - name: create database upgrade script
+      template:
+        src: database-upgrade.sh.j2
+        dest: /usr/local/bin/database-upgrade.sh
+        owner: root
+        group: root
+        mode: 0750
 
-- name: Create a new database with name '{{ icinga2_ido_database }}'
-  mysql_db:
-    name: '{{ icinga2_ido_database }}'
-    state: present
-  register: _mysql_ido_schema
+    # # needs root rights
+    # - name: ensure database {{ icinga2_ido.database }} is created
+    #   shell: >
+    #     mysql \
+    #       --host {{ icinga2_ido.host }} \
+    #       --user {{ icinga2_ido.username }} \
+    #       --password {{ icinga2_ido.password }} \
+    #       --batch \
+    #       --skip-column-names \
+    #       --execute \
+    #       "SELECT count(TABLE_NAME) FROM information_schema.tables where TABLE_SCHEMA = '{{ icinga2_ido.database }}';"
+    #   register: mysql_ido_schema
+    #   changed_when: false
+    #   check_mode: false
+    #   # no_log: true
 
-- name: check mysql database version
-  shell: >
-    mysql \
-      --host={{ icinga2_ido_host }} \
-      --user={{ icinga2_ido_username }} \
-      --password={{ icinga2_ido_password }} \
-      --batch \
-      --skip-column-names \
-      --execute \
-      "select version from {{ icinga2_ido_database }}.icinga_dbversion"
-  register: _mysql_ido_version
-  changed_when: false
-  ignore_errors: true
-  no_log: true
-  when: not _mysql_ido_schema.failed | bool
 
-- name: create the mysql ido schema
-  mysql_db:
-    name: "{{ icinga2_ido_database }}"
-    state: import
-    target: "{{ icinga2_ido_mysql_schema_file }}"
-  register: mysql_create_ido_schema
-  changed_when: false
-  check_mode: false
-  when: ( not _mysql_ido_schema.failed and _mysql_ido_version.stdout | string | length == 0 )
+    - name: check if configured database are available
+      wait_for:
+        host: "{{ icinga2_ido.host }}"
+        port: "{{ icinga2_ido.port }}"
+        delay: 1              # No wait before first check (sec)
+        timeout: 5            # Stop checking after timeout (sec)
+      ignore_errors: false
+      retries: 10
+      delay: 10
 
-# TODO
-# update database schema
-- name: update database schema  # noqa 305
-  shell: /usr/local/bin/database-upgrade.sh
-  changed_when: false
-  no_log: false
+
+    # - name: Create a new database with name '{{ icinga2_ido.database }}'
+    #   mysql_db:
+    #     name: '{{ icinga2_ido.database }}'
+    #     login_host: "{{ icinga2_ido.host }}"
+    #     login_user: "{{ icinga2_ido.username }}"
+    #     login_password: "{{ icinga2_ido.password }}"
+    #     state: present
+    #   register: _mysql_ido_schema
+
+    - name: check mysql database version
+      shell: >
+        mysql \
+          --host={{ icinga2_ido.host }} \
+          --user={{ icinga2_ido.username }} \
+          --password={{ icinga2_ido.password }} \
+          --batch \
+          --skip-column-names \
+          --execute \
+          "select version from {{ icinga2_ido.database }}.icinga_dbversion"
+      register: _mysql_ido_version
+      changed_when: false
+      ignore_errors: true
+      # no_log: true
+      # when: not _mysql_ido_schema.failed | bool
+
+
+    # - debug:
+    #     var: "{{ item }}"
+    #   when: item is defined
+    #   loop:
+    #     - _mysql_ido_version.stdout
+
+    - name: create the mysql ido schema
+      mysql_db:
+        name: "{{ icinga2_ido.database }}"
+        login_host: "{{ icinga2_ido.host }}"
+        login_user: "{{ icinga2_ido.username }}"
+        login_password: "{{ icinga2_ido.password }}"
+        state: import
+        target: "{{ icinga2_ido.mysql.schema_file }}"
+      register: mysql_create_ido_schema
+      changed_when: false
+      check_mode: false
+      when: _mysql_ido_version.stdout | string | length == 0
+
+    # TODO
+    # update database schema
+    - name: update database schema  # noqa 305
+      shell: /usr/local/bin/database-upgrade.sh
+      changed_when: false
+      # no_log: false
+
+  when: icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
 
 - name: configure ido-mysql feature
   template:

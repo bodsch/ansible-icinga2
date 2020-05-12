@@ -1,16 +1,27 @@
 ---
 
+- name: create templates.conf
+  template:
+    src: etc/icinga2/zones.d/global-templates/templates.conf.j2
+    dest: /etc/icinga2/global-templates.conf
+    mode: 0644
+    backup: true
+  notify:
+    - check configuration
+    - restart icinga2
+
 - name: create static zone file on icinga2 satellite
   template:
     src: etc/icinga2/zones.conf.j2
     dest: /etc/icinga2/zones.conf
-  when: not __satellite_api_connections.stat.exists
+  when: not icinga2_satellite_has_api_connection | bool
   notify: restart icinga2
 
-#- name: remove static zone file on icinga2 satellite
-#  file:
-#    dest: '/etc/icinga2/zones.conf'
-#  when: __satellite_api_connections.stat.exists == true
-#  notify:
-#    - restart icinga2
-#    - restart icinga2 master
+- name: remove static zone file on icinga2 satellite
+  file:
+    dest: '/etc/icinga2/zones.conf'
+  when: icinga2_satellite_has_api_connection | bool
+  notify:
+    - check configuration
+    - restart icinga2
+    - restart icinga2 master

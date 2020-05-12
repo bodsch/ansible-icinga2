@@ -1,7 +1,27 @@
 // {{ ansible_managed }}
 
+// full documentation: https://icinga.com/docs/icinga2/latest/doc/09-object-types/#apilistener
+{% set _api_attr = ['ticket_salt','crl_path','bind_host','bind_port','accept_config','accept_commands',
+  'max_anonymous_clients','cipher_list','tls_protocolmin','tls_handshake_timeout',
+  'access_control_allow_origin','environment'] %}
+
 object ApiListener "api" {
-  accept_config   = {{ icinga2_api_accept_config | bool | ternary('true', 'false') }}
-  accept_commands = {{ icinga2_api_accept_commands | bool | ternary('true', 'false') }}
-  ticket_salt     = {{ icinga2_api_ticket_salt }}
+
+{% for k, v in icinga2_api.items() | sort %}
+{% if k in _api_attr %}
+{% if k == 'ticket_salt' and icinga2_mode == 'master' and icinga2_primary_master == ansible_fqdn %}
+  ticket_salt     = {{ icinga2_api.ticket_salt }}
+{% else %}
+{% if v is string %}
+  {{ k }} = {{ v }}
+{% elif v is boolean %}
+  {{ k }} = {{ v | bool | ternary('true', 'false') }}
+{% elif v is iterable %}
+  {{ k }} = {{ v | join(':') }}
+{% else %}
+  {{ k }} = {{ v }}
+{% endif %}
+{% endif %}
+{% endif %}
+{% endfor %}
 }

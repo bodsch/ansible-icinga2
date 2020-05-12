@@ -1,10 +1,8 @@
 ---
 
-
 # merge multiple dictionary variables:
-#   - application_properties_defaults from vars/main.yml
-#   - application_properties_custom from vars/main.yml
-#   - application_properties from defaults/main.yml or from playbook
+#   - icinga2_apply_service_default from vars/main.yml
+#   - icinga2_apply_service from defaults/main.yml or from playbook
 #
 - name: merge icinga2_apply_service configuration between defaults and custom
   set_fact:
@@ -16,47 +14,56 @@
     icinga2_checkcommands: "{{ icinga2_checkcommands_default |
       combine( icinga2_checkcommands, recursive=True ) }}"
 
-- name: create global-templates file for service definitions
-  template:
-    src: etc/icinga2/zones.d/global-templates/services.conf.j2
-    dest: /etc/icinga2/zones.d/global-templates/services.conf
-    mode: 0644
-    backup: true
-  notify:
-    - restart icinga2
+- block:
 
-- name: create global-templates file for template definitions
-  template:
-    src: etc/icinga2/zones.d/global-templates/templates.conf.j2
-    dest: /etc/icinga2/zones.d/global-templates/templates.conf
-    mode: 0644
-    backup: true
-  notify:
-    - restart icinga2
+    - name: create global-templates file for service definitions
+      template:
+        src: etc/icinga2/zones.d/global-templates/services.conf.j2
+        dest: /etc/icinga2/zones.d/global-templates/services.conf
+        mode: 0644
+        #backup: true
+      notify:
+        - check configuration
+        - restart icinga2
 
-- name: create global-templates file for commands definitions
-  template:
-    src: etc/icinga2/zones.d/global-templates/commands.conf.j2
-    dest: /etc/icinga2/zones.d/global-templates/commands.conf
-    mode: 0644
-    backup: true
-  notify:
-    - restart icinga2
+    # - name: create global-templates file for template definitions
+    #   template:
+    #     src: etc/icinga2/zones.d/global-templates/templates.conf.j2
+    #     dest: /etc/icinga2/zones.d/global-templates/templates.conf
+    #     mode: 0644
+    #     backup: true
+    #   notify:
+    #     - check configuration
+    #     - restart icinga2
 
-- name: create global-templates file for functions definitions
-  template:
-    src: etc/icinga2/zones.d/global-templates/functions.conf.j2
-    dest: /etc/icinga2/zones.d/global-templates/functions.conf
-    mode: 0644
-    backup: true
-  notify:
-    - restart icinga2
+    - name: create global-templates file for commands definitions
+      template:
+        src: etc/icinga2/zones.d/global-templates/commands.conf.j2
+        dest: /etc/icinga2/zones.d/global-templates/commands.conf
+        mode: 0644
+        #backup: true
+      notify:
+        - check configuration
+        - restart icinga2
 
-- name: create global-templates file for event commands
-  template:
-    src: etc/icinga2/zones.d/global-templates/eventcommands.conf.j2
-    dest: /etc/icinga2/zones.d/global-templates/eventcommands.conf
-    mode: 0644
-    backup: true
-  notify:
-    - restart icinga2
+    - name: create global-templates file for functions definitions
+      template:
+        src: etc/icinga2/zones.d/global-templates/functions.conf.j2
+        dest: /etc/icinga2/zones.d/global-templates/functions.conf
+        mode: 0644
+        #backup: true
+      notify:
+        - check configuration
+        - restart icinga2
+
+    - name: create global-templates file for event commands
+      template:
+        src: etc/icinga2/zones.d/global-templates/eventcommands.conf.j2
+        dest: /etc/icinga2/zones.d/global-templates/eventcommands.conf
+        mode: 0644
+        #backup: true
+      notify:
+        - check configuration
+        - restart icinga2
+
+  when: icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn

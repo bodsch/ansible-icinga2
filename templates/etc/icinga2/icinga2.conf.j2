@@ -1,10 +1,27 @@
-{{ ansible_managed | comment(decoration='// ') }}
+// {{ ansible_managed }}
 
 include "constants.conf"
 {% if icinga2_mode == 'master' %}
-include_recursive "satellites.d"
-include_recursive "notifications"
+{% if icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn %}
+// includes all master zones and definitions
+// include_recursive "masters.d"
 {% endif %}
+// includes all satellite zones and definitions
+include_recursive "satellites.d"
+// includes all notification definitions
+include_recursive "notifications"
+
+{% if icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn %}
+// include "hosts.conf"
+include "groups.conf"
+include "users.conf"
+include "downtimes.conf"
+{% endif %}
+include "api-users.conf"
+{% endif %}
+
+include "global-templates.conf"
+// The zones.conf defines zones for a cluster setup
 include "zones.conf"
 
 include <itl>
@@ -14,4 +31,4 @@ include <manubulon>
 // include <windows-plugins>
 // include <nscp>
 include "features-enabled/*.conf"
-include_recursive "conf.d"
+// include_recursive "conf.d"

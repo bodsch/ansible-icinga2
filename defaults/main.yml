@@ -13,12 +13,17 @@ icinga2_dependencies:
   - icinga2
   - icinga2-common
 
+# you MUST create an ticket salt!
+# e.g. 'cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 64 | head -n 1'
+icinga2_salt: ''
+
 # distribution dependent
 # monitoring_plugins_directory: /usr/lib/nagios/plugins
 
 tz: Etc/UTC
 icinga2_local_scriptsdir: /usr/local/scripts
 icinga2_backupdir: /srv/backup/icinga2/{{ inventory_hostname }}
+icinga2_local_backupdir: /tmp/icinga2/{{ inventory_hostname }}
 
 icinga2_rootdir: /usr/share/icinga2
 
@@ -28,11 +33,29 @@ icinga2_sudo_cmd: []
 # 'master' or 'satellite'
 icinga2_mode: master
 
+icinga2_ha: false
+icinga2_masters: []
+#   master-1.icinga.local:
+#     type: primary
+#     ip: 192.168.130.20
+#   master-2.icinga.local:
+#     ip: 192.168.130.21
+
+icinga2_satellites: []
+#   zone1:
+#     satellite-1.icinga.local:
+#       ip: 192.168.130.30
+#     satellite-2.icinga.local:
+#       ip: 192.168.130.31
+#   zone2:
+#     satellite-3.icinga.local:
+#       ip: 192.168.130.32
+
 # master internal name
 icinga2_server: '{{ inventory_hostname }}'
 
 # master fqdn
-icinga2_master: '{{ ansible_fqdn }}'
+# icinga2_master: "{{ ansible_fqdn }}"
 
 icinga2_master_features_disabled:
   - perfdata
@@ -51,36 +74,18 @@ icinga2_features: {}
 #   graphite:
 #     graphite_host: localhost
 
-icinga2_api_enabled: true
-icinga2_api_accept_config: true
-icinga2_api_accept_commands: true
-icinga2_api_ticket_salt: TicketSalt
-icinga2_api_user: []
-# - root:
-#     password: foo
-#     client_cn: NodeName
-#     permissions: '*'
+icinga2_api: {}
 
-icinga2_ido_type: mysql
-icinga2_ido_enabled: true
-icinga2_ido_username: 'icinga2_ido'
-icinga2_ido_password: 'icinga2_ido'
-icinga2_ido_host: '127.0.0.1'
-icinga2_ido_database: 'icinga2_ido'
-icinga2_ido_port: 3306
-icinga2_ido_socket: /run/mysqld.sock
+icinga2_ido: {}
 
-# https://www.icinga.com/docs/icinga2/latest/doc/09-object-types/#objecttype-filelogger
-# Can be “debug”, “notice”, “information”, “warning” or “critical”.
-icinga2_mainlog_severity: warning
-icinga2_mainlog_logfile: icinga2.log
-icinga2_mainlog_directory: /var/log/icinga2
-
-# backward compatibility
-icinga2_mainlog_path: /var/log/icinga2/icinga2.log
+icinga2_filelogger: {}
 
 # master check definitions:
-icinga2_hosts: []
+icinga2_host_object: []
+
+# master check definitions:
+# OBSOLETE
+# icinga2_hosts: []
 # icinga2_hosts:
 #   localhost:
 #     import: generic-host
@@ -96,7 +101,8 @@ icinga2_hosts: []
 #       }
 
 # satellite definitions
-icinga2_satellite: []
+# OBSOLETE
+# icinga2_satellite: []
 #  satellite.local:
 #    import: generic-host
 #    vars: |
@@ -249,8 +255,6 @@ icinga2_apply_service: {}
 #       }
 #     assign_where: 'host.vars.https_vhosts'
 
-icinga2_ido_mysql_schema_file: /usr/share/icinga2-ido-mysql/schema/mysql.sql
-icinga2_ido_mysql_schema_updates: /usr/share/icinga2-ido-mysql/schema/upgrade
 
 icinga2_aide_enabled: true
 
@@ -263,16 +267,16 @@ icinga2_cmd_group: icingacmd
 icinga2_pki_dir: /var/lib/icinga2/certs
 icinga2_pki_cadir: /var/lib/icinga2/ca
 
-icinga2_hostgroups:
-  - { name: 'linux-servers', displayname: 'Linux Servers', conditions: 'assign where host.vars.os == "Linux"' }
-  - { name: 'icinga-satellites', displayname: 'Icinga2 Satellites', conditions: 'assign where host.vars.satellite' }
+icinga2_hostgroups: {}
+#  - { name: 'linux-servers', displayname: 'Linux Servers', conditions: 'assign where host.vars.os == "Linux"' }
+#  - { name: 'icinga-satellites', displayname: 'Icinga2 Satellites', conditions: 'assign where host.vars.satellite' }
 
-icinga2_servicegroups:
-  - { name: ping, displayname: 'Ping Checks', conditions: 'assign where match("ping*", service.name)' }
-  - { name: disk, displayname: 'Disk Checks', conditions: 'assign where match("disk*", service.name)' }
-  - { name: http, displayname: 'HTTP Checks', conditions: 'assign where match("http*", service.name)' }
-  - { name: https, displayname: 'HTTPS Checks', conditions: 'assign where match("https*", service.name)' }
-  - { name: 'tls-cert', displayname: 'TLS Certs Checks', conditions: 'assign where match("ssl*", service.name)' }
+icinga2_servicegroups: {}
+#  - { name: ping, displayname: 'Ping Checks', conditions: 'assign where match("ping*", service.name)' }
+#  - { name: disk, displayname: 'Disk Checks', conditions: 'assign where match("disk*", service.name)' }
+#  - { name: http, displayname: 'HTTP Checks', conditions: 'assign where match("http*", service.name)' }
+#  - { name: https, displayname: 'HTTPS Checks', conditions: 'assign where match("https*", service.name)' }
+#  - { name: 'tls-cert', displayname: 'TLS Certs Checks', conditions: 'assign where match("ssl*", service.name)' }
 
 ## Client conf
 
