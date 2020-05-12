@@ -1,35 +1,38 @@
-{{ ansible_managed | comment(decoration='// ') }}
+// {{ ansible_managed }}
 
-{% set satellite_ip = lookup('pipe', 'host ' + ansible_fqdn   + ' | grep "has address" | cut -d" " -f4') %}
-{% set master_ip    = lookup('pipe', 'host ' + icinga2_master + ' | grep "has address" | cut -d" " -f4') %}
-// satellite: {{ ansible_fqdn }}  - {{ satellite_ip }}
-// master   : {{ icinga2_master }} - {{ master_ip }}
-/*
-object Endpoint "{{ ansible_fqdn }}" { host = "{{ satellite_ip }}"; port = "5665" }
-object Zone "{{ ansible_fqdn }}" { parent = "{{ icinga2_master }}" ; endpoints = [ "{{ ansible_fqdn }}" ] }
-*/
-
-{% if icinga2_satellite is defined and icinga2_satellite | count != 0 %}
-{% for key, v in icinga2_satellite.items() -%}
+{% if icinga2_host_object is defined and icinga2_host_object | count != 0 %}
+{% for key, v in icinga2_host_object.items() -%}
 {%- if v['endpoint_name'] is defined %}
 {%- set _name = v['endpoint_name'] -%}
 {%- set _v = v.pop('endpoint_name') -%}
 {%- else -%}
 {%- set _name = key -%}
 {% endif %}
-
+{%- if v['zone'] is defined %}
+{%- set _zone = v['zone'] -%}
+{%- set _v = v.pop('zone') -%}
+{%- else -%}
+{%- set _zone = ansible_fqdn -%}
+{% endif %}
+{% if icinga2_satellites[icinga2_satellite_zone] is defined and icinga2_satellites[icinga2_satellite_zone][_name] is defined and icinga2_satellites[icinga2_satellite_zone][_name]['ip'] is defined %}
+{% set satellite_ip = icinga2_satellites[icinga2_satellite_zone][_name]['ip'] %}
+{% else %}
+{% set satellite_ip = lookup('pipe', 'host ' + ansible_fqdn   + ' | grep "has address" | cut -d" " -f4') %}
+{% endif %}
 {%- if v['display_name'] is defined %}
 {%- set display_name = v['display_name'] %}
 {%- set _v = v.pop('display_name') -%}
 {%- endif %}
 
 object Host "{{ _name }}" {
+{% if satellite_ip is defined and satellite_ip | length != 0 %}
   address = "{{ satellite_ip }}"
-  {% if display_name is defined %}
+{% endif %}
+{% if display_name is defined %}
   display_name = "{{ display_name }}"
-  {% endif -%}
+{% endif %}
   command_endpoint = "{{ ansible_fqdn }}"
-  zone = "{{ ansible_fqdn }}"
+  zone = "{{ _zone }}"
   {% for ke,ve in v.items() | sort -%}
   {% if ke == 'import' -%}{{ ke }} "{{ ve }}"
   {% elif ke == 'groups' -%}{{ ke }} = ["{{ ve | join('","') }}"]

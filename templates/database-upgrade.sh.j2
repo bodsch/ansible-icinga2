@@ -5,7 +5,7 @@
 export PATH=/usr/sbin:/usr/bin:/sbin:/bin
 umask 022
 
-MYSQL_OPTS="--host={{ icinga2_ido_host }} --user={{ icinga2_ido_username }} --password={{ icinga2_ido_password }}"
+MYSQL_OPTS="--host={{ icinga2_ido.host }} --user={{ icinga2_ido.username }} --password={{ icinga2_ido.password }}"
 
 
 date=$(date +%Y-%m-%d)
@@ -47,7 +47,7 @@ update_schema() {
   # check database version
   # and install the update, when it needed
   #
-  query="select version from {{ icinga2_ido_database }}.icinga_dbversion"
+  query="select version from {{ icinga2_ido.database }}.icinga_dbversion"
   db_version=$(mysql ${MYSQL_OPTS}  --batch --execute="${query}" | tail -n1)
 
   if [[ -z "${db_version}" ]]
@@ -58,7 +58,7 @@ update_schema() {
 #    update_schema
   else
 
-    upgrape_directory="{{ icinga2_ido_mysql_schema_updates }}"
+    upgrape_directory="{{ icinga2_ido.mysql.schema_upgrade }}"
 
     echo "IDO database version: ${db_version}"
 
@@ -70,7 +70,7 @@ update_schema() {
       then
         echo "apply database update '${FILE_VER}' from '${DB_UPDATE_FILE}'"
 
-        mysql ${MYSQL_OPTS} --force {{ icinga2_ido_database }}  < ${DB_UPDATE_FILE}
+        mysql ${MYSQL_OPTS} --force {{ icinga2_ido.database }}  < ${DB_UPDATE_FILE}
 
         if [[ $? -gt 0 ]]
         then

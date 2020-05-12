@@ -1,11 +1,21 @@
-{{ ansible_managed | comment(decoration='// ') }}
+// {{ ansible_managed }}
+
 {% if icinga2_mode == 'satellite' %}
-{% set satellite_ip = lookup('pipe', 'host ' + icinga2_certificate_cn   + ' | grep "has address" | cut -d" " -f4') %}
-{% set master_ip    = lookup('pipe', 'host ' + icinga2_master + ' | grep "has address" | cut -d" " -f4') %}
-// satellite: {{ icinga2_certificate_cn }}  - {{ satellite_ip }}
-// master   : {{ icinga2_master }} - {{ master_ip }}
-
-object Endpoint "{{ icinga2_certificate_cn }}" { host = "{{ satellite_ip }}"; port = "5665" }
-object Zone "{{ icinga2_certificate_cn }}" { parent = "master" ; endpoints = [ "{{ icinga2_certificate_cn }}" ] }
-
-{% endif %}
+{% if icinga2_satellite_zone is defined %}
+{% if icinga2_satellites is mapping -%}
+{% if icinga2_satellites[icinga2_satellite_zone] is defined -%}
+{%- set _keys = icinga2_satellites[icinga2_satellite_zone].keys() -%}
+{%- for s in _keys -%}
+object Endpoint "{{ s }}" {
+{%- if icinga2_satellites[icinga2_satellite_zone][s]['ip'] is defined %} host = "{{ icinga2_satellites[icinga2_satellite_zone][s]['ip'] }}"; {% endif %}
+  port = "5665" }
+{% endfor %}
+object Zone "{{ icinga2_satellite_zone }}" { endpoints = [ "{{ _keys | join( '", "') }}" ] ; parent = "master" }
+{% else %}
+// no zone config for '{{ icinga2_satellite_zone }}' found!
+object Endpoint "{{ icinga2_satellite_zone }}" { host = "{{ ansible_fqdn }}"; port = "5665" }
+object Zone "{{ icinga2_satellite_zone }}" { endpoints = [ "{{ ansible_fqdn }}" ] ; parent = "master" }
+{% endif -%}
+{% endif -%}
+{% endif -%}
+{% endif -%}

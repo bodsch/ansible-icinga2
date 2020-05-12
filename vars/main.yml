@@ -1,5 +1,56 @@
 ---
 
+
+_icinga2_mariadb_packages:
+  default:
+    - python-mysqldb
+    - python3-mysqldb
+    - libmariadb-dev
+  archlinux: []
+  redhat-7:
+    - MySQL-python
+  centos-7:
+    - mariadb
+    - python36-PyMySQL
+    - python2-PyMySQL
+    - MySQL-python
+  centos-8:
+    - python36-devel
+  centos:
+    - MariaDB-client
+    - python36-devel
+  debian:
+    - python-mysqldb
+    - python3-mysqldb
+  ubuntu-16:
+    - python-mysqldb
+    - python3-mysqldb
+  ubuntu:
+    - python-mysqldb
+    - python3-mysqldb
+
+_icinga2_mariadb_python_packages:
+  default:
+    - PyMySQL
+    - mysqlclient
+  debian:
+    - PyMySQL
+    - mysqlclient
+  centos:
+    - PyMySQL
+    - mysqlclient
+
+icinga2_mariadb_packages: "{{ _icinga2_mariadb_packages[ansible_distribution | lower ~ '-' ~ ansible_distribution_major_version ] |
+  default(_icinga2_mariadb_packages[ansible_distribution | lower ~ '-' ~ ansible_distribution_major_version] |
+  default(_icinga2_mariadb_packages[ansible_distribution | lower] |
+  default(_icinga2_mariadb_packages['default']))) }}"
+
+icinga2_mariadb_python_packages: "{{ _icinga2_mariadb_python_packages[ansible_distribution | lower ~ '-' ~ ansible_distribution_major_version] |
+  default(_icinga2_mariadb_python_packages[ansible_distribution | lower] |
+  default(_icinga2_mariadb_python_packages['default'])) }}"
+
+
+icinga2_remove_old_cert: false
 icinga2_installed_version: ''
 
 _monitoring_plugins_directory:
@@ -75,6 +126,8 @@ icinga2_pki_userdir: "{{ _icinga2_pki_userdir[ansible_os_family | lower] |
 icinga2_monitoring_plugins: "{{ _icinga2_monitoring_plugins[ansible_os_family | lower] |
   default(_icinga2_monitoring_plugins['default']) }}"
 
+icinga2_downtime_system_name_internal: ''
+
 
 icinga2_apply_service_default:
   ssh:
@@ -94,14 +147,14 @@ icinga2_apply_service_default:
     check_command: load
     # Used by the ScheduledDowntime apply rule in `downtimes.conf`.
     extra_parameters: |
-      if( host.vars.downtime ) {
+      if(host.vars.downtime) {
         vars.backup_downtime = host.vars.downtime
       }
-    assign_where: 'host.name == NodeName || host.vars.satellite'
+    assign_where: 'host.vars.os == "Linux"'
   icinga:
     import: generic-service
     check_command: icinga
-    assign_where: 'host.name == NodeName || host.vars.satellite'
+    assign_where: 'host.name == NodeName'
   procs:
     import: generic-service
     check_command: procs
@@ -109,7 +162,7 @@ icinga2_apply_service_default:
   users:
     import: generic-service
     check_command: users
-    assign_where: 'host.name == NodeName'
+    assign_where: 'host.vars.os == "Linux"'
   sensors:
     import: generic-service
     check_command: sensors
@@ -175,3 +228,39 @@ icinga2_checkcommands_default:
   system_uptime:
     import: plugin-check-command
     command: '[ PluginDir + "/check_uptime.sh" ]'
+
+
+icinga2_ido_default:
+  type: mysql
+  enabled: true
+  username: 'icinga2_ido'
+  password: 'icinga2_ido'
+  host: '127.0.0.1'
+  database: 'icinga2_ido'
+  port: 3306
+  socket: /run/mysqld.sock
+  # Max age for ... Defaults to 0 (never)
+  cleanup: {}
+  mysql:
+    schema_file: /usr/share/icinga2-ido-mysql/schema/mysql.sql
+    schema_upgrade: /usr/share/icinga2-ido-mysql/schema/upgrade
+
+icinga2_api_default:
+  enabled: true
+  accept_config: true
+  accept_commands: true
+  ticket_salt: TicketSalt
+  user: {}
+#     root:
+#       password: foo
+#       client_cn: NodeName
+#       permissions: '*'
+
+icinga2_filelogger_default:
+  directory: /var/log/icinga2
+  mainlog:
+    severity: warning
+    logfile: icinga2.log
+#   debuglog:
+#     severity: debug
+#     logfile: debug.log

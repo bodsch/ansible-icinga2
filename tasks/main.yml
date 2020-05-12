@@ -3,31 +3,66 @@
 - include: preparations.yml
   become: true
   tags:
-    - preparations
+    - icinga2
 
-#- include: variables.yml
-#  become: true
-#  tags:
-#    - preparations
+# need test
+# - include: variables.yml
+#   become: true
+#   tags:
+#     - icinga2
 
 - include_tasks: master.yml
   when: icinga2_mode == 'master'
+  tags:
+    - icinga2
 
 - include_tasks: satellite.yml
   when: icinga2_mode == 'satellite'
+  tags:
+    - icinga2
 
 - include_tasks: plugins.yml
+  tags:
+    - icinga2
 
-- include: custom_checks.yml
-  when: icinga2_mode == 'master'
+## #- include: custom_checks.yml
+## #  when: icinga2_mode == 'master'
+## #  tags:
+## #    - icinga2
+##
+## - include: service.yml
+##   tags:
+##     - icinga2
+##
+# ---------------------------------------------------------------------------------------
 
-- include: service.yml
+- include_tasks: master/backup.yml
+  when:
+    - icinga2_mode == 'master'
+#     icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
+  tags:
+    - icinga2
+    - backup
+
+- include_tasks: master/restore.yml
+  when:
+    - icinga2_mode == 'master'
+#     icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
+  tags:
+    - icinga2
+    - restore
 
 - include_tasks: downtime.yml
+  when:
+    - icinga2_mode == 'master'
+    - icinga2_downtime_comment is defined and icinga2_downtime_comment | length != 0
+    - icinga2_downtime_duration is defined and icinga2_downtime_duration | int != 0
+    - icinga2_api.user is defined
+    - icinga2_api.password is defined
+    - icinga2_downtime_system_name is defined
+#     icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
   tags:
     - icinga2
     - downtime_schedule
     - downtime_remove
-  when:
-    icinga2_set_downtime | default(False) and
-    icinga2_mode == 'master'
+

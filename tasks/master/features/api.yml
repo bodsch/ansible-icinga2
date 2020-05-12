@@ -3,14 +3,6 @@
 # configure API
 - block:
 
-    - name: configure api feature
-      template:
-        src: etc/icinga2/features/api.conf.j2
-        dest: /etc/icinga2/features-available/api.conf
-        owner: root
-        group: root
-        mode: 0644
-
     - name: enable api feature
       icinga2_feature:
         name: api
@@ -20,5 +12,13 @@
       tags:
         - icinga2
         - features
+
+    - name: configure api feature
+      template:
+        src: etc/icinga2/features/api.conf.j2
+        dest: /etc/icinga2/features-available/api.conf
+        owner: root
+        group: root
+        mode: 0644
 
   when: icinga2_master_features_enabled | join('|') | regex_search('api')

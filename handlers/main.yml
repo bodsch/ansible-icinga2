@@ -1,15 +1,31 @@
 ---
 
+- name: check configuration  # noqa 301
+  shell: >
+    icinga2 daemon --validate --log-level debug --config /etc/icinga2/icinga2.conf
+  register: icinga2_validate_config
+  notify:
+    - validated config
+
+- name: validated config
+  debug:
+    var: icinga2_validate_config.stdout
+  when: (
+    icinga2_validate_config is defined and
+    icinga2_validate_config.failed )
+
 - name: restart icinga2  # noqa 301
   service:
     name: icinga2
     state: restarted
-  when: (
-    icinga2_validate_config is defined and
-    not icinga2_validate_config.failed )
+#   when: (
+#     icinga2_validate_confi gis defined and
+#     not icinga2_validate_config.failed )
 
 - name: restart icinga2 master
-  service:
-    name: icinga2
-    state: restarted
-  delegate_to: "{{ icinga2_server }}"
+  shell: >
+    /etc/icinga2/restart_icinga2.sh '{{ ansible_fqdn }}'
+  delegate_to: "{{ item.key }}"
+  with_dict:
+    "{{ icinga2_masters }}"
+

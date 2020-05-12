@@ -1,10 +1,5 @@
 ---
 
-- name: remove default example of satellites
-  file:
-    path: /etc/icinga2/conf.d/satellite.conf
-    state: absent
-
 - name: configure icinga2
   template:
     src: '{{ item.src }}'
@@ -15,39 +10,85 @@
   with_items:
     - src: etc/icinga2/icinga2.conf.j2
       dest: /etc/icinga2/icinga2.conf
-#    - src: etc/icinga2/constants.conf.j2
-#      dest: /etc/icinga2/constants.conf
     - src: etc/icinga2/features/mainlog.conf.j2
       dest: /etc/icinga2/features-available/mainlog.conf
   notify:
+    - check configuration
     - restart icinga2
 
-- name: create configuration files
+- name: create downtimes.conf
   template:
-    src: "etc/icinga2/conf.d/{{ item }}.j2"
-    dest: "/etc/icinga2/conf.d/{{ item }}"
+    src: "etc/icinga2/conf.d/downtimes.conf.j2"
+    dest: "/etc/icinga2/downtimes.conf"
     owner: root
     group: root
     mode: 0644
-  loop:
-    - notifications.conf
-    - api-users.conf
-    - users.conf
-    - downtimes.conf
   notify:
+    - check configuration
     - restart icinga2
 
-- name: create global-templates directory
-  file:
-    name: /etc/icinga2/zones.d/global-templates
-    state: directory
+- name: create users.conf
+  template:
+    src: "etc/icinga2/conf.d/users.conf.j2"
+    dest: "/etc/icinga2/users.conf"
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - check configuration
+    - restart icinga2
 
-- name: create master directory
-  file:
-    name: /etc/icinga2/zones.d/master
-    state: directory
+- name: create api-users.conf
+  template:
+    src: "etc/icinga2/conf.d/api-users.conf.j2"
+    dest: "/etc/icinga2/api-users.conf"
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - check configuration
+    - restart icinga2
+
+
+- name: create templates.conf
+  template:
+    src: etc/icinga2/zones.d/global-templates/templates.conf.j2
+    dest: /etc/icinga2/global-templates.conf
+    mode: 0644
+    backup: true
+  notify:
+    - check configuration
+    - restart icinga2
+
 
 - name: create satellite directory
   file:
     name: /etc/icinga2/satellites.d
     state: directory
+
+- block:
+
+    - name: create global-templates directory
+      file:
+        name: /etc/icinga2/zones.d/global-templates
+        state: directory
+
+    - name: create director-global directory
+      file:
+        name: /etc/icinga2/zones.d/director-global
+        state: directory
+
+    - name: create master directory
+      file:
+        name: /etc/icinga2/zones.d/master
+        state: directory
+
+    # - name: create satellite directory
+    #   file:
+    #     name: /etc/icinga2/masters.d
+    #     state: directory
+
+  when:
+    - icinga2_ha | bool
+    - icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
+

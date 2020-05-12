@@ -1,7 +1,7 @@
 // {{ ansible_managed }}
 
-{% if icinga2_api_user is defined and icinga2_api_user | count != 0 -%}
-{% for key  in icinga2_api_user -%}
-object ApiUser "{{ key }}" { {% for k,v in icinga2_api_user[key].items() -%} {% if k == 'permissions' %}{{ k }} = ["{{ v|join('","') }}"]; {% else %}{{ k }} = "{{ v }}"; {% endif -%} {% endfor %} }
+{% if icinga2_api.user is defined and icinga2_api.user | count != 0 -%}
+{% for key  in icinga2_api.user -%}
+object ApiUser "{{ key }}" { {% for k,v in icinga2_api.user[key].items() -%} {% if k == 'permissions' %}{{ k }} = ["{{ v|join('","') }}"]; {% else %}{{ k }} = "{{ v }}"; {% endif -%} {% endfor %} }
 {% endfor %}
 {% endif %}

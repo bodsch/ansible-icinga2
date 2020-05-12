@@ -1,11 +1,57 @@
 ---
 
+- name: define primary icinga2 master
+  set_fact:
+    icinga2_primary_master: "{{ icinga2_masters | primary_master }}"
+
+- name: define satellite zone
+  set_fact:
+    icinga2_satellite_zone: "{{ icinga2_satellites | satellite_zone(ansible_fqdn) }}"
+  when: icinga2_mode == 'satellite' and icinga2_satellites is defined and icinga2_satellites | count > 0
+
+- name: assert missing primary master
+  assert:
+    that:
+      - icinga2_primary_master | length != 0
+    msg: primary icinga2 master is missing
+    quiet: true
+
+# ----------------------------------------------------------------------------------
+
+# read a present salt from ansible facts
+#
+- name: set fact for salt
+  set_fact:
+    icinga2_salt: "{{ ansible_local.icinga2.salt }}"
+  when: (
+    ansible_local.icinga2 is defined and
+    ansible_local.icinga2.salt is defined and
+    ansible_local.icinga2.salt | length != 0 and
+    icinga2_salt != ansible_local.icinga2.salt)
+
+- name: assert missing salt
+  assert:
+    that:
+      - icinga2_salt | length != 0
+    msg: icinga2 salt is missing
+    quiet: true
+
+- name: merge icinga2 filelogger configuration between defaults and custom
+  set_fact:
+    icinga2_filelogger: "{{ icinga2_filelogger_default |
+      combine( icinga2_filelogger, recursive=True ) }}"
+
+- name: merge icinga2 api configuration between defaults and custom
+  set_fact:
+    icinga2_api: "{{ icinga2_api_default |
+      combine( icinga2_api, recursive=True ) }}"
+
+# ----------------------------------------------------------------------------------
+
 - name: install requirements
   package:
-    name: "{{ item }}"
+    name: "{{ icinga2_requirements }}"
     state: present
-  loop:
-    - "{{ icinga2_requirements }}"
 
 - name: make sure ansible local facts directory exists
   file:
@@ -15,6 +61,19 @@
     group: root
     mode: 0755
 
+- name: create custom fact file
+  template:
+    src: facts.d/icinga2.fact.j2
+    dest: /etc/ansible/facts.d/icinga2.fact
+    owner: root
+    group: root
+    mode: 0755
+
+- name: do facts module to get latest information
+  setup:
+
+# debian based
+#
 - block:
     #
     - name: add icinga2 repo GPG key
@@ -35,6 +94,8 @@
 
   when: ansible_os_family | lower == 'debian' and icinga2_use_external_repo | bool
 
+# redhat based
+#
 - block:
     #
     - name: Import EPEL GPG key.
@@ -76,6 +137,8 @@
 
   when: ansible_os_family | lower == 'redhat' and icinga2_use_external_repo | bool
 
+# arch-linux based
+#
 - block:
     #
     - name: install build tools
@@ -102,6 +165,7 @@
         group: aur_builder
 
   when: ansible_os_family | lower == 'archlinux' and icinga2_use_external_repo | bool
+
 
 - name: create sudo rules for icinga
   template:
