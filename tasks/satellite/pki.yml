@@ -29,7 +29,8 @@
       stat:
         path: "files/{{ icinga2_primary_master }}/ca.crt"
         checksum_algorithm: sha1
-        get_checksum: yes
+        get_checksum: true
+      become: false
       run_once: true
       delegate_to: localhost
       register: primary_master_ca_file

@@ -9,6 +9,11 @@
     icinga2_satellite_zone: "{{ icinga2_satellites | satellite_zone(ansible_fqdn) }}"
   when: icinga2_mode == 'satellite' and icinga2_satellites is defined and icinga2_satellites | count > 0
 
+- name: define satellite zone
+  set_fact:
+    icinga2_satellite_zone: "{{ ansible_fqdn }}"
+  when: icinga2_mode == 'satellite' and icinga2_satellites is defined and icinga2_satellites | count == 0
+
 - name: assert missing primary master
   assert:
     that:
