@@ -19,22 +19,22 @@
     dest: /usr/lib/monitoring-plugins
     state: link
 
-# - name: copy extra check plugins
-#   copy:
-#     src: plugins/{{ item }}
-#     dest: "{{ monitoring_plugins_directory }}"
-#     mode: 0755
-#   loop:
-#     "{{ icinga2_plugins_extra }}"
-#   notify:
-#     - restart icinga2
-#   when: (
-#     icinga2_plugins_extra is defined and
-#     icinga2_plugins_extra != [])
-#   tags:
-#     - icinga2
-#     - configure
-#
+- name: copy extra check plugins
+  copy:
+    src: plugins/{{ item }}
+    dest: "{{ monitoring_plugins_directory }}"
+    mode: 0755
+  loop:
+    "{{ icinga2_plugins_extra }}"
+  notify:
+    - restart icinga2
+  when: (
+    icinga2_plugins_extra is defined and
+    icinga2_plugins_extra != [])
+  tags:
+    - icinga2
+    - configure
+
 # - name: download extra plugins
 #   get_url:
 #     url: "{{ item.url }}"

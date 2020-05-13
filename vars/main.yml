@@ -211,12 +211,26 @@ icinga2_apply_service_default:
       retry_interval = 2
       enable_notifications = true
     assign_where: 'host.vars.file_age'
+
+  apt:
+    import: generic-service
+    check_command: apt
+    assign_where: 'host.vars.os == "Linux" && (host.vars.dist == "Debian" || host.vars.dist == "Ubuntu")'
+
   uptime:
     import: generic-service
     display_name: system uptime
     check_command: system_uptime
     assign_where: '"uptime" in host.vars.services'
 
+  memory:
+    import: generic-service
+    display_name: system memory
+    check_command: check_memory
+    check_interval: '45s'
+    retry_interval: '10s'
+    assign_where: '"memory" in host.vars.services'
+    ignore_where: 'host.vars.os == "Windows"'
 
 icinga2_checkcommands_default:
   hostname:
@@ -228,6 +242,9 @@ icinga2_checkcommands_default:
   system_uptime:
     import: plugin-check-command
     command: '[ PluginDir + "/check_uptime.sh" ]'
+  check_memory:
+    import: plugin-check-command
+    command: '[ PluginDir + "/check_mem" ]'
 
 
 icinga2_ido_default:

@@ -25,15 +25,6 @@
   tags:
     - icinga2
 
-## #- include: custom_checks.yml
-## #  when: icinga2_mode == 'master'
-## #  tags:
-## #    - icinga2
-##
-## - include: service.yml
-##   tags:
-##     - icinga2
-##
 # ---------------------------------------------------------------------------------------
 
 - include_tasks: master/backup.yml

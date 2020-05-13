@@ -284,15 +284,10 @@ icinga2_master_port: 5665
 
 icinga2_plugins_extra:
   - restart_service
-  - check_diskstat.sh
   - check_hostname
-  - check_mysql_health
-  - check_mem
-  - check_ssl_cert
-  - check_ssl_observatory
-  - check_redis
-  - check_postfix_queue
+  - check_diskstat.sh
   - check_uptime.sh
+  - check_mem
 
 icinga2_become_user: nagios
 

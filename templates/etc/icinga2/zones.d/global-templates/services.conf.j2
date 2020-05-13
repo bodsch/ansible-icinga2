@@ -31,6 +31,8 @@ apply Service {{ _name }} {
   {{ ve | indent(2) }}
 {% elif k == 'assign_where' %}
   assign where {{ ve }}
+{% elif k == 'ignore_where' %}
+  ignore where {{ ve }}
 {% else %}
 {% if ve is sameas true or ve is sameas false %}
   {{ k }} = {{ ve | bool | ternary( 'true', 'false') }}
@@ -46,7 +48,7 @@ apply Service {{ _name }} {
 {% endif %}
 
 // --------------------------------------------------------------------------------------
-
+/*
 apply Service "HTTP: " for (http_vhost => config in host.vars.http_vhosts) {
   import "generic-service"
 
@@ -159,10 +161,7 @@ apply Service "smart " for (device => config in host.vars.smart) {
   assign where host.vars.smart
 }
 
-/**
-  *  generic SSL Certificate check for all vhosts in vars.https_vhost
-  */
-/*
+// generic SSL Certificate check for all vhosts in vars.https_vhost
 apply Service "SSL CERT: " for (https_vhost => config in host.vars.https_vhosts) {
 
   import "generic-service"
@@ -188,7 +187,7 @@ apply Service "SSL CERT: " for (https_vhost => config in host.vars.https_vhosts)
 
   assign where host.vars.https_vhosts
 }
-*/
+
 
 apply Service for (disk => config in host.vars.disks) {
   import "generic-service"
@@ -200,14 +199,12 @@ apply Service for (disk => config in host.vars.disks) {
 
 
 {% if ansible_swaptotal_mb != 0 %}
-/*
-  we need an better implementation
-
-    - ansible_swaptotal_mb = 0
-    - ansible_system_vendor = NA
-    - ansible_virtualization_type = openvz
-    - ansible_virtualization_role = guest
-*/
+//  we need an better implementation
+//
+//    - ansible_swaptotal_mb = 0
+//    - ansible_system_vendor = NA
+//    - ansible_virtualization_type = openvz
+//    - ansible_virtualization_role = guest
 apply Service "swap" {
   import "generic-service"
 
@@ -279,9 +276,6 @@ apply Service "snmp " for (c => config in host.vars.snmp) {
     }
   }
 
-/*  vars.snmp_oid = "1.3.6.1.2.1.1.3.0"
-  vars.snmp_miblist = "DISMAN-EVENT-MIB"
-*/
   assign where host.vars.snmp
 }
 
@@ -388,14 +382,6 @@ apply Service "proc_icinga2" to Host {
   # enable_perfdata = true
 }
 
-apply Service "apt" {
-  import "generic-service"
-
-  check_command = "apt"
-
-  assign where host.vars.os == "Linux" && (host.vars.dist == "Debian" || host.vars.dist == "Ubuntu")
-}
-
 apply Service "arch" {
   import "generic-service"
 
@@ -468,21 +454,6 @@ apply Service "docker-containers" to Host {
   }
 }
 
-
-apply Service "memory" {
-  import "generic-service"
-  # import "icinga-satellite-service"
-  check_command = "check_memory"
-
-  check_interval = 45s
-  retry_interval = 10s
-
-  command_endpoint = host.vars.remote_endpoint
-  assign where host.vars.satellite && host.vars.memory
-  ignore where host.vars.os == "Windows"
-}
-
-
 apply Service "file_" for ( file => config in host.vars.file_age) {
   import "generic-service"
   # import "icinga-satellite-service"
@@ -519,7 +490,7 @@ apply Service "file_" for ( file => config in host.vars.file_age) {
     }
   }
 
-/*    "file_age_ignoremissing" = config.ignoremissing*/
+//    "file_age_ignoremissing" = config.ignoremissing
 
   max_check_attempts = 5
   check_interval = 10m
@@ -538,16 +509,6 @@ apply Service "mailqueue" to Host {
   assign where host.vars.mailqueue
 
   check_command = "postfix_queue"
-}
-
-apply Service "uptime" to Host {
-  import "generic-service"
-
-  display_name = "system uptime"
-
-  assign where "uptime" in host.vars.services
-
-  check_command = "system_uptime"
 }
 
 
@@ -583,3 +544,4 @@ apply Service "proc_sqlgrey" to Host {
   #enable_flapping = true
   # enable_perfdata = true
 }
+*/
