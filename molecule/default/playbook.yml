@@ -16,8 +16,8 @@
     mariadb_databases:
 
       - name: icinga2_ido
-        collation: utf8mb4_bin
-        encoding: utf8mb4
+#        collation: utf8mb4_bin
+#        encoding: utf8mb4
 
     mariadb_users:
 
@@ -28,42 +28,50 @@
 
     icinga2_mode: master
 
+    icinga2_masters:
+      debian-10:
+
     icinga2_sudo_cmd:
       - /sbin/service foo restart
 
-    icinga2_api.user:
-      root:
-        password: foo
-        client_cn: NodeName
-        permissions: '*'
+    icinga2_api:
+      user:
+        root:
+          password: foo
+          permissions: '*'
 
-    icinga2_ido_username: icinga2_ido
-    icinga2_ido_password: icinga2
-    icinga2_ido_socket: /var/lib/mysql/mysql.sock
+    icinga2_ido:
+      username: icinga2_ido
+      password: icinga2
+      # socket: /var/lib/mysql/mysql.sock
+      cleanup:
+        acknowledgements_age: 48h
+        hostchecks_age: 48h
+        servicechecks_age: 48h
 
-    icinga2_mainlog_severity: warning
+    # icinga2_mainlog_severity: warning
 
     icinga2_master_features_enabled:
       - checker
       - api
       - ido-mysql
       - mainlog
-      - graphite
+      # - graphite
 
-    icinga2_features:
-      graphite:
-        graphite_host: localhost
+    #icinga2_features:
+    #  graphite:
+    #    graphite_host: localhost
 
-    icinga2_plugins_download:
-      - url: 'https://raw.githubusercontent.com/bodsch/check_arch_updates/1.0/check_arch_updates'
-        dest: 'check_arch_updates'
-        checksum: 'sha256:7afa562aaedb63f6e93cfebfa4a9a3ea49fecda62d4dae3d8ff919b76c117c41'
+    #icinga2_plugins_download:
+    #  - url: 'https://raw.githubusercontent.com/bodsch/check_arch_updates/1.0/check_arch_updates'
+    #    dest: 'check_arch_updates'
+    #    checksum: 'sha256:7afa562aaedb63f6e93cfebfa4a9a3ea49fecda62d4dae3d8ff919b76c117c41'
 
-
-    icinga2_hosts:
+    icinga2_host_object:
       localhost:
         import: generic-host
         address: '{{ ansible_default_ipv4.address }}'
+        display_name: "{{ ansible_fqdn }}"
         vars: |
           os = "Linux"
           dist = "{{ ansible_distribution }}"

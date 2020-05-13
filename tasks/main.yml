@@ -5,12 +5,6 @@
   tags:
     - icinga2
 
-# need test
-# - include: variables.yml
-#   become: true
-#   tags:
-#     - icinga2
-
 - include_tasks: master.yml
   when: icinga2_mode == 'master'
   tags:
@@ -30,7 +24,6 @@
 - include_tasks: master/backup.yml
   when:
     - icinga2_mode == 'master'
-#     icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
   tags:
     - icinga2
     - backup
@@ -38,7 +31,6 @@
 - include_tasks: master/restore.yml
   when:
     - icinga2_mode == 'master'
-#     icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
   tags:
     - icinga2
     - restore
@@ -51,9 +43,7 @@
     - icinga2_api.user is defined
     - icinga2_api.password is defined
     - icinga2_downtime_system_name is defined
-#     icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
   tags:
     - icinga2
     - downtime_schedule
     - downtime_remove
-

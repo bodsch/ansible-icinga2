@@ -1,5 +1,10 @@
 # icinga2 satellite
 
+
+```
+icinga2_mode: satellite
+```
+
 ```
 icinga2_host_object:
 

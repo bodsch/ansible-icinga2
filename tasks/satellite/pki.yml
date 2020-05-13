@@ -40,21 +40,13 @@
       stat:
         path: "{{ icinga2_pki_ca_cert }}"
         checksum_algorithm: sha1
-        get_checksum: yes
+        get_checksum: true
       register: satellite_ca_file
 
     - name: set facts
       set_fact:
         icinga2_remove_old_cert: "{{ primary_master_ca_file.stat.checksum | string == satellite_ca_file.stat.checksum | string }}"
       when: satellite_ca_file.stat.checksum is defined
-
-    # - debug:
-    #     var: "{{ item }}"
-    #   when: item is defined
-    #   with_items:
-    #     - icinga2_remove_old_cert
-    #     - primary_master_ca_file.stat.checksum
-    #     - satellite_ca_file.stat.checksum
 
     - name: remove old ca file from satellite
       file:
@@ -65,7 +57,6 @@
         - /var/lib/icinga2/ca
       when: satellite_ca_file.stat.checksum is defined and
         not icinga2_remove_old_cert
-
 
 - name: configure icinga2
   template:
@@ -79,31 +70,12 @@
       dest: /etc/icinga2/constants.conf
     - src: etc/icinga2/features/mainlog.conf.j2
       dest: /etc/icinga2/features-available/mainlog.conf
-#  when: icinga2_salt is defined
 
 - name: configure icinga2 api
   template:
     src: etc/icinga2/features/api.conf.j2
     dest: /etc/icinga2/features-available/api.conf
     mode: 0644
-
-# - name: check if the icinga master {{ icinga2_primary_master }} are available
-#   wait_for:
-#     host: "{{ icinga2_primary_master }}"
-#     port: "{{ icinga2_master_port | default(5665) }}"
-#     delay: 4              # No wait before first check (sec)
-#     timeout: 5            # Stop checking after timeout (sec)
-#   ignore_errors: false
-#   retries: 10
-#   delay: 10
-
-# - name: set facts
-#   set_fact:
-#     icinga2_pki_ca_key: "{{ icinga2_pki_dir }}/ca.key"
-#     icinga2_pki_ca_cert: "{{ icinga2_pki_dir }}/ca.crt"
-#     icinga2_pki_fqdn_key: "{{ icinga2_pki_dir }}/{{ ansible_fqdn }}.key"
-#     icinga2_pki_fqdn_cert: "{{ icinga2_pki_dir }}/{{ ansible_fqdn }}.crt"
-#     icinga2_pki_master_cert: "{{ icinga2_pki_dir }}/trusted-master.crt"
 
 - name: "create '{{ icinga2_pki_dir }}'"
   file:
@@ -115,78 +87,18 @@
   stat:
     path: "{{ icinga2_pki_fqdn_key }}"
     checksum_algorithm: sha1
-    get_checksum: yes
+    get_checksum: true
   register: __satellite_key
 
 - name: "check for existing '{{ icinga2_pki_ca_cert }}'"
   stat:
     path: "{{ icinga2_pki_ca_cert }}"
     checksum_algorithm: sha1
-    get_checksum: yes
+    get_checksum: true
   register: __ca_crt
-
-# # compare checksum for ca.cert
-# - name: check local ca.crt
-#   stat:
-#     path: files/ca.crt
-#     checksum_algorithm: sha1
-#     get_checksum: yes
-#   register: __local_ca_crt
-#
-# - name: set facts
-#   set_fact:
-#     icinga2_ca_checksum: "{{ __ca_crt.stat.checksum }}"
-#   when: __ca_crt.stat.exists | bool
-#
-# - name: set facts
-#   set_fact:
-#     icinga2_local_ca_checksum: "{{ __local_ca_crt.stat.checksum }}"
-#   when: __local_ca_crt.stat.exists | bool
-#
-# - debug:
-#     var: "{{ item }}"
-#   when: item is defined
-#   with_items:
-#     - __ca_crt.stat
-#     - __local_ca_crt.stat
-#     - icinga2_ca_checksum
-#     - icinga2_local_ca_checksum
-#
-# - name: remove old ca file from satellite
-#   file:
-#     path: "{{ item }}"
-#     state: absent
-#   loop:
-#     - /var/lib/icinga2/certs
-#     - /var/lib/icinga2/ca
-#   when: (
-#     not icinga2_local_ca_checksum is defined and
-#     icinga2_ca_checksum is defined and
-#     icinga2_local_ca_checksum != icinga2_ca_checksum)
-#
-# - name: set facts
-#   set_fact:
-#     __satellite_key.stat.exists: false
-#   when: (
-#     icinga2_local_ca_checksum is defined and
-#     icinga2_ca_checksum is defined and
-#     icinga2_local_ca_checksum != icinga2_ca_checksum)
-#
-# - debug:
-#     var: "{{ item }}"
-#   when: item is defined
-#   with_items:
-#     - __satellite_key.stat
 
 - block:
     #
-    # - name: copy ca.crt from primary icinga2 master
-    #   fetch:
-    #     src: "{{ icinga2_pki_ca_cert }}"
-    #     dest: files/ca.crt
-    #     flat: true
-    #   delegate_to: '{{ icinga2_primary_master }}'
-
     - name: "copy ca.crt to '{{ ansible_fqdn }}'"
       copy:
         src: files/ca.crt
@@ -206,8 +118,6 @@
         icinga2_fqdn_ticket: "{{ ticket.stdout }}"
 
     - name: configure icinga2 satellite pki
-    ## http://lowendbox.com/blog/server-monitoring-with-icinga-2-part-2-the-node-ubuntu-host/
-    ## http://serverfault.com/questions/647805/how-to-set-up-icinga2-remote-client-without-using-cli-wizard
       command: "{{ item }}"
       with_items:
         - icinga2 pki new-cert
@@ -252,7 +162,6 @@
 
   when: not __satellite_key.stat.exists
 
-
 - name: create zone entry under '/etc/icinga2/zones.d' on master '{{ icinga2_primary_master }}'
   file:
     dest: /etc/icinga2/zones.d/{{ icinga2_satellite_zone }}
@@ -286,11 +195,3 @@
 - name: set facts
   set_fact:
     icinga2_satellite_has_api_connection: "{{ __satellite_api_connections.stat.exists }}"
-
-# - debug:
-#     var: "{{ item }}"
-#   when: item is defined
-#   with_items:
-#     # - "/var/lib/icinga2/api/zones/{{ icinga2_satellite_zone }}/_etc/{{ icinga2_certificate_cn }}.conf"
-#     # - icinga2_certificate_cn
-#     - icinga2_satellite_has_api_connection

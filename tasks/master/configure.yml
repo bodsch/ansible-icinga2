@@ -49,7 +49,6 @@
     - check configuration
     - restart icinga2
 
-
 - name: create templates.conf
   template:
     src: etc/icinga2/zones.d/global-templates/templates.conf.j2
@@ -59,7 +58,6 @@
   notify:
     - check configuration
     - restart icinga2
-
 
 - name: create satellite directory
   file:
@@ -83,12 +81,6 @@
         name: /etc/icinga2/zones.d/master
         state: directory
 
-    # - name: create satellite directory
-    #   file:
-    #     name: /etc/icinga2/masters.d
-    #     state: directory
-
   when:
-    - icinga2_ha | bool
+    # - icinga2_ha | bool
     - icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
-

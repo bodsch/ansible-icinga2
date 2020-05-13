@@ -18,9 +18,6 @@
   service:
     name: icinga2
     state: restarted
-#   when: (
-#     icinga2_validate_confi gis defined and
-#     not icinga2_validate_config.failed )
 
 - name: restart icinga2 master
   shell: >
@@ -28,4 +25,3 @@
   delegate_to: "{{ item.key }}"
   with_dict:
     "{{ icinga2_masters }}"
-

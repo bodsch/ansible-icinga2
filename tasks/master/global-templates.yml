@@ -26,16 +26,6 @@
         - check configuration
         - restart icinga2
 
-    # - name: create global-templates file for template definitions
-    #   template:
-    #     src: etc/icinga2/zones.d/global-templates/templates.conf.j2
-    #     dest: /etc/icinga2/zones.d/global-templates/templates.conf
-    #     mode: 0644
-    #     backup: true
-    #   notify:
-    #     - check configuration
-    #     - restart icinga2
-
     - name: create global-templates file for commands definitions
       template:
         src: etc/icinga2/zones.d/global-templates/commands.conf.j2
