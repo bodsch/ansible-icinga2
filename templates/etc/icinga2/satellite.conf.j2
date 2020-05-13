@@ -12,10 +12,13 @@ object Endpoint "{{ s }}" {
 {% endfor %}
 object Zone "{{ icinga2_satellite_zone }}" { endpoints = [ "{{ _keys | join( '", "') }}" ] ; parent = "master" }
 {% else %}
-// no zone config for '{{ icinga2_satellite_zone }}' found!
 object Endpoint "{{ icinga2_satellite_zone }}" { host = "{{ ansible_fqdn }}"; port = "5665" }
 object Zone "{{ icinga2_satellite_zone }}" { endpoints = [ "{{ ansible_fqdn }}" ] ; parent = "master" }
 {% endif -%}
+{% else %}
+{% set _ip = lookup('pipe', 'host ' + ansible_fqdn   + ' | grep "has address" | cut -d" " -f4') %}
+object Endpoint "{{ icinga2_satellite_zone }}" { host = "{{ _ip }}"; port = "5665" }
+object Zone "{{ icinga2_satellite_zone }}" { endpoints = [ "{{ ansible_fqdn }}" ] ; parent = "master" }
 {% endif -%}
 {% endif -%}
 {% endif -%}
