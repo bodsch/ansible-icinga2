@@ -4,14 +4,14 @@ Ansible role to setup Icinga2 master or satellite.
 
 ## Requirements & Dependencies
 
- - ansible role to deploy a mariadb
+ - running mariadb / mysql database
 
 ### Operating systems
 
 Tested on
 
 * Debian 9 / 10
-* Ubuntu 16.04 / 18.04 / 18.10
+* Ubuntu 18.04 / 18.10 / 19.10
 * CentOS 7
 
 ## Contribution
@@ -35,28 +35,11 @@ If you want to use something stable, please use a [Tagged Version](https://gitla
 
 ---
 
-## Example Playbook
+Please read the following documention for configuration points.
 
-Just include this role in your list.
-For example
-
-```
-- host: icinga-master
-  roles:
-    - role: icinga2
-
-- host: icinga-satellite
-  roles:
-    - role: icinga2
-      vars:
-        icinga2_mode: satellite
-        icinga2_server: icinga-master
-        icinga2_master: icinga.foo-bar.com
-```
 
 ## Documentation
 
-- [About](doc/01-about.md)
 - [Features](doc/09-features.md)
 - [API Users](doc/10-api-users.md)
 - [groups](doc/11-groups.md)
@@ -66,6 +49,159 @@ For example
 - [master](doc/15-master.md)
 - [satellite](doc/16-satellite.md)
 - [Backup and Restore](doc/20-backup-restore.md)
+
+---
+
+## Examples
+
+A complete test setup can be found in the GitLab under [icinga2-infrastructure](https://gitlab.com/icinga2-infrastructure/deployment).
+
+### Icinga2 Master
+
+#### single-master
+
+```
+---
+- host: icinga-master
+  vars:
+    icinga2_ido:
+      user: icinga2_ido
+      password: icinga2_ido
+      host: localhost
+      cleanup:
+        acknowledgements_age: 72h
+
+    icinga2_api:
+      user:
+        icinga2:
+          password: S0mh1TuFJI
+          permissions: '*'
+
+    icinga2_salt: 42T2fYT7bIxj5v291ajAW6kK0njvNMww8eWinBdEO5vh02xwC5qaNMMx77qNkYFE
+
+    icinga2_masters:
+      master-1.icinga.local:
+
+    icinga2_host_object:
+      master-1.icinga.local:
+        endpoint_name: master-1.icinga.local
+        zone: master
+        display_name: master-1.icinga.local
+        import: generic-host
+        address: '{{ ansible_default_ipv4.address }}'
+        vars: |
+          os = "Linux"
+          dist = "{{ ansible_distribution }}"
+          dist_ver = "{{ ansible_distribution_version }}"
+          disks = {
+            "disk /" = {
+              disk_partitions = "/"
+            }
+          }
+          services = [ "uptime", "memory" ]
+
+
+  roles:
+    - role: icinga2
+```
+
+#### multi-master
+
+```
+---
+- host: icinga-master
+  vars:
+    icinga2_ido:
+      user: icinga2_ido
+      password: icinga2_ido
+      host: localhost
+      cleanup:
+        acknowledgements_age: 72h
+
+    icinga2_api:
+      user:
+        icinga2:
+          password: S0mh1TuFJI
+          permissions: '*'
+
+    icinga2_salt: 42T2fYT7bIxj5v291ajAW6kK0njvNMww8eWinBdEO5vh02xwC5qaNMMx77qNkYFE
+
+    icinga2_ha: true
+
+    icinga2_masters:
+      master-1.icinga.local:
+        # type: primary
+        ip: 192.168.130.20
+        port: 5665
+      master-2.icinga.local:
+        ip: 192.168.130.21
+
+  roles:
+    - role: icinga2
+```
+
+### Icinga satellite
+
+#### simple
+
+```
+---
+- host: icinga-master
+  vars:
+    icinga2_mode: satellite
+
+    icinga2_salt: 42T2fYT7bIxj5v291ajAW6kK0njvNMww8eWinBdEO5vh02xwC5qaNMMx77qNkYFE
+
+    icinga2_masters:
+      master-1.icinga.local:
+
+    icinga2_host_object:
+
+      satellite-1.icinga.local:
+        endpoint_name: satellite-1.icinga.local
+        zone: "{{ icinga2_satellite_zone }}"
+        display_name: satellite-1.icinga.local
+        import: generic-host
+        address: '{{ ansible_default_ipv4.address }}'
+        vars: |
+          os = "Linux"
+          dist = "{{ ansible_distribution }}"
+          dist_ver = "{{ ansible_distribution_version }}"
+          satellite = true
+          disks = {
+            "disk /" = {
+              disk_partitions = "/"
+            }
+          }
+          services = [ "uptime" ]
+
+  roles:
+    - role: icinga2
+```
+
+#### multi satellite with zones
+
+```
+---
+- host: icinga-master
+  vars:
+    icinga2_mode: satellite
+
+    icinga2_salt: 42T2fYT7bIxj5v291ajAW6kK0njvNMww8eWinBdEO5vh02xwC5qaNMMx77qNkYFE
+
+    icinga2_masters:
+      master-1.icinga.local:
+
+    icinga2_satellites:
+      zone1:
+        satellite-1.icinga.local:
+          ip: 192.168.130.30
+        satellite-2.icinga.local:
+          ip: 192.168.130.31
+
+  roles:
+    - role: icinga2
+```
 
 
 ## tests
@@ -80,12 +216,33 @@ tox -e py38-ansible29 -- molecule -s icinga2-satellite
 
 ## Troubleshooting & Known issues
 
+
+### API
+
 ```
-# icinga2 feature list
-Disabled features: api command compatlog debuglog gelf graphite icingastatus opentsdb statusdata syslog
-Enabled features: checker ido-mysql livestatus mainlog notification perfdata
+export CURL_OPTS="--silent --insecure"
+export ICINGA_CREDS="--user icinga2:S0mh1TuFJI"
+export ICINGA_API_URL="https://master-1.icinga.local:5665/v1"
+```
+```
+$ curl ${ICINGA_CREDS} ${CURL_OPTS} --header 'Accept: application/json' ${ICINGA_API_URL}/status/ApiListener | jq --raw-output ".results[].status.api.zones"
 ```
 
+```
+$ curl ${ICINGA_CREDS} ${CURL_OPTS} --header 'Accept: application/json' ${ICINGA_API_URL}/status/CIB | jq --raw-output '.results[].status.uptime'
+```
+
+```
+$ curl ${ICINGA_CREDS} ${CURL_OPTS} --header 'Accept: application/json' ${ICINGA_API_URL}/status/ApiListener | jq --raw-output ".results[].status.api"
+```
+
+```
+$ curl ${ICINGA_CREDS} ${CURL_OPTS} ${ICINGA_API_URL}/objects/hosts | jq
+```
+
+```
+$ curl ${ICINGA_CREDS} ${CURL_OPTS} --header 'Accept: application/json' --header 'X-HTTP-Method-Override: GET' --request POST --data '{ "attrs": [ "name" ], "type": "Host", "filter": "host.name==\"master-1.icinga.local\"" }' ${ICINGA_API_URL}/objects/hosts
+```
 
 
 ## License
