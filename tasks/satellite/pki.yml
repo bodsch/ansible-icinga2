@@ -101,7 +101,7 @@
     #
     - name: "copy ca.crt to '{{ ansible_fqdn }}'"
       copy:
-        src: files/ca.crt
+        src: files/{{ icinga2_primary_master }}/ca.crt
         dest: "{{ icinga2_pki_ca_cert }}"
         owner: "{{ icinga2_user }}"
         group: "{{ icinga2_user }}"
