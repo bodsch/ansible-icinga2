@@ -22,6 +22,7 @@
     name: notification
     state: "{{ feature_notification_state }}"
   notify:
+    - check configuration
     - restart icinga2
   tags:
     - icinga2

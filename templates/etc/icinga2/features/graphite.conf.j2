@@ -1,16 +1,22 @@
 // {{ ansible_managed }}
+{# https://icinga.com/docs/icinga2/latest/doc/09-object-types/#graphitewriter #}
 
-// full documentation: https://icinga.com/docs/icinga2/latest/doc/09-object-types/#graphitewriter
-{% set _graphite_attr = ['host','port','host_name_template',
+{% set _attr = ['host','port','host_name_template',
   'service_name_template','enable_send_thresholds','enable_send_metadata',
   'enable_ha'] %}
 
-{% if icinga2_features.graphite.host is defined %}
+{% if icinga2_features.graphite is defined and icinga2_features.graphite.host is defined %}
 object GraphiteWriter "graphite" {
 {% if icinga2_features.graphite is defined and icinga2_features.graphite | count != 0 %}
-{% for k, v in icinga2_features.graphite.items() | sort %}
-{% if k in _graphite_attr %}
+{% for k, v in icinga2_features.graphite.items() %}
+{% if k in _attr %}
+{% if v is sameas true or v is sameas false %}
+  {{ k }} = {{ v | bool | ternary('true', 'false') }}
+{% elif k is string %}
   {{ k }} = "{{ v }}"
+{% else %}
+  {{ k }} = {{ v }}
+{% endif %}
 {% endif %}
 {% endfor %}
 {% endif %}
