@@ -34,6 +34,9 @@ if add 'graphite' to `icinga2_master_features_enabled` above, you can her config
 
 
 ```
+icinga2_master_features_enabled:
+  - graphite
+
 icinga2_features:
   graphite:
     host: localhost
@@ -43,6 +46,9 @@ icinga2_features:
 
 
 ```
+icinga2_master_features_enabled:
+  - influxdb
+
 icinga2_features:
   influxdb:
     host: localhost
@@ -60,6 +66,20 @@ icinga2_features:
       tags:
         hostname: "$host.name$"
         service: "$service.name$"
+```
+
+## gelf
+
+```
+icinga2_master_features_enabled:
+  - gelf
+
+icinga2_features:
+  gelf:
+    host: tsdb-1.icinga.local
+    port: 12201
+    source: "{{ ansible_fqdn }}"
+    enable_send_perfdata: true
 ```
 
 
