@@ -1,0 +1,24 @@
+// {{ ansible_managed }}
+{# https://icinga.com/docs/icinga2/latest/doc/09-object-types/#gelfwriter #}
+
+{% set _attr = ['host','port','source',
+  'enable_send_perfdata','enable_tls','ca_path','cert_path','key_path',
+  'enable_ha'] %}
+
+{% if icinga2_features.gelf is defined and icinga2_features.gelf.host is defined %}
+object GelfWriter "gelf" {
+{% if icinga2_features.gelf is defined and icinga2_features.gelf | count != 0 %}
+{% for k, v in icinga2_features.gelf.items() %}
+{% if k in _attr %}
+{% if v is sameas true or v is sameas false %}
+  {{ k }} = {{ v | bool | ternary('true', 'false') }}
+{% elif k is string %}
+  {{ k }} = "{{ v }}"
+{% else %}
+  {{ k }} = {{ v }}
+{% endif %}
+{% endif %}
+{% endfor %}
+{% endif %}
+}
+{% endif %}

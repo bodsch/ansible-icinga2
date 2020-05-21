@@ -39,6 +39,30 @@ icinga2_features:
     host: localhost
 ```
 
+## influxdb
+
+
+```
+icinga2_features:
+  influxdb:
+    host: localhost
+    port: 8086
+    enable_ha: true
+    database: icinga2
+    flush_threshold: 1024
+    flush_interval: 10s
+    host_template:
+      measurement: "$host.check_command$"
+      tags:
+        hostname: "$host.name$"
+    service_template:
+      measurement: "$service.check_command$"
+      tags:
+        hostname: "$host.name$"
+        service: "$service.name$"
+```
+
+
 ## FileLogger
 
 ```

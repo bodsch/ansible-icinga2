@@ -18,6 +18,7 @@
     name: graphite
     state: "{{ feature_graphite_state }}"
   notify:
+    - check configuration
     - restart icinga2
   tags:
     - icinga2

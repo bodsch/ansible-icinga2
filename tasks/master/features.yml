@@ -16,4 +16,6 @@
 - include: features/api.yml
 - include: features/notification.yml
 - include: features/graphite.yml
+- include: features/influxdb.yml
+- include: features/gelf.yml
 - include: features/ido.yml
