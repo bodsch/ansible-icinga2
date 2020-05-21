@@ -1,0 +1,38 @@
+// {{ ansible_managed }}
+{# https://icinga.com/docs/icinga2/latest/doc/13-addons/#influxdb #}
+{# https://icinga.com/docs/icinga2/latest/doc/14-features/#influxdb-writer #}
+
+{% set _attr = ['host','port','database','flush_threshold','flush_interval',
+  'host_template','service_template'] %}
+
+{% if icinga2_features.influxdb is defined and icinga2_features.influxdb.host is defined %}
+object InfluxdbWriter "influxdb" {
+{% if icinga2_features.influxdb is defined and icinga2_features.influxdb | count != 0 %}
+{% for k, v in icinga2_features.influxdb.items() %}
+{% if k in _attr %}
+{% if k == "host" or k == "database" %}
+  {{ k }} = "{{ v }}"
+{% elif v is sameas true or v is sameas false %}
+  {{ k }} = {{ v | bool | ternary('true', 'false') }}
+{% elif k == "host_template" or k == "service_template" %}
+  {{ k }} = {
+{% for k2, v2 in v.items() | sort %}
+{% if k2 == "tags" %}
+{% for k3, v3 in v2.items() | sort %}
+    tags = {
+      {{ k3  }} = "{{ v3 }}"
+    }
+{% endfor %}
+{% else %}
+    {{ k2  }} = "{{ v2 }}"
+{% endif %}
+{% endfor %}
+  }
+{% else %}
+  {{ k }} = {{ v }}
+{% endif %}
+{% endif %}
+{% endfor %}
+{% endif %} {# 1 #}
+}
+{% endif %}
