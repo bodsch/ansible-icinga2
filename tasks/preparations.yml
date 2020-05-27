@@ -51,6 +51,11 @@
     icinga2_api: "{{ icinga2_api_default |
       combine( icinga2_api, recursive=True ) }}"
 
+- name: merge icinga2 timeperiod configuration between defaults and custom
+  set_fact:
+    icinga2_timeperiod: "{{ icinga2_timeperiod_default |
+      combine( icinga2_timeperiod, recursive=True ) }}"
+
 # ----------------------------------------------------------------------------------
 
 - name: install requirements

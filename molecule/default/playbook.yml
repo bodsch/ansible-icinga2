@@ -14,13 +14,9 @@
     mariadb_max_connections: 20
 
     mariadb_databases:
-
       - name: icinga2_ido
-#        collation: utf8mb4_bin
-#        encoding: utf8mb4
 
     mariadb_users:
-
       - name: icinga2_ido
         host: 127.0.0.1
         password: icinga2
@@ -49,23 +45,11 @@
         hostchecks_age: 48h
         servicechecks_age: 48h
 
-    # icinga2_mainlog_severity: warning
-
     icinga2_master_features_enabled:
       - checker
       - api
-      - ido-mysql
+      # - ido-mysql
       - mainlog
-      # - graphite
-
-    #icinga2_features:
-    #  graphite:
-    #    graphite_host: localhost
-
-    #icinga2_plugins_download:
-    #  - url: 'https://raw.githubusercontent.com/bodsch/check_arch_updates/1.0/check_arch_updates'
-    #    dest: 'check_arch_updates'
-    #    checksum: 'sha256:7afa562aaedb63f6e93cfebfa4a9a3ea49fecda62d4dae3d8ff919b76c117c41'
 
     icinga2_host_object:
       localhost:
@@ -84,15 +68,8 @@
 
     icinga2_salt: tmpams80tqx
 
-  # pre_tasks:
-  #   - name: clean caches for debian based
-  #     command: apt clean
-  #     args:
-  #       warn: false
-  #     when: ansible_os_family | lower == 'debian'
-
   roles:
-    - role: mariadb
+    #- role: mariadb
     - role: ansible-icinga2
 
   # tasks:

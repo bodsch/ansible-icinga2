@@ -181,6 +181,7 @@ icinga2_apply_service_default:
     assign_where: '"memory" in host.vars.services'
     ignore_where: 'host.vars.os == "Windows"'
 
+
 icinga2_checkcommands_default:
   system_uptime:
     import: plugin-check-command
@@ -188,6 +189,34 @@ icinga2_checkcommands_default:
   check_memory:
     import: plugin-check-command
     command: '[ PluginDir + "/check_mem" ]'
+
+
+icinga2_timeperiod_default:
+  never:
+    display_name: Icinga2 never TimePeriod
+    ranges: {}
+
+  9to5:
+    display_name: Icinga2 9to5 TimePeriod
+    ranges:
+      monday: "09:00-17:00"
+      tuesday: "09:00-17:00"
+      wednesday: "09:00-17:00"
+      thursday: "09:00-17:00"
+      friday: "09:00-17:00"
+      saturday: "09:00-17:00"
+      sunday: "09:00-17:00"
+
+  24x7:
+    display_name: Icinga2 24x7 TimePeriod
+    ranges:
+      monday: "00:00-24:00"
+      tuesday: "00:00-24:00"
+      wednesday: "00:00-24:00"
+      thursday: "00:00-24:00"
+      friday: "00:00-24:00"
+      saturday: "00:00-24:00"
+      sunday: "00:00-24:00"
 
 
 icinga2_ido_default:

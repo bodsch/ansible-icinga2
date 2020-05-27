@@ -4,7 +4,6 @@
 #  src: https://github.com/bodsch/ansible-mariadb.git
 #  version: master
 
-
 - name: mariadb
   src: https://github.com/geerlingguy/ansible-role-mysql.git
   version: 3.1.0

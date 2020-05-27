@@ -1,69 +1,5 @@
 ---
 
-- name: configure icinga2
-  template:
-    src: '{{ item.src }}'
-    dest: "{{ item.dest }}"
-    owner: root
-    group: root
-    mode: 0644
-  with_items:
-    - src: etc/icinga2/icinga2.conf.j2
-      dest: /etc/icinga2/icinga2.conf
-    - src: etc/icinga2/features/mainlog.conf.j2
-      dest: /etc/icinga2/features-available/mainlog.conf
-  notify:
-    - check configuration
-    - restart icinga2
-
-- name: create downtimes.conf
-  template:
-    src: "etc/icinga2/conf.d/downtimes.conf.j2"
-    dest: "/etc/icinga2/downtimes.conf"
-    owner: root
-    group: root
-    mode: 0644
-  notify:
-    - check configuration
-    - restart icinga2
-
-- name: create users.conf
-  template:
-    src: "etc/icinga2/conf.d/users.conf.j2"
-    dest: "/etc/icinga2/users.conf"
-    owner: root
-    group: root
-    mode: 0644
-  notify:
-    - check configuration
-    - restart icinga2
-
-- name: create api-users.conf
-  template:
-    src: "etc/icinga2/conf.d/api-users.conf.j2"
-    dest: "/etc/icinga2/api-users.conf"
-    owner: root
-    group: root
-    mode: 0644
-  notify:
-    - check configuration
-    - restart icinga2
-
-- name: create templates.conf
-  template:
-    src: etc/icinga2/zones.d/global-templates/templates.conf.j2
-    dest: /etc/icinga2/global-templates.conf
-    mode: 0644
-    backup: true
-  notify:
-    - check configuration
-    - restart icinga2
-
-- name: create satellite directory
-  file:
-    name: /etc/icinga2/satellites.d
-    state: directory
-
 - block:
 
     - name: create global-templates directory
@@ -84,3 +20,78 @@
   when:
     # - icinga2_ha | bool
     - icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
+
+- name: create satellite directory
+  file:
+    name: /etc/icinga2/satellites.d
+    state: directory
+
+- name: configure icinga2
+  template:
+    src: '{{ item.src }}'
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+    - src: etc/icinga2/icinga2.conf.j2
+      dest: /etc/icinga2/icinga2.conf
+    - src: etc/icinga2/features/mainlog.conf.j2
+      dest: /etc/icinga2/features-available/mainlog.conf
+  notify:
+    - check configuration
+    - restart icinga2
+
+- name: create downtimes.conf
+  template:
+    src: etc/icinga2/conf.d/downtimes.conf.j2
+    dest: /etc/icinga2/downtimes.conf
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - check configuration
+    - restart icinga2
+
+- name: create users.conf
+  template:
+    src: etc/icinga2/conf.d/users.conf.j2
+    dest: /etc/icinga2/users.conf
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - check configuration
+    - restart icinga2
+
+- name: create api-users.conf
+  template:
+    src: etc/icinga2/conf.d/api-users.conf.j2
+    dest: /etc/icinga2/api-users.conf
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - check configuration
+    - restart icinga2
+
+- name: create templates.conf in global-templates
+  template:
+    src: etc/icinga2/zones.d/global-templates/templates.conf.j2
+    dest: /etc/icinga2/global-templates.conf
+    mode: 0644
+    backup: true
+  notify:
+    - check configuration
+    - restart icinga2
+
+- name: create timeperiods.conf in global-templates
+  template:
+    src: etc/icinga2/zones.d/global-templates/timeperiods.conf.j2
+    dest: /etc/icinga2/zones.d/global-templates/timeperiods.conf
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - check configuration
+    - restart icinga2

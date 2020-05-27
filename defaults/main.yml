@@ -71,6 +71,8 @@ icinga2_notification_usergroups: {}
 
 icinga2_checkcommands: {}
 
+icinga2_timeperiod: {}
+
 icinga2_apply_service: {}
 
 icinga2_aide_enabled: true

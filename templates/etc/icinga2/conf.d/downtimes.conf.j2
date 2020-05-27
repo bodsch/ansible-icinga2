@@ -3,7 +3,7 @@
 {% for i in icinga2_service_downtimes -%}
 apply ScheduledDowntime "{{ i }}" to Service {
   {% for k,v in icinga2_service_downtimes[i].items() -%}
-  {%- if v is mapping %} # ranges = {}
+  {%- if v is mapping %} {# ranges = {} #}
   {{ k }} = {
 {% for k2, v2 in v.items() %}
       {{ k2 }} = {{ v2 }}
@@ -21,7 +21,7 @@ apply ScheduledDowntime "{{ i }}" to Service {
 }
 
 {% endfor %}
-// ---
+
 {% for i in icinga2_host_downtimes -%}
 apply ScheduledDowntime "{{name}}" to Host {
   {% for k,v in icinga2_host_downtimes[i].items() -%}

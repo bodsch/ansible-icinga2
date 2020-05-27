@@ -9,10 +9,10 @@
       args:
         warn: false
       when: ansible_os_family | lower == 'debian'
-    - name: update instance
-      shell: |
-        apt update
-        apt -y dist-upgrade
-      args:
-        warn: false
-      when: ansible_os_family | lower == 'debian'
+    # - name: update instance
+    #   shell: |
+    #     apt update
+    #     apt -y dist-upgrade
+    #   args:
+    #     warn: false
+    #   when: ansible_os_family | lower == 'debian'
