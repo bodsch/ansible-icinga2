@@ -18,6 +18,17 @@ icinga2_masters:
     ip: 192.168.130.21
 ```
 
+behind a NAT you would overwrite the icinga2 host name?
+
+try this:
+
+```
+icinga2_masters:
+  master-1.icinga.local:
+    overwrite: master.test.com:
+    ip: 192.168.130.20
+```
+
 
 ### add host to icinga
 

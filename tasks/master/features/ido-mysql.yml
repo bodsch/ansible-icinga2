@@ -16,7 +16,7 @@
     #   shell: >
     #     mysql \
     #       --host {{ icinga2_ido.host }} \
-    #       --user {{ icinga2_ido.username }} \
+    #       --user {{ icinga2_ido.user }} \
     #       --password {{ icinga2_ido.password }} \
     #       --batch \
     #       --skip-column-names \
@@ -43,7 +43,7 @@
     #   mysql_db:
     #     name: '{{ icinga2_ido.database }}'
     #     login_host: "{{ icinga2_ido.host }}"
-    #     login_user: "{{ icinga2_ido.username }}"
+    #     login_user: "{{ icinga2_ido.user }}"
     #     login_password: "{{ icinga2_ido.password }}"
     #     state: present
     #   register: _mysql_ido_schema
@@ -52,7 +52,7 @@
       shell: >
         mysql \
           --host={{ icinga2_ido.host }} \
-          --user={{ icinga2_ido.username }} \
+          --user={{ icinga2_ido.user }} \
           --password={{ icinga2_ido.password }} \
           --batch \
           --skip-column-names \
@@ -75,7 +75,7 @@
       mysql_db:
         name: "{{ icinga2_ido.database }}"
         login_host: "{{ icinga2_ido.host }}"
-        login_user: "{{ icinga2_ido.username }}"
+        login_user: "{{ icinga2_ido.user }}"
         login_password: "{{ icinga2_ido.password }}"
         state: import
         target: "{{ icinga2_ido.mysql.schema_file }}"
