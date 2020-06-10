@@ -37,7 +37,7 @@ if [[ $mysqlbackup ]]
 then
   mysqldump \
     --host={{ icinga2_ido.host }} \
-    --user={{ icinga2_ido.username }} \
+    --user={{ icinga2_ido.user }} \
     --password={{ icinga2_ido.password }} \
     --add-drop-database \
     --add-drop-table \

@@ -1,13 +1,15 @@
 // {{ ansible_managed }}
 
-{% if icinga2_masters is mapping %}
-{% set icinga2_master = '' %}
-{% set _keys = icinga2_masters.keys() %}
-{% for m in _keys -%}
+{% if icinga2_masters is mapping -%}
+ {%- set icinga2_reordered_masters = icinga2_masters | reorder_master -%}
+ {%- set icinga2_master = '' -%}
+ {%- set _keys = icinga2_reordered_masters.keys() -%}
+ {%- for m in _keys -%}
+
 object Endpoint "{{ m }}" {
-{%- if icinga2_masters[m]['ip'] is defined %} host = "{{ icinga2_masters[m]['ip'] }}"; {% endif %}
+{%- if icinga2_reordered_masters[m]['ip'] is defined %} host = "{{ icinga2_reordered_masters[m]['ip'] }}"; {% endif %}
   port = "5665" }
-{% endfor %}
+ {% endfor -%}
 object Zone "master" { endpoints = [ "{{ _keys | join( '", "') }}" ] }
 {% endif %}
 

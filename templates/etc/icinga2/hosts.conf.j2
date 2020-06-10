@@ -2,6 +2,7 @@
 
 {% if icinga2_host_object is defined and icinga2_host_object | count != 0 %}
 {% for key, v in icinga2_host_object.items() -%}
+// {{ key }}
 {%- if v['endpoint_name'] is defined %}
 {%- set _name = v['endpoint_name'] -%}
 {%- set _v = v.pop('endpoint_name') -%}
@@ -23,14 +24,14 @@
 {%- set _v = v.pop('display_name') -%}
 {%- endif %}
 
-object Host "{{ _name }}" {
+object Host "{{ key }}" {
 {% if _ip is defined and _ip | length != 0 %}
   address = "{{ _ip }}"
 {% endif %}
 {% if display_name is defined %}
   display_name = "{{ display_name }}"
 {% endif %}
-  command_endpoint = "{{ ansible_fqdn }}"
+  command_endpoint = "{{ _name }}"
 {% if _zone is defined %}
   zone = "{{ _zone }}"
 {% endif %}
