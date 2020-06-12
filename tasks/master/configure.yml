@@ -75,23 +75,29 @@
     - check configuration
     - restart icinga2
 
-- name: create templates.conf in global-templates
-  template:
-    src: etc/icinga2/zones.d/global-templates/templates.conf.j2
-    dest: /etc/icinga2/global-templates.conf
-    mode: 0644
-    backup: true
-  notify:
-    - check configuration
-    - restart icinga2
+- name: create configurations in global-templates
+  block:
 
-- name: create timeperiods.conf in global-templates
-  template:
-    src: etc/icinga2/zones.d/global-templates/timeperiods.conf.j2
-    dest: /etc/icinga2/zones.d/global-templates/timeperiods.conf
-    owner: root
-    group: root
-    mode: 0644
-  notify:
-    - check configuration
-    - restart icinga2
+    - name: create templates.conf in global-templates
+      template:
+        src: etc/icinga2/zones.d/global-templates/templates.conf.j2
+        dest: /etc/icinga2/global-templates.conf
+        mode: 0644
+        backup: true
+      notify:
+        - check configuration
+        - restart icinga2
+
+    - name: create timeperiods.conf in global-templates
+      template:
+        src: etc/icinga2/zones.d/global-templates/timeperiods.conf.j2
+        dest: /etc/icinga2/zones.d/global-templates/timeperiods.conf
+        owner: root
+        group: root
+        mode: 0644
+      notify:
+        - check configuration
+        - restart icinga2
+  when:
+    # - icinga2_ha | bool
+    - icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
