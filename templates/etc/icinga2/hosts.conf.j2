@@ -18,6 +18,8 @@
 {% set _ip = icinga2_masters[_name]['ip'] %}
 {%- set _ = v.pop('address') -%}
 {% else %}
+{# use you *functional* dns to resolve hostname.
+  this runs on the ansible-host and not on the destination machine! #}
 {% set _ip = lookup('pipe', 'host ' + ansible_fqdn   + ' | grep "has address" | cut -d" " -f4') %}
 {% endif %}
 {%- if v['display_name'] is defined %}
