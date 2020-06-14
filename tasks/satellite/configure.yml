@@ -15,7 +15,9 @@
     src: etc/icinga2/zones.conf.j2
     dest: /etc/icinga2/zones.conf
   when: not icinga2_satellite_has_api_connection | bool
-  notify: restart icinga2
+  notify:
+    - check configuration
+    - restart icinga2
 
 - name: remove static zone file on icinga2 satellite
   file:
