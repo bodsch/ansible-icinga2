@@ -2,7 +2,7 @@
 
 - name: create templates.conf
   template:
-    src: etc/icinga2/zones.d/global-templates/templates.conf.j2
+    src: etc/icinga2/global-templates.conf.j2
     dest: /etc/icinga2/global-templates.conf
     mode: 0644
     backup: true
@@ -19,7 +19,7 @@
 
 - name: remove static zone file on icinga2 satellite
   file:
-    dest: '/etc/icinga2/zones.conf'
+    dest: /etc/icinga2/zones.conf
   when: icinga2_satellite_has_api_connection | bool
   notify:
     - check configuration
