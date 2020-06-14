@@ -75,19 +75,18 @@
     - check configuration
     - restart icinga2
 
+- name: create templates.conf in global-templates
+  template:
+    src: templates/etc/icinga2/global-templates.conf.j2
+    dest: /etc/icinga2/global-templates.conf
+    mode: 0644
+    backup: true
+  notify:
+    - check configuration
+    - restart icinga2
+
 - name: create configurations in global-templates
   block:
-
-    - name: create templates.conf in global-templates
-      template:
-        src: etc/icinga2/zones.d/global-templates/templates.conf.j2
-        dest: /etc/icinga2/global-templates.conf
-        mode: 0644
-        backup: true
-      notify:
-        - check configuration
-        - restart icinga2
-
     - name: create timeperiods.conf in global-templates
       template:
         src: etc/icinga2/zones.d/global-templates/timeperiods.conf.j2
