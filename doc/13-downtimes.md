@@ -56,3 +56,36 @@ and call a ansible task:
 ```
 ansible-playbook --inventory inventories/icinga2  playbooks/master.yml --extra-vars @downtime.json --tags downtime_schedule
 ```
+
+## own ansible module to create downtimes
+
+example:
+
+```
+- name: set downtime
+  icinga2_downtime:
+    url: "https://localhost:5665"
+    url_username: "{{ icinga2_api.user }}"
+    url_password: "{{ icinga2_api.password }}"
+    comment: "{{ icinga2_downtime_comment }}"
+    state: present
+    name: "{{ item }}"
+    object_type: 'Host'
+    all_services: true
+    duration: "{{ icinga2_downtime_duration }}"
+    start_time: "{{ downtime_start }}"
+    end_time: "{{ downtime_end }}"
+    # fixed: false
+  delegate_to: "master-1.icinga.local"
+  vars:
+    downtime_start: "{{ ansible_date_time.epoch }}"
+    downtime_end: "{{ downtime_start | int + icinga2_downtime_duration * 60 }}"
+  with_items:
+    - "{{ icinga2_downtime_system_name }}"
+  tags:
+    - icinga2
+    - downtime_schedule
+    - downtime_remove
+  when:
+    - ansible_fqdn == "master-1.icinga.local"
+```
