@@ -35,113 +35,26 @@
   when:
     - icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
 
-- name: check '{{ icinga2_downtime_system_name }}'
-  uri:
-    url: "https://localhost:{{ icinga2_master_port | default(5665) }}/v1/objects/hosts"
-    url_username: "{{ icinga2_api.user }}"
-    url_password: "{{ icinga2_api.password }}"
-    use_proxy: false
-    force_basic_auth: true
-    validate_certs: false
-    method: POST
-    http_agent: 'curl/7.69.1'
-    timeout: 10
-    headers:
-      Accept: "application/json"
-      X-HTTP-Method-Override: GET
-    body_format: json
-    body:
-      attrs:
-        - name
-      type: Host
-      filter: "host.name == \"{{ icinga2_downtime_system_name }}\""
-  delegate_to: "{{ icinga2_primary_master }}"
-  register: icinga2_downtime_system
-  tags:
-    - icinga2
-    - downtime_schedule
-  when:
-    - icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
-
-- name: define icinga2_downtime_system_name
-  set_fact:
-    icinga2_downtime_system_name_internal: "{{ icinga2_downtime_system.json.results[0].attrs.name }}"
-  when:
-    - icinga2_downtime_system.json.results is defined
-    - icinga2_downtime_system.json.results[0] is defined
-    - icinga2_downtime_system.json.results[0].attrs is defined
-    - icinga2_downtime_system.json.results[0].attrs.name is defined
-  tags:
-    - icinga2
-    - downtime_schedule
-    - downtime_remove
-
-- name: assert missing '{{ icinga2_downtime_system_name }}'
-  assert:
-    that:
-      - icinga2_downtime_system_name_internal | length != 0
-      - icinga2_downtime_system_name_internal == icinga2_downtime_system_name
-    msg: "'{{ icinga2_downtime_system_name }}' is not in our monitoring, skip creating downtime"
-    quiet: true
-  when:
-    - icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
-  tags:
-    - icinga2
-    - downtime_schedule
-
-# thanks to @nbuchwitz for using his code!
 - name: schedule downtime
-  uri:
-    url: "https://localhost:{{ icinga2_master_port | default(5665) }}/v1/actions/schedule-downtime"
-    url_username: "{{ icinga2_api.user }}"
-    url_password: "{{ icinga2_api.password }}"
-    use_proxy: false
-    force_basic_auth: true
-    validate_certs: false
-    method: POST
-    http_agent: 'curl/7.69.1'
-    timeout: 10
-    headers:
-      Accept: "application/json"
-    body_format: json
-    body:
-      type: "{{ item.type }}"
-      filter: "{{ item.filter }}"
-      author: "ansible"
-      fixed: true
-      comment: "{{ icinga2_downtime_comment }}"
-      start_time: "{{ downtime_start }}"
-      end_time: "{{ downtime_end }}"
-      duration: "{{ icinga2_downtime_duration }}"
+  icinga2_downtime:
+    host: "https://localhost"
+    username: "{{ icinga2_api.user }}"
+    password: "{{ icinga2_api.password }}"
+    comment: "{{ icinga2_downtime_comment }}"
+    hostnames: "{{ icinga2_downtime_system_name }}"
+    duration: "{{ icinga2_downtime_duration }}"
+    start_time: "{{ downtime_start }}"
+    end_time: "{{ downtime_end }}"
+    state: present
+  delegate_to: "{{ icinga2_primary_master }}"
   vars:
     downtime_start: "{{ ansible_date_time.epoch }}"
     downtime_end: "{{ downtime_start | int + icinga2_downtime_duration * 60 }}"
-  loop:
-    - { type: "Service", filter: "host.name == \"{{ icinga2_downtime_system_name_internal }}\"" }
-    - { type: "Host", filter: "host.name==\"{{ icinga2_downtime_system_name_internal }}\"" }
-  delegate_to: "{{ icinga2_primary_master }}"
   tags:
     - icinga2
     - downtime_schedule
   when:
     - icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
 
-- name: remove downtime
-  uri:
-    url: "https://{{ icinga2_master }}:{{ icinga2_master_port | default(5665) }}/v1/actions/remove-downtime"
-    url_username: "{{ icinga2_api.user }}"
-    url_password: "{{ icinga2_api.password }}"
-    use_proxy: false
-    force_basic_auth: true
-    validate_certs: false
-    method: POST
-    headers:
-      Accept: "application/json"
-    body_format: json
-    body:
-      type: "Downtime"
-      filter: "host.name==\"{{ icinga2_downtime_system_name_internal }}\" && downtime.author == \"ansible\""
-  delegate_to: localhost
-  tags:
-    - icinga2
-    - downtime_remove
+# TODO
+# - name: remove downtime

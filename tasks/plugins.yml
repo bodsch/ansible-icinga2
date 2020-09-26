@@ -18,6 +18,7 @@
     src: "{{ monitoring_plugins_directory }}"
     dest: /usr/lib/monitoring-plugins
     state: link
+  when: ansible_os_family | lower != 'archlinux'
 
 - name: copy extra check plugins
   copy:

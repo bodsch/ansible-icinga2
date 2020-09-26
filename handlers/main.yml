@@ -25,3 +25,21 @@
   delegate_to: "{{ item.key }}"
   with_dict:
     "{{ icinga2_masters }}"
+
+# - name: restart icinga2 master
+#   uri:
+#     url: "https://localhost:{{ icinga2_master_port | default(5665) }}/v1/actions/restart-process"
+#     url_username: "{{ icinga2_api.user }}"
+#     url_password: "{{ icinga2_api.password }}"
+#     use_proxy: false
+#     force_basic_auth: true
+#     validate_certs: false
+#     method: POST
+#     http_agent: 'curl/7.69.1'
+#     timeout: 10
+#     headers:
+#       Accept: "application/json"
+#   delegate_to: "{{ item.key }}"
+#   register: icinga2_downtime_system
+#   with_dict:
+#     "{{ icinga2_masters }}"

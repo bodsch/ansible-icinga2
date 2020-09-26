@@ -1,5 +1,7 @@
 ---
 
+- include_tasks: check_installed.yml
+
 - block:
 
     - name: install icinga2 packages
@@ -15,29 +17,6 @@
 # check for updates
 
 - block:
-    # - name: install build tools
-    #   package:
-    #     name: '{{item}}'
-    #     state: present
-    #   loop:
-    #     - base-devel
-    #     - cmake
-    #
-    # - name: create sudo rules for aur_builder
-    #   copy:
-    #     content: '%aur_builder ALL=(ALL) NOPASSWD: ALL'
-    #     dest: /etc/sudoers.d/aur
-    #     validate: 'visudo -cf %s'
-    #
-    # - name: create build group
-    #   group:
-    #     name: aur_builder
-    #
-    # - name: create build user
-    #   user:
-    #     name: aur_builder
-    #     group: aur_builder
-
     - name: download icinga2 package
       become: true
       become_user: aur_builder
@@ -62,10 +41,32 @@
       when: __packaged_icinga2_version is defined and __packaged_icinga2_version.rc is defined and __packaged_icinga2_version.rc == 0
 
     - block:
-
         - name: compare versiones
           debug:
-            msg: current installed version {{ icinga2_version }} - we need an update to version {{ packaged_icinga2_version }}
+            msg: current installed version {{ icinga2_installed_version }} - we need an update to version {{ packaged_icinga2_version }}
+
+        # - name: install build tools
+        #   package:
+        #     name: '{{item}}'
+        #     state: present
+        #   loop:
+        #     - base-devel
+        #     - cmake
+        #
+        # - name: create sudo rules for aur_builder
+        #   copy:
+        #     content: '%aur_builder ALL=(ALL) NOPASSWD: ALL'
+        #     dest: /etc/sudoers.d/aur
+        #     validate: 'visudo -cf %s'
+        #
+        # - name: create build group
+        #   group:
+        #     name: aur_builder
+        #
+        # - name: create build user
+        #   user:
+        #     name: aur_builder
+        #     group: aur_builder
 
         - name: build icinga2 package
           become: true
@@ -73,7 +74,7 @@
           shell: |
             cd ~/icinga2/
             makepkg --syncdeps --install --noprogressbar --noconfirm
-      when: packaged_icinga2_version is version( icinga2_version ,'>')
+      when: packaged_icinga2_version is version( icinga2_installed_version ,'>')
 
   when: (
     icinga2_use_external_repo | bool and
@@ -84,6 +85,5 @@
 - include: satellite/pki.yml
 - include: satellite/configure.yml
 - include: satellite/features.yml
-
 
 # /var/lib/icinga2/api/zones-stage/startup.log

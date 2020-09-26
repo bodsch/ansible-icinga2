@@ -129,12 +129,6 @@ class FilterModule(object):
 
         return seen
 
-
-
-
-
-
-
     """
 
     """

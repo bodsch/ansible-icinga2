@@ -106,7 +106,7 @@
 
 - name: create groups.conf
   template:
-    src: etc/icinga2/conf.d/groups.conf.j2
+    src: etc/icinga2/groups.conf.j2
     dest: /etc/icinga2/groups.conf
     mode: 0644
     backup: true
