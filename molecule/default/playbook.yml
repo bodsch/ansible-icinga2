@@ -5,18 +5,15 @@
     NETRC: ''
   vars:
 
-    ansible_python_interpreter: python3
+    mysql_bind_address: 127.0.0.1
+    mysql_max_connections: 20
 
-    mariadb_use_external_repo: false
+    mysql_root_password_update: true
 
-    mariadb_bind_address: 127.0.0.1
-    mariadb_root_password: root
-    mariadb_max_connections: 20
-
-    mariadb_databases:
+    mysql_databases:
       - name: icinga2_ido
 
-    mariadb_users:
+    mysql_users:
       - name: icinga2_ido
         host: 127.0.0.1
         password: icinga2
@@ -25,7 +22,8 @@
     icinga2_mode: master
 
     icinga2_masters:
-      debian-10:
+      #debian-10:
+      centos-7:
 
     icinga2_sudo_cmd:
       - /sbin/service foo restart
@@ -48,7 +46,7 @@
     icinga2_master_features_enabled:
       - checker
       - api
-      # - ido-mysql
+      - ido-mysql
       - mainlog
 
     icinga2_host_object:
@@ -69,7 +67,7 @@
     icinga2_salt: tmpams80tqx
 
   roles:
-    #- role: mariadb
+    - role: mariadb
     - role: ansible-icinga2
 
   # tasks:

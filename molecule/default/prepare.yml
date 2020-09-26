@@ -3,16 +3,16 @@
   hosts: all
   gather_facts: true
   become: true
-  tasks:
-    - name: clean caches for debian based
-      command: apt clean
-      args:
-        warn: false
-      when: ansible_os_family | lower == 'debian'
-    # - name: update instance
-    #   shell: |
-    #     apt update
-    #     apt -y dist-upgrade
-    #   args:
-    #     warn: false
-    #   when: ansible_os_family | lower == 'debian'
+  # tasks:
+  #   - name: clean caches for debian based
+  #     command: apt clean
+  #     args:
+  #       warn: false
+  #     when: ansible_os_family | lower == 'debian'
+  #   # - name: update instance
+  #   #   shell: |
+  #   #     apt update
+  #   #     apt -y dist-upgrade
+  #   #   args:
+  #   #     warn: false
+  #   #   when: ansible_os_family | lower == 'debian'

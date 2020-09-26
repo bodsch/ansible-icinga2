@@ -44,6 +44,8 @@
       copy:
         src: "{{ icinga2_pki_cadir }}/ca.crt"
         dest: "{{ icinga2_pki_dir }}/ca.crt"
+        owner: "{{ icinga2_user }}"
+        group: "{{ icinga2_group }}"
         mode: 0640
         remote_src: true
       tags:
@@ -55,6 +57,8 @@
       file:
         src: "{{ icinga2_pki_dir }}/{{ inventory_hostname }}.{{ item }}"
         dest: "{{ icinga2_pki_dir }}/{{ icinga2_certificate_cn }}.{{ item }}"
+        owner: "{{ icinga2_user }}"
+        group: "{{ icinga2_group }}"
         state: link
       with_items:
         - key

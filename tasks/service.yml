@@ -12,11 +12,15 @@
     icinga2_validate_config is defined and
     icinga2_validate_config.failed )
 
+- name: enable icinga2 services
+  service:
+    name: icinga2
+    enabled: true
+
 - name: ensure services are started
   service:
     name: icinga2
     state: started
-    enabled: true
   when: (
     icinga2_validate_config is defined and
     not icinga2_validate_config.failed )

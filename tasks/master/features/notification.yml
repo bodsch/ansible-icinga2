@@ -4,6 +4,8 @@
   file:
     name: /etc/icinga2/notifications
     state: directory
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
     mode: 0640
 
 - name: define graphite feature state
@@ -14,8 +16,8 @@
   template:
     src: etc/icinga2/features/notification.conf.j2
     dest: /etc/icinga2/features-available/notification.conf
-    owner: root
-    group: root
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
     mode: 0644
 
 - name: enable notification feature

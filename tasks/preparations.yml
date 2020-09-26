@@ -21,6 +21,23 @@
     msg: primary icinga2 master is missing
     quiet: true
 
+# - debug:
+#     var="{{ item }}"
+#   when: item is defined
+#   with_items:
+#     - icinga2_primary_master
+#     - ansible_fqdn
+#     - icinga2_mode
+
+- name: assert wrong primary master
+  assert:
+    that:
+      - icinga2_mode == 'master'
+      - icinga2_primary_master == ansible_fqdn
+    msg: primary icinga2 master is not identical with ansible_fqdn ('{{ icinga2_primary_master }}' vs. '{{ ansible_fqdn }}')
+    quiet: true
+  when: icinga2_validate_primary_master
+
 # ----------------------------------------------------------------------------------
 
 # read a present salt from ansible facts
@@ -176,7 +193,6 @@
         group: aur_builder
 
   when: ansible_os_family | lower == 'archlinux' and icinga2_use_external_repo | bool
-
 
 - name: create sudo rules for icinga
   template:

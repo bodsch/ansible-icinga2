@@ -53,7 +53,7 @@
         src: files/ca.crt
         dest: "{{ icinga2_pki_ca_cert }}"
         owner: "{{ icinga2_user }}"
-        group: "{{ icinga2_user }}"
+        group: "{{ icinga2_group }}"
         mode: 0640
 
     - name: configure icinga2 secondary master pki
@@ -97,13 +97,15 @@
       file:
         path: "{{ icinga2_pki_dir }}"
         owner: "{{ icinga2_user }}"
-        group: "{{ icinga2_user }}"
+        group: "{{ icinga2_group }}"
         recurse: true
 
     - name: configure zones
       template:
         src: etc/icinga2/zones.conf.j2
         dest: /etc/icinga2/zones.conf
+        owner: "{{ icinga2_user }}"
+        group: "{{ icinga2_group }}"
         mode: 0644
         backup: true
 
@@ -132,6 +134,8 @@
       template:
         src: etc/icinga2/satellite-zone.conf.j2
         dest: /etc/icinga2/zones.d/master/{{ ansible_fqdn }}.conf
+        owner: "{{ icinga2_user }}"
+        group: "{{ icinga2_group }}"
         mode: 0640
       delegate_to: "{{ icinga2_primary_master }}"
       notify:
@@ -180,8 +184,8 @@
   template:
     src: etc/icinga2/constants.conf.j2
     dest: /etc/icinga2/constants.conf
-    # owner: root
-    # group: root
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
     mode: 0644
   notify:
     - check configuration

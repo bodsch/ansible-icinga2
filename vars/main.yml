@@ -95,8 +95,38 @@ _icinga2_monitoring_plugins:
     # To ensure ansible_default_ipv4 is populated
     - iproute2
   redhat:
-    - nagios-plugins-all
-    - lynx
+    - nagios-plugins
+    # Problem: conflicting requests
+    #      - nothing provides perl(Readonly) needed by nagios-plugins-check-updates-1.7.10-1.el8.x86_64
+    #- nagios-plugins-check-updates
+    - nagios-plugins-disk
+    - nagios-plugins-dns
+    - nagios-plugins-file_age
+    - nagios-plugins-fping
+    - nagios-plugins-http
+    - nagios-plugins-icmp
+
+    # Problem: package nagios-plugins-ifstatus-2.3.3-4.el8.x86_64 requires perl(Net::SNMP), but none of the providers can be installed
+    #      - conflicting requests
+    #      - nothing provides perl(Digest::SHA1) >= 1.02 needed by perl-Net-SNMP-6.0.1-25.el8.1.noarc
+    #- nagios-plugins-ifstatus
+    - nagios-plugins-ldap
+    - nagios-plugins-load
+    - nagios-plugins-mailq
+    - nagios-plugins-mysql
+    - nagios-plugins-ntp
+    - nagios-plugins-ping
+    - nagios-plugins-procs
+    - nagios-plugins-sensors
+    - nagios-plugins-smtp
+    - nagios-plugins-snmp
+    - nagios-plugins-ssh
+    - nagios-plugins-swap
+    - nagios-plugins-tcp
+    - nagios-plugins-time
+    - nagios-plugins-uptime
+    - nagios-plugins-users
+    # - lynx
     # required for snmpget/check_snmp
     - net-snmp
     # To ensure ansible_default_ipv4 is populated

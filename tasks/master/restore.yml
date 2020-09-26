@@ -20,15 +20,22 @@
         dest: /usr/local/bin/restore-icinga2.sh
         mode: 0755
 
-    - name: configure backup script 2/m with cron
-      cron:
-        name: "icinga2 backup"
-        minute: '0'
-        hour: '23'
-        day: 2,16
-        user: root
-        job: /usr/local/bin/backup-icinga2.sh
-        cron_file: backup_icinga2
+    # - name: detect crontab
+    #   stat:
+    #     path: /usr/bin/crontab
+    #   register: _crontab_script
+    #
+    # - name: configure backup script 2/m with cron
+    #   cron:
+    #     name: "icinga2 backup"
+    #     minute: '0'
+    #     hour: '23'
+    #     day: 2,16
+    #     user: root
+    #     job: /usr/local/bin/backup-icinga2.sh
+    #     cron_file: backup_icinga2
+    #   when:
+    #     - _crontab_script.stat.exists
 
   when:
     - icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn

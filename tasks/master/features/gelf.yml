@@ -8,8 +8,8 @@
   template:
     src: etc/icinga2/features/gelf.conf.j2
     dest: /etc/icinga2/features-available/gelf.conf
-    owner: root
-    group: root
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
     mode: 0644
 
 - name: enable gelf feature
