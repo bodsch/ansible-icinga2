@@ -1,5 +1,10 @@
 ---
 
+- name: define primary icinga2 master
+  set_fact:
+    icinga2_primary_master: "{{ icinga2_masters | reorder_master }}"
+
+
 - include: preparations.yml
   become: true
   tags:
