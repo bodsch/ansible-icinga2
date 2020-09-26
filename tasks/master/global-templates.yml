@@ -20,8 +20,9 @@
       template:
         src: etc/icinga2/zones.d/global-templates/services.conf.j2
         dest: /etc/icinga2/zones.d/global-templates/services.conf
+        owner: "{{ icinga2_user }}"
+        group: "{{ icinga2_group }}"
         mode: 0644
-        #backup: true
       notify:
         - check configuration
         - restart icinga2
@@ -30,8 +31,9 @@
       template:
         src: etc/icinga2/zones.d/global-templates/commands.conf.j2
         dest: /etc/icinga2/zones.d/global-templates/commands.conf
+        owner: "{{ icinga2_user }}"
+        group: "{{ icinga2_group }}"
         mode: 0644
-        #backup: true
       notify:
         - check configuration
         - restart icinga2
@@ -40,8 +42,9 @@
       template:
         src: etc/icinga2/zones.d/global-templates/functions.conf.j2
         dest: /etc/icinga2/zones.d/global-templates/functions.conf
+        owner: "{{ icinga2_user }}"
+        group: "{{ icinga2_group }}"
         mode: 0644
-        #backup: true
       notify:
         - check configuration
         - restart icinga2
@@ -50,8 +53,9 @@
       template:
         src: etc/icinga2/zones.d/global-templates/eventcommands.conf.j2
         dest: /etc/icinga2/zones.d/global-templates/eventcommands.conf
+        owner: "{{ icinga2_user }}"
+        group: "{{ icinga2_group }}"
         mode: 0644
-        #backup: true
       notify:
         - check configuration
         - restart icinga2

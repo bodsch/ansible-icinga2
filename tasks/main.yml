@@ -24,6 +24,10 @@
   tags:
     - icinga2
 
+- include_tasks: service.yml
+  tags:
+    - icinga2
+
 # ---------------------------------------------------------------------------------------
 
 - include_tasks: master/backup.yml

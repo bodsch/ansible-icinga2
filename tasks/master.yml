@@ -25,7 +25,6 @@
         state: present
       register: icinga2_installer
       loop:
-        - icinga2-ido-mysql
         - "{{ icinga2_dependencies }}"
 
     - name: do facts module to get latest information
@@ -35,17 +34,35 @@
       file:
         path: /usr/sbin/policy-rc.d
         state: absent
-
-    # - debug:
-    #     var: "{{ item }}"
-    #   when: item is defined
-    #   with_items:
-    #     - icinga2_installer
-
   when:
     not icinga2_installed
 
+- name: install icinga2-ido package
+  package:
+    name: icinga2-ido-mysql
+    state: present
+
 - include_tasks: check_installed.yml
+
+- name: detect icinga2_user  # noqa 301 306
+  shell: |
+    grep ": \${ICINGA2_USER" /usr/lib/icinga2/prepare-dirs | cut -d'=' -f2 | cut -d'"' -f2
+  register: _icinga2_user
+
+- name: set icinga2_user to {{ _icinga2_user.stdout }}
+  set_fact:
+    icinga2_user: "{{ _icinga2_user.stdout }}"
+  when: _icinga2_user.stdout is defined
+
+- name: detect icinga2_group  # noqa 301 306
+  shell: |
+    grep ": \${ICINGA2_GROUP" /usr/lib/icinga2/prepare-dirs | cut -d'=' -f2 | cut -d'"' -f2
+  register: _icinga2_group
+
+- name: set icinga2_group to {{ _icinga2_group.stdout }}
+  set_fact:
+    icinga2_group: "{{ _icinga2_group.stdout }}"
+  when: _icinga2_group.stdout is defined
 
 - name: create restart script
   copy:
@@ -54,14 +71,13 @@
     owner: root
     group: root
     mode: 0755
-#   when: icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
 
 - name: create icinga2 constants.conf
   template:
     src: etc/icinga2/constants.conf.j2
     dest: /etc/icinga2/constants.conf
-    # owner: root
-    # group: root
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
     mode: 0644
   notify:
     - check configuration
@@ -72,22 +88,25 @@
     dest: "{{ icinga2_pki_dir }}"
     state: directory
     mode: 0755
-    owner: "{{ icinga2_pki_userdir }}"
-    group: "{{ icinga2_pki_userdir }}"
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
 
 - name: configure zones
   template:
     src: etc/icinga2/zones.conf.j2
     dest: /etc/icinga2/zones.conf
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
     mode: 0644
     backup: true
-
 
 - name: create directory for master zone
   file:
     path: /etc/icinga2/zones.d/master
     state: directory
-    mode: 0755
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
+    mode: 0640
   when: icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
 
 # only on primary master!
@@ -95,6 +114,8 @@
   template:
     src: etc/icinga2/hosts.conf.j2
     dest: /etc/icinga2/zones.d/master/{{ ansible_fqdn }}.conf
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
     mode: 0644
     backup: true
   notify:
@@ -108,6 +129,8 @@
   template:
     src: etc/icinga2/groups.conf.j2
     dest: /etc/icinga2/groups.conf
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
     mode: 0644
     backup: true
   notify:
@@ -117,7 +140,7 @@
     - configure
   when: icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
 
-- name: create {{ icinga2_local_scriptsdir }} directory
+- name: create '{{ icinga2_local_scriptsdir }}' directory
   file:
     path: "{{ icinga2_local_scriptsdir }}"
     state: directory
@@ -139,10 +162,23 @@
         icinga2 daemon --validate --log-level debug --config /etc/icinga2/icinga2.conf
       register: icinga2_validate_config
 
-    - name: reload icinga2 master
+    - name: restart icinga2 master
       service:
         name: icinga2
-        state: reloaded
+        state: restarted
+      ignore_errors: true # https://github.com/ansible/ansible/issues/71528
+      register: _restart_icinga2_master
+
+    # - debug:
+    #     msg: "{{ _restart_icinga2_master.msg }}"
+    #   when: _restart_icinga2_master.failed
+
+    - name: restart icinga2 master (fix https://github.com/ansible/ansible/issues/71528)  # noqa 303
+      shell: |
+        systemctl restart icinga2
+      when:
+        - _restart_icinga2_master.failed
+        - _restart_icinga2_master.msg == "Service is in unknown state"
 
     - name: wait for primary master to startup
       wait_for:

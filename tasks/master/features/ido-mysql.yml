@@ -7,8 +7,8 @@
       template:
         src: database-upgrade.sh.j2
         dest: /usr/local/bin/database-upgrade.sh
-        owner: root
-        group: root
+        owner: "{{ icinga2_user }}"
+        group: "{{ icinga2_group }}"
         mode: 0750
 
     # # needs root rights
@@ -97,8 +97,8 @@
   template:
     src: etc/icinga2/features/ido-mysql.conf.j2
     dest: /etc/icinga2/features-available/ido-mysql.conf
-    owner: root
-    group: root
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
     mode: 0644
 
 - name: enable ido-mysql feature

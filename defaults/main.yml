@@ -3,6 +3,8 @@ icinga2_version: ''
 
 icinga2_use_external_repo: true
 
+icinga2_validate_primary_master: true
+
 icinga2_certificate_cn: '{{ ansible_fqdn }}'
 
 icinga2_requirements:
@@ -94,8 +96,7 @@ icinga2_plugins_extra:
   - check_diskstat.sh
   - check_uptime.sh
   - check_mem
-
-icinga2_become_user: nagios
+  - check_requiered_reboot.sh
 
 icinga2_plugins_download: []
 #   - url: 'https://gitlab.com/coremedia-as-code/monitoring/monitoring-plugins/raw/master/icinga2/check_coremedia_licenses.py'

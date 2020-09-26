@@ -6,19 +6,26 @@
       file:
         name: /etc/icinga2/zones.d/global-templates
         state: directory
+        owner: "{{ icinga2_user }}"
+        group: "{{ icinga2_group }}"
         mode: 0640
 
     - name: create director-global directory
       file:
         name: /etc/icinga2/zones.d/director-global
         state: directory
+        owner: "{{ icinga2_user }}"
+        group: "{{ icinga2_group }}"
         mode: 0640
 
-    - name: create master directory
-      file:
-        name: /etc/icinga2/zones.d/master
-        state: directory
-        mode: 0640
+    # already present
+    # - name: create master directory
+    #   file:
+    #     name: /etc/icinga2/zones.d/master
+    #     state: directory
+    #     owner: "{{ icinga2_user }}"
+    #     group: "{{ icinga2_group }}"
+    #     mode: 0640
 
   when:
     # - icinga2_ha | bool
@@ -28,14 +35,16 @@
   file:
     name: /etc/icinga2/satellites.d
     state: directory
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
     mode: 0640
 
 - name: configure icinga2
   template:
     src: '{{ item.src }}'
     dest: "{{ item.dest }}"
-    owner: root
-    group: root
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
     mode: 0644
   with_items:
     - src: etc/icinga2/icinga2.conf.j2
@@ -50,8 +59,8 @@
   template:
     src: etc/icinga2/downtimes.conf.j2
     dest: /etc/icinga2/downtimes.conf
-    owner: root
-    group: root
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
     mode: 0644
   notify:
     - check configuration
@@ -61,8 +70,8 @@
   template:
     src: etc/icinga2/users.conf.j2
     dest: /etc/icinga2/users.conf
-    owner: root
-    group: root
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
     mode: 0644
   notify:
     - check configuration
@@ -72,8 +81,8 @@
   template:
     src: etc/icinga2/api-users.conf.j2
     dest: /etc/icinga2/api-users.conf
-    owner: root
-    group: root
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
     mode: 0644
   notify:
     - check configuration
@@ -83,8 +92,9 @@
   template:
     src: etc/icinga2/global-templates.conf.j2
     dest: /etc/icinga2/global-templates.conf
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
     mode: 0644
-    backup: true
   notify:
     - check configuration
     - restart icinga2
@@ -95,8 +105,8 @@
       template:
         src: etc/icinga2/zones.d/global-templates/timeperiods.conf.j2
         dest: /etc/icinga2/zones.d/global-templates/timeperiods.conf
-        owner: root
-        group: root
+        owner: "{{ icinga2_user }}"
+        group: "{{ icinga2_group }}"
         mode: 0644
       notify:
         - check configuration

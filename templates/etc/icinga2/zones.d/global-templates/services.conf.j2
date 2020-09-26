@@ -49,55 +49,7 @@ apply Service {{ _name }} {
 
 // --------------------------------------------------------------------------------------
 /*
-apply Service "HTTP: " for (http_vhost => config in host.vars.http_vhosts) {
-  import "generic-service"
 
-  check_command = "http"
-
-  check_interval = 3m
-
-  vars += config
-}
-
-apply Service "HTTPS: " for (https_vhost => config in host.vars.https_vhosts) {
-  import "generic-service"
-
-  check_command = "http"
-
-  check_interval = 3m
-
-  vars += config
-
-  vars += {
-    "http_vhost" = host.name
-    // "http_certificate" = "15"
-    // "http_sni" = true
-    "http_ssl" = true
-    // "notify" = "true"
-  }
-
-  assign where host.vars.https_vhosts
-}
-
-apply Service "cert: " for (https_vhost => config in host.vars.https_vhosts) {
-  import "generic-service"
-
-  check_command = "http"
-
-  check_interval = 1h
-
-  vars += config
-
-  vars += {
-    "http_vhost" = host.name
-    "http_certificate" = "15"
-    "http_sni" = true
-    "http_ssl" = true
-    // "notify" = "true"
-  }
-
-  assign where host.vars.https_vhosts
-}
 
 apply Service "dnssec " for (zone => config in host.vars.zones) {
   import "generic-service"
@@ -125,77 +77,6 @@ apply Service "dns" {
   assign where host.vars.zones
 }
 
-apply Service "rbl" {
-  import "generic-service"
-
-  check_command = "check_rbl"
-
-  vars = {
-    rbl_address = host.vars.rbl
-  }
-
-  assign where host.vars.rbl
-}
-
-apply Service "diskstat " for (device => config in host.vars.diskstat) {
-  import "generic-service"
-  check_command = "check_diskstat"
-  check_interval = 2m
-
-  vars = {
-    "diskstat_dev" = device
-  }
-  vars += config
-  assign where host.vars.diskstat
-}
-
-apply Service "smart " for (device => config in host.vars.smart) {
-  import "generic-service"
-  check_command = "check_smart"
-  check_interval = 15m
-
-  vars = {
-    "smart_device" = device
-  }
-  vars += config
-  assign where host.vars.smart
-}
-
-// generic SSL Certificate check for all vhosts in vars.https_vhost
-apply Service "SSL CERT: " for (https_vhost => config in host.vars.https_vhosts) {
-
-  import "generic-service"
-
-  display_name = "SSL Certificate"
-  // notes        = "check ssl certificate"
-  // notes_url    = "/doc/operations/http-certificate.html"
-
-  check_command = "http"
-
-  vars = {
-    "http_vhost" = https_vhost
-    "http_certificate" = "15"
-    "http_port" = config.https_port
-    "http_sni" = true
-    "http_ssl" = true
-  }
-
-  max_check_attempts = 2
-  check_interval = 10m
-  retry_interval = 2
-  enable_notifications = true
-
-  assign where host.vars.https_vhosts
-}
-
-
-apply Service for (disk => config in host.vars.disks) {
-  import "generic-service"
-
-  check_command = "disk"
-
-  vars += config
-}
 
 
 {% if ansible_swaptotal_mb != 0 %}
@@ -215,17 +96,7 @@ apply Service "swap" {
 {% endif %}
 
 
-apply Service "speedtest" {
-  import "generic-service"
 
-  check_command = "command-check-speedtest"
-
-  max_check_attempts = 2
-  check_interval = 15m
-  retry_interval = 2
-
-  assign where host.vars.speedtest
-}
 
 apply Service "DNS resolution - google" {
   import "generic-service"
@@ -247,82 +118,7 @@ apply Service "DNS resolution - OpenDNS" {
   assign where "DNS-check" in host.groups
 }
 
-apply Service "snmp " for (c => config in host.vars.snmp) {
-  import "generic-service"
 
-  var oid  = check_dictionary( config, "oid" )
-  var warn = check_dictionary( config, "warn" )
-  var crit = check_dictionary( config, "crit" )
-  var description = check_dictionary( config, "description" )
-
-  check_command = "snmp"
-
-  if( description ) {
-    display_name = description
-  } else {
-    display_name = "SNMP for " + c
-  }
-  notes        = "snmp check"
-
-  vars = {
-    snmp_oid = oid
-    snmp_label = c
-  }
-
-  if( warn && crit ) {
-    vars += {
-      "snmp_warn"  = warn
-      "snmp_crit " = crit
-    }
-  }
-
-  assign where host.vars.snmp
-}
-
-
-apply Service "fritzbox " for (fritz => config in host.vars.fritz_box) {
-  import "generic-service"
-
-  check_command = "fritz"
-
-  vars += config
-}
-
-apply Service "imap" to Host {
-  import "generic-service"
-
-  display_name = "Mail IMAP"
-
-  assign where "imap" in host.vars.services
-
-  check_command = "imap"
-
-  #max_check_attempts = 5
-  #retry_interval = 10
-  #enable_notifications = false
-  #enable_flapping = true
-  # enable_perfdata = true
-}
-
-apply Service "pop" to Host {
-  import "generic-service"
-
-  display_name = "Mail POP3"
-
-  assign where "pop3" in host.vars.services || "pop" in host.vars.services
-
-  check_command = "pop"
-}
-
-apply Service "smtp" to Host {
-  import "generic-service"
-
-  display_name = "Mail SMTP"
-
-  assign where "smtp" in host.vars.services
-
-  check_command = "smtp"
-}
 
 apply Service "sensors" to Host {
   import "generic-service"
@@ -382,13 +178,7 @@ apply Service "proc_icinga2" to Host {
   # enable_perfdata = true
 }
 
-apply Service "arch" {
-  import "generic-service"
 
-  check_command = "arch"
-
-  assign where host.vars.os == "Linux" && host.vars.dist == "Archlinux"
-}
 
 apply Service "dhcp" to Host {
   import "generic-service"

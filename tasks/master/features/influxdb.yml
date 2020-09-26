@@ -20,6 +20,6 @@
   template:
     src: etc/icinga2/features/influxdb.conf.j2
     dest: /etc/icinga2/features-available/influxdb.conf
-    owner: root
-    group: root
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
     mode: 0644
