@@ -2,20 +2,25 @@
 
 dependencies: []
 
-
 galaxy_info:
   author: Bodo Schulz
-  description: icinga2
-  company: ''
+  description: ansible role for handling icinga2 as master or satellite
   license: "BSD"
-  min_ansible_version: 2.2
+  min_ansible_version: 2.8
   platforms:
     - name: Ubuntu
       versions:
-        - 16.04
-        - 18.04
+        - cosmic # 16.04
+        - bionic # 18.04
     - name: Debian
       versions:
-        - 8
-        - 9
-        - 10
+        - jessie # 8
+        - etch   # 9
+        - buster # 10
+    - name: EL
+      versions:
+        - 7
+  galaxy_tags:
+    - monitoring
+    - icinga2
+
