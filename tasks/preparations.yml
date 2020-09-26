@@ -163,6 +163,7 @@
       copy:
         content: '%aur_builder ALL=(ALL) NOPASSWD: ALL'
         dest: /etc/sudoers.d/aur
+        mode: 0640
         validate: visudo -cf %s
 
     - name: create build group

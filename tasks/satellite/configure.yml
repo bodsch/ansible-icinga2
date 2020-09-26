@@ -14,6 +14,7 @@
   template:
     src: etc/icinga2/zones.conf.j2
     dest: /etc/icinga2/zones.conf
+    mode: 0644
   when: not icinga2_satellite_has_api_connection | bool
   notify:
     - check configuration

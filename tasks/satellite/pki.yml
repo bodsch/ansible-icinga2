@@ -82,6 +82,7 @@
     dest: "{{ icinga2_pki_dir }}"
     state: directory
     owner: "{{ icinga2_user }}"
+    mode: 0640
 
 - name: "check if existing key '{{ icinga2_pki_fqdn_key }}'"
   stat:
@@ -105,6 +106,7 @@
         dest: "{{ icinga2_pki_ca_cert }}"
         owner: "{{ icinga2_user }}"
         group: "{{ icinga2_user }}"
+        mode: 0640
 
     - name: "create a pki ticket at '{{ icinga2_primary_master }}'"
       shell: |
@@ -166,6 +168,7 @@
   file:
     dest: /etc/icinga2/zones.d/{{ icinga2_satellite_zone }}
     state: directory
+    mode: 0750
   delegate_to: "{{ icinga2_primary_master }}"
 
 # create on both masters!
@@ -173,6 +176,7 @@
   template:
     src: etc/icinga2/satellite.conf.j2
     dest: /etc/icinga2/satellites.d/{{ icinga2_satellite_zone }}.conf
+    mode: 0640
   delegate_to: "{{ item.key }}"
   with_dict:
     "{{ icinga2_masters }}"
@@ -183,6 +187,7 @@
   template:
     src: etc/icinga2/satellite-zone.conf.j2
     dest: /etc/icinga2/zones.d/{{ icinga2_satellite_zone }}/{{ icinga2_certificate_cn }}.conf
+    mode: 0640
   delegate_to: "{{ icinga2_primary_master }}"
   notify:
     - restart icinga2 master

@@ -48,6 +48,7 @@
       copy:
         src: backup/latest.tar.bz2
         dest: /var/tmp/latest.tar.bz2
+        mode: 0640
       delegate_to: '{{ icinga2_primary_master }}'
       when:
         - icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
@@ -57,6 +58,7 @@
       copy:
         src: backup/latest.tar.bz2.sha512
         dest: /var/tmp/latest.tar.bz2.sha512
+        mode: 0640
       delegate_to: '{{ icinga2_primary_master }}'
       when:
         - icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn

@@ -6,16 +6,19 @@
       file:
         name: /etc/icinga2/zones.d/global-templates
         state: directory
+        mode: 0640
 
     - name: create director-global directory
       file:
         name: /etc/icinga2/zones.d/director-global
         state: directory
+        mode: 0640
 
     - name: create master directory
       file:
         name: /etc/icinga2/zones.d/master
         state: directory
+        mode: 0640
 
   when:
     # - icinga2_ha | bool
@@ -25,6 +28,7 @@
   file:
     name: /etc/icinga2/satellites.d
     state: directory
+    mode: 0640
 
 - name: configure icinga2
   template:

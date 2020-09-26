@@ -44,6 +44,7 @@
       copy:
         src: "{{ icinga2_pki_cadir }}/ca.crt"
         dest: "{{ icinga2_pki_dir }}/ca.crt"
+        mode: 0640
         remote_src: true
       tags:
         - icinga2
