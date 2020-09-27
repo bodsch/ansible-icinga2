@@ -27,6 +27,18 @@ provisioner:
       deprecation_warnings: True
       stdout_callback: yaml
 
+scenario:
+  test_sequence:
+    - lint
+    - destroy
+    - dependency
+    - syntax
+    - create
+    - prepare
+    - converge
+    # - verify
+    - destroy
+
 verifier:
   name: ansible
 
