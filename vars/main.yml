@@ -1,6 +1,5 @@
 ---
 
-
 _icinga2_mariadb_packages:
   default:
     - python-mysqldb
@@ -9,6 +8,9 @@ _icinga2_mariadb_packages:
   archlinux: []
   redhat-7:
     - MySQL-python
+  centos:
+    - MariaDB-client
+    - python36-devel
   centos-7:
     - mariadb
     - python36-PyMySQL
@@ -16,18 +18,15 @@ _icinga2_mariadb_packages:
     - MySQL-python
   centos-8:
     - python36-devel
-  centos:
-    - MariaDB-client
-    - python36-devel
   debian:
-    - python-mysqldb
     - python3-mysqldb
-  ubuntu-16:
+  debian-9:
     - python-mysqldb
-    - python3-mysqldb
   ubuntu:
-    - python-mysqldb
     - python3-mysqldb
+  #ubuntu-16:
+  #  - python3-mysqldb
+
 
 _icinga2_mariadb_python_packages:
   default:
@@ -36,18 +35,21 @@ _icinga2_mariadb_python_packages:
   debian:
     - PyMySQL
     - mysqlclient
-  centos:
+  redhat:
     - PyMySQL
     - mysqlclient
 
-icinga2_mariadb_packages: "{{ _icinga2_mariadb_packages[ansible_distribution | lower ~ '-' ~ ansible_distribution_major_version ] |
-  default(_icinga2_mariadb_packages[ansible_distribution | lower ~ '-' ~ ansible_distribution_major_version] |
+icinga2_mariadb_packages: "{{
+          _icinga2_mariadb_packages[ansible_distribution | lower ~ '-' ~ ansible_distribution_major_version ] |
   default(_icinga2_mariadb_packages[ansible_distribution | lower] |
+  default(_icinga2_mariadb_packages[ansible_os_family | lower] |
   default(_icinga2_mariadb_packages['default']))) }}"
 
-icinga2_mariadb_python_packages: "{{ _icinga2_mariadb_python_packages[ansible_distribution | lower ~ '-' ~ ansible_distribution_major_version] |
+icinga2_mariadb_python_packages: "{{
+          _icinga2_mariadb_python_packages[ansible_distribution | lower ~ '-' ~ ansible_distribution_major_version] |
   default(_icinga2_mariadb_python_packages[ansible_distribution | lower] |
-  default(_icinga2_mariadb_python_packages['default'])) }}"
+  default(_icinga2_mariadb_python_packages[ansible_os_family | lower] |
+  default(_icinga2_mariadb_python_packages['default']))) }}"
 
 
 icinga2_remove_old_cert: false

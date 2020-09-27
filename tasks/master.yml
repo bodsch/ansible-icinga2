@@ -2,12 +2,12 @@
 
 - include_tasks: check_installed.yml
 
-- name: install mariadb packages
-  package:
-    name: "{{ item }}"
-    state: present
-  loop:
-    - "{{ icinga2_mariadb_packages }}"
+# - name: install packages for support databases
+#   package:
+#     name: "{{ item }}"
+#     state: present
+#   loop:
+#     - "{{ icinga2_mariadb_packages }}"
 
 - block:
     #
@@ -37,10 +37,10 @@
   when:
     not icinga2_installed
 
-- name: install icinga2-ido package
-  package:
-    name: icinga2-ido-mysql
-    state: present
+# - name: install icinga2-ido package
+#   package:
+#     name: icinga2-ido-mysql
+#     state: present
 
 - include_tasks: check_installed.yml
 

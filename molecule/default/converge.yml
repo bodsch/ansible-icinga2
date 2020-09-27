@@ -5,6 +5,8 @@
     NETRC: ''
   vars:
 
+    mysql_python_package_debian: "{{ 'python3-mysqldb' if ansible_python.version.major == 3 else 'python-mysqldb' }}"
+
     mysql_bind_address: 127.0.0.1
     mysql_max_connections: 20
 
@@ -68,7 +70,7 @@
 
   roles:
     - role: mariadb
-    - role: bodsch.icinga2
+    - role: ansible-icinga2 # bodsch.icinga2
 
   # tasks:
   #   # - include: ../../tasks/master/features.yml

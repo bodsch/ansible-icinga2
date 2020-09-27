@@ -1,5 +1,17 @@
 ---
 
+- name: install packages for support databases
+  package:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - "{{ icinga2_mariadb_packages }}"
+
+- name: install icinga2-ido package
+  package:
+    name: icinga2-ido-mysql
+    state: present
+
 - block:
     # configure ido-mysql
     #
@@ -11,23 +23,6 @@
         group: "{{ icinga2_group }}"
         mode: 0750
 
-    # # needs root rights
-    # - name: ensure database {{ icinga2_ido.database }} is created
-    #   shell: >
-    #     mysql \
-    #       --host {{ icinga2_ido.host }} \
-    #       --user {{ icinga2_ido.user }} \
-    #       --password {{ icinga2_ido.password }} \
-    #       --batch \
-    #       --skip-column-names \
-    #       --execute \
-    #       "SELECT count(TABLE_NAME) FROM information_schema.tables where TABLE_SCHEMA = '{{ icinga2_ido.database }}';"
-    #   register: mysql_ido_schema
-    #   changed_when: false
-    #   check_mode: false
-    #   # no_log: true
-
-
     - name: check if configured database are available
       wait_for:
         host: "{{ icinga2_ido.host }}"
@@ -37,7 +32,6 @@
       ignore_errors: false
       retries: 10
       delay: 10
-
 
     # - name: Create a new database with name '{{ icinga2_ido.database }}'
     #   mysql_db:
@@ -61,15 +55,8 @@
       register: _mysql_ido_version
       changed_when: false
       ignore_errors: true
-      # no_log: true
+      no_log: true
       # when: not _mysql_ido_schema.failed | bool
-
-
-    # - debug:
-    #     var: "{{ item }}"
-    #   when: item is defined
-    #   loop:
-    #     - _mysql_ido_version.stdout
 
     - name: create the mysql ido schema
       mysql_db:

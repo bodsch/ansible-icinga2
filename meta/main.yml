@@ -12,6 +12,7 @@ galaxy_info:
       versions:
         - cosmic # 16.04
         - bionic # 18.04
+        - focal  # 20.04
     - name: Debian
       versions:
         - jessie # 8

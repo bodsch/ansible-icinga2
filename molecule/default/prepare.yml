@@ -1,18 +1,41 @@
 ---
-- name: Prepare
-  hosts: all
-  gather_facts: true
-  become: true
-  # tasks:
-  #   - name: clean caches for debian based
-  #     command: apt clean
-  #     args:
-  #       warn: false
-  #     when: ansible_os_family | lower == 'debian'
-  #   # - name: update instance
-  #   #   shell: |
-  #   #     apt update
-  #   #     apt -y dist-upgrade
-  #   #   args:
-  #   #     warn: false
-  #   #   when: ansible_os_family | lower == 'debian'
+
+- hosts: all
+
+  tasks:
+
+    - debug:
+        msg:
+          - "ansible_os_family                  : {{ ansible_os_family }}"
+          - "ansible_distribution               : {{ ansible_distribution }}"
+          - "ansible_distribution_major_version : {{ ansible_distribution_major_version }}"
+          - "ansible_version                    : {{ ansible_version.full }}"
+          - "ansible_python_version             : {{ ansible_python.version.major }}"
+
+    - block:
+
+        - name: Install required packages on Debian
+          apt:
+            # name:
+            #   # required to add key to apt keyring
+            #   - gnupg
+            #   # required to verify icinga2 is running
+            #   - procps
+            update_cache: true
+
+        - name: Install Backports repository on Debian Stretch
+          apt_repository:
+            repo: deb http://deb.debian.org/debian {{ ansible_distribution_release }}-backports main
+            state: present
+            update_cache: true
+          when:
+            - ansible_distribution_release == 'stretch'
+
+        - name: Install apt-transport-https on older Debian/Ubuntu versions
+          apt:
+            name:
+              - apt-transport-https
+          when:
+            - ansible_distribution_release in ['jessie', 'stretch', 'xenial']
+
+      when: ansible_os_family | lower == 'debian'
