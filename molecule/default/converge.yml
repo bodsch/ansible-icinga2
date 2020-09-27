@@ -68,7 +68,7 @@
 
   roles:
     - role: mariadb
-    - role: ansible-icinga2
+    - role: bodsch.icinga2
 
   # tasks:
   #   # - include: ../../tasks/master/features.yml
