@@ -23,7 +23,7 @@
 
     icinga2_masters:
       #debian-10:
-      centos-7:
+      instance:
 
     icinga2_sudo_cmd:
       - /sbin/service foo restart

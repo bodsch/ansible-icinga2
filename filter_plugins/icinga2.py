@@ -2,8 +2,8 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-from ansible.errors import AnsibleError, AnsibleParserError
-from ansible.plugins.lookup import LookupBase
+# from ansible.errors import AnsibleError, AnsibleParserError
+# from ansible.plugins.lookup import LookupBase
 from ansible.utils.display import Display
 
 # https://docs.ansible.com/ansible/latest/dev_guide/developing_plugins.html
@@ -12,15 +12,15 @@ from ansible.utils.display import Display
 display = Display()
 
 
-
 class FilterModule(object):
-    ''' Ansible file jinja2 tests '''
-
+    """
+        Ansible file jinja2 tests
+    """
     def filters(self):
         return {
-          'primary_master': self.filter_primary,
-          'reorder_master': self.filter_reorder,
-          'satellite_zone': self.satellite_zone
+            'primary_master': self.filter_primary,
+            'reorder_master': self.filter_reorder,
+            'satellite_zone': self.satellite_zone
         }
 
     """
@@ -36,7 +36,6 @@ class FilterModule(object):
 
       returns 'blackbox.matrix.lan'
     """
-
     def filter_primary(self, mydict):
         seen = ''
 
@@ -45,7 +44,7 @@ class FilterModule(object):
         display.vv("found: {} entries in {}".format(count, mydict))
 
         if(count == 1):
-            k  = mydict.keys()
+            k = mydict.keys()
             keys = list(k)
             display.v("key: {}".format(k))
             display.v("{}".format(keys))
@@ -57,14 +56,14 @@ class FilterModule(object):
                 if(isinstance(i, dict)):
                     _type = i.get('type', None)
 
-                if(_type != None and _type == 'primary' ):
+                if(_type is not None and _type == 'primary'):
                     seen = k
                     break
 
         display.vv("found primary: {}".format(seen))
 
         if(seen == ''):
-            k  = mydict.keys()
+            k = mydict.keys()
             keys = list(k)
             display.v("key: {}".format(k))
             display.v("{}".format(keys))
@@ -73,7 +72,6 @@ class FilterModule(object):
         display.v("return primary: {}".format(seen))
 
         return seen
-
 
     """
       reorganize 'icinga2_masters' dict
@@ -101,7 +99,6 @@ class FilterModule(object):
 
         return seen
 
-
     """
 
     """
@@ -114,11 +111,9 @@ class FilterModule(object):
         display.vv("search zone for '{}'".format(ansible_fqdn))
 
         for zone, zone_entries in mydict.items():
-            _type = None
-
-            keys     = zone_entries.keys()
+            keys = zone_entries.keys()
             key_list = list(keys)
-            found    = self.__search(key_list, ansible_fqdn)
+            found = self.__search(key_list, ansible_fqdn)
 
             display.vv("zone : {} -> values {} ({})".format(zone, key_list, found))
 
@@ -138,9 +133,9 @@ class FilterModule(object):
 
         for key, value in multilevelDict.items():
 
-            display.v( "key: {} == value: {}".format(key, value))
+            display.v("key: {} == value: {}".format(key, value))
 
-            if value == None:
+            if value is None:
                 value = {}
 
             if value.get('overwrite'):
@@ -151,7 +146,6 @@ class FilterModule(object):
                 new[key] = value
 
         return new
-
 
     """
 

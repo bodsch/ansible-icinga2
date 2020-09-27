@@ -173,7 +173,7 @@
     #     msg: "{{ _restart_icinga2_master.msg }}"
     #   when: _restart_icinga2_master.failed
 
-    - name: restart icinga2 master (fix https://github.com/ansible/ansible/issues/71528)  # noqa 303
+    - name: restart icinga2 master (fix https://github.com/ansible/ansible/issues/71528)  # noqa 303 306
       shell: |
         systemctl restart icinga2
       when:
