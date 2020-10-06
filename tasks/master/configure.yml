@@ -8,7 +8,7 @@
         state: directory
         owner: "{{ icinga2_user }}"
         group: "{{ icinga2_group }}"
-        mode: 0640
+        mode: 0755
 
     - name: create director-global directory
       file:
@@ -16,7 +16,7 @@
         state: directory
         owner: "{{ icinga2_user }}"
         group: "{{ icinga2_group }}"
-        mode: 0640
+        mode: 0755
 
     # already present
     # - name: create master directory
@@ -25,7 +25,7 @@
     #     state: directory
     #     owner: "{{ icinga2_user }}"
     #     group: "{{ icinga2_group }}"
-    #     mode: 0640
+    #     mode: 0660
 
   when:
     # - icinga2_ha | bool
@@ -37,7 +37,7 @@
     state: directory
     owner: "{{ icinga2_user }}"
     group: "{{ icinga2_group }}"
-    mode: 0640
+    mode: 0755
 
 - name: configure icinga2
   template:
@@ -45,7 +45,7 @@
     dest: "{{ item.dest }}"
     owner: "{{ icinga2_user }}"
     group: "{{ icinga2_group }}"
-    mode: 0644
+    mode: 0666
   with_items:
     - src: etc/icinga2/icinga2.conf.j2
       dest: /etc/icinga2/icinga2.conf
@@ -61,7 +61,7 @@
     dest: /etc/icinga2/downtimes.conf
     owner: "{{ icinga2_user }}"
     group: "{{ icinga2_group }}"
-    mode: 0644
+    mode: 0666
   notify:
     - check configuration
     - restart icinga2
@@ -72,7 +72,7 @@
     dest: /etc/icinga2/users.conf
     owner: "{{ icinga2_user }}"
     group: "{{ icinga2_group }}"
-    mode: 0644
+    mode: 0666
   notify:
     - check configuration
     - restart icinga2
@@ -83,7 +83,7 @@
     dest: /etc/icinga2/api-users.conf
     owner: "{{ icinga2_user }}"
     group: "{{ icinga2_group }}"
-    mode: 0644
+    mode: 0666
   notify:
     - check configuration
     - restart icinga2
@@ -94,7 +94,7 @@
     dest: /etc/icinga2/global-templates.conf
     owner: "{{ icinga2_user }}"
     group: "{{ icinga2_group }}"
-    mode: 0644
+    mode: 0666
   notify:
     - check configuration
     - restart icinga2
@@ -107,7 +107,7 @@
         dest: /etc/icinga2/zones.d/global-templates/timeperiods.conf
         owner: "{{ icinga2_user }}"
         group: "{{ icinga2_group }}"
-        mode: 0644
+        mode: 0666
       notify:
         - check configuration
         - restart icinga2

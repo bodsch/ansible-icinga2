@@ -22,4 +22,4 @@
     dest: /etc/icinga2/features-available/influxdb.conf
     owner: "{{ icinga2_user }}"
     group: "{{ icinga2_group }}"
-    mode: 0644
+    mode: 0660

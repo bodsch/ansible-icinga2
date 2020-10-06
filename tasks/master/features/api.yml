@@ -20,6 +20,6 @@
         dest: /etc/icinga2/features-available/api.conf
         owner: "{{ icinga2_user }}"
         group: "{{ icinga2_group }}"
-        mode: 0644
+        mode: 0660
 
   when: icinga2_master_features_enabled | join('|') | regex_search('api')

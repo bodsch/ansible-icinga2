@@ -6,7 +6,7 @@
     state: directory
     owner: "{{ icinga2_user }}"
     group: "{{ icinga2_group }}"
-    mode: 0640
+    mode: 0750
 
 - name: define graphite feature state
   set_fact:
@@ -18,7 +18,7 @@
     dest: /etc/icinga2/features-available/notification.conf
     owner: "{{ icinga2_user }}"
     group: "{{ icinga2_group }}"
-    mode: 0644
+    mode: 0666
 
 - name: enable notification feature
   icinga2_feature:

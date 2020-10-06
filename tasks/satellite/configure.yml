@@ -4,7 +4,7 @@
   template:
     src: etc/icinga2/global-templates.conf.j2
     dest: /etc/icinga2/global-templates.conf
-    mode: 0644
+    mode: 0666
     backup: true
   notify:
     - check configuration
@@ -14,7 +14,7 @@
   template:
     src: etc/icinga2/zones.conf.j2
     dest: /etc/icinga2/zones.conf
-    mode: 0644
+    mode: 0666
   when: not icinga2_satellite_has_api_connection | bool
   notify:
     - check configuration
@@ -23,6 +23,7 @@
 - name: remove static zone file on icinga2 satellite
   file:
     dest: /etc/icinga2/zones.conf
+    state: absent
   when: icinga2_satellite_has_api_connection | bool
   notify:
     - check configuration

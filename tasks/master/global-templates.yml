@@ -22,7 +22,7 @@
         dest: /etc/icinga2/zones.d/global-templates/services.conf
         owner: "{{ icinga2_user }}"
         group: "{{ icinga2_group }}"
-        mode: 0644
+        mode: 0660
       notify:
         - check configuration
         - restart icinga2
@@ -33,7 +33,7 @@
         dest: /etc/icinga2/zones.d/global-templates/commands.conf
         owner: "{{ icinga2_user }}"
         group: "{{ icinga2_group }}"
-        mode: 0644
+        mode: 0660
       notify:
         - check configuration
         - restart icinga2
@@ -44,7 +44,7 @@
         dest: /etc/icinga2/zones.d/global-templates/functions.conf
         owner: "{{ icinga2_user }}"
         group: "{{ icinga2_group }}"
-        mode: 0644
+        mode: 0660
       notify:
         - check configuration
         - restart icinga2
@@ -55,7 +55,7 @@
         dest: /etc/icinga2/zones.d/global-templates/eventcommands.conf
         owner: "{{ icinga2_user }}"
         group: "{{ icinga2_group }}"
-        mode: 0644
+        mode: 0660
       notify:
         - check configuration
         - restart icinga2

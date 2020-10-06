@@ -6,7 +6,7 @@
       template:
         src: backup.config.j2
         dest: /usr/local/etc/backup.config
-        mode: 0644
+        mode: 0660
 
     - name: add backup script
       template:

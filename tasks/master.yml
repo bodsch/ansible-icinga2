@@ -78,7 +78,7 @@
     dest: /etc/icinga2/constants.conf
     owner: "{{ icinga2_user }}"
     group: "{{ icinga2_group }}"
-    mode: 0644
+    mode: 0666
   notify:
     - check configuration
     - restart icinga2
@@ -97,7 +97,7 @@
     dest: /etc/icinga2/zones.conf
     owner: "{{ icinga2_user }}"
     group: "{{ icinga2_group }}"
-    mode: 0644
+    mode: 0666
     backup: true
 
 - name: create directory for master zone
@@ -106,7 +106,7 @@
     state: directory
     owner: "{{ icinga2_user }}"
     group: "{{ icinga2_group }}"
-    mode: 0640
+    mode: 0755
   when: icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
 
 # only on primary master!
@@ -116,7 +116,7 @@
     dest: /etc/icinga2/zones.d/master/{{ ansible_fqdn }}.conf
     owner: "{{ icinga2_user }}"
     group: "{{ icinga2_group }}"
-    mode: 0644
+    mode: 0666
     backup: true
   notify:
     - check configuration
@@ -131,7 +131,7 @@
     dest: /etc/icinga2/groups.conf
     owner: "{{ icinga2_user }}"
     group: "{{ icinga2_group }}"
-    mode: 0644
+    mode: 0666
     backup: true
   notify:
     - check configuration
@@ -144,6 +144,8 @@
   file:
     path: "{{ icinga2_local_scriptsdir }}"
     state: directory
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
     mode: 0755
 
 - include_tasks: master/pki.yml

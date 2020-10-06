@@ -10,7 +10,7 @@
     dest: /etc/icinga2/features-available/gelf.conf
     owner: "{{ icinga2_user }}"
     group: "{{ icinga2_group }}"
-    mode: 0644
+    mode: 0660
 
 - name: enable gelf feature
   icinga2_feature:
