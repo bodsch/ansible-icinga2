@@ -10,14 +10,18 @@ galaxy_info:
   platforms:
     - name: Ubuntu
       versions:
-        - cosmic # 16.04
-        - bionic # 18.04
-        - focal  # 20.04
+        # 16.04
+        - cosmic
+        # 18.04
+        - bionic
+        # 20.04
+        - focal
     - name: Debian
       versions:
-        - jessie # 8
-        - etch   # 9
-        - buster # 10
+        # 9
+        - etch
+        # 10
+        - buster
     - name: EL
       versions:
         - 7
@@ -25,4 +29,12 @@ galaxy_info:
 
   galaxy_tags:
     - monitoring
+    - icinga
     - icinga2
+    - HA
+    - master
+    - satellite
+    - rhel
+    - debian
+    - ubuntu
+    - centos

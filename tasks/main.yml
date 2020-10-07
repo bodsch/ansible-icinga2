@@ -4,7 +4,6 @@
   set_fact:
     icinga2_primary_master: "{{ icinga2_masters | reorder_master }}"
 
-
 - include: preparations.yml
   become: true
   tags:
@@ -17,10 +16,6 @@
 
 - include_tasks: satellite.yml
   when: icinga2_mode == 'satellite'
-  tags:
-    - icinga2
-
-- include_tasks: plugins.yml
   tags:
     - icinga2
 

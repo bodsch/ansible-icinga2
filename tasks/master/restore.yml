@@ -1,7 +1,6 @@
 ---
 
 - block:
-
     - name: add backup and restore config
       template:
         src: backup.config.j2
@@ -19,29 +18,10 @@
         src: restore-icinga2.sh.j2
         dest: /usr/local/bin/restore-icinga2.sh
         mode: 0755
-
-    # - name: detect crontab
-    #   stat:
-    #     path: /usr/bin/crontab
-    #   register: _crontab_script
-    #
-    # - name: configure backup script 2/m with cron
-    #   cron:
-    #     name: "icinga2 backup"
-    #     minute: '0'
-    #     hour: '23'
-    #     day: 2,16
-    #     user: root
-    #     job: /usr/local/bin/backup-icinga2.sh
-    #     cron_file: backup_icinga2
-    #   when:
-    #     - _crontab_script.stat.exists
-
   when:
     - icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
 
 - block:
-
     - name: define primary icinga2 master
       set_fact:
         icinga2_primary_master: "{{ icinga2_masters | primary_master }}"
@@ -77,7 +57,6 @@
       when:
         - icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
         - icinga2_restore_script.stat.exists
-
   when:
     - icinga2_master_backup_enabled is defined and icinga2_master_backup_enabled | bool
 

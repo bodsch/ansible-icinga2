@@ -19,6 +19,12 @@ icinga2_checkcommands:
         required = true
         value = "$docker_containers$"
       }
+  system_uptime:
+    import: plugin-check-command
+    command: '[ PluginDir + "/check_uptime.sh" ]'
+  check_memory:
+    import: plugin-check-command
+    command: '[ PluginDir + "/check_mem" ]'
 ```
 
 you can also use `arguments_append` to create an `arguments += {` line.

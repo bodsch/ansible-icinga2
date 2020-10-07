@@ -21,14 +21,6 @@
     msg: primary icinga2 master is missing
     quiet: true
 
-# - debug:
-#     var="{{ item }}"
-#   when: item is defined
-#   with_items:
-#     - icinga2_primary_master
-#     - ansible_fqdn
-#     - icinga2_mode
-
 - name: assert wrong primary master
   assert:
     that:
@@ -105,7 +97,6 @@
     #
     - name: add icinga2 repo GPG key
       apt_key:
-        # F51A 91A5 EE00 1AA5 D77D  53C4 C6E3 19C3 3441 0682
         id: F51A91A5EE001AA5D77D53C4C6E319C334410682
         url: https://packages.icinga.com/icinga.key
 

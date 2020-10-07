@@ -16,9 +16,7 @@
     - icinga2
     - features
 
-# configure API
 - block:
-
     - name: configure api feature
       template:
         src: etc/icinga2/features/api.conf.j2

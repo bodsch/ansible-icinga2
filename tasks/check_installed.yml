@@ -13,9 +13,8 @@
   setup:
 
 - block:
-    #
     - name: detect installed icinga2 version  # noqa 301 306
-      shell: >
+      shell: |
         icinga2 --version | head -n1 | awk -F 'version: ' '{printf $2}' | awk -F '-' '{print $1}' | sed 's|r||'
       register: __installed_icinga2_version
 

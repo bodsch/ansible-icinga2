@@ -1,7 +1,6 @@
 ---
 
 - block:
-
     - name: create global-templates directory
       file:
         name: /etc/icinga2/zones.d/global-templates
@@ -17,18 +16,7 @@
         owner: "{{ icinga2_user }}"
         group: "{{ icinga2_group }}"
         mode: 0755
-
-    # already present
-    # - name: create master directory
-    #   file:
-    #     name: /etc/icinga2/zones.d/master
-    #     state: directory
-    #     owner: "{{ icinga2_user }}"
-    #     group: "{{ icinga2_group }}"
-    #     mode: 0660
-
   when:
-    # - icinga2_ha | bool
     - icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
 
 - name: create satellite directory
@@ -112,5 +100,4 @@
         - check configuration
         - restart icinga2
   when:
-    # - icinga2_ha | bool
     - icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn

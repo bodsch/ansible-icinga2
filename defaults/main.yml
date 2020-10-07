@@ -89,23 +89,3 @@ icinga2_hostgroups: {}
 icinga2_servicegroups: {}
 
 icinga2_master_port: 5665
-
-icinga2_plugins_extra:
-  - restart_service
-  - check_hostname
-  - check_diskstat.sh
-  - check_uptime.sh
-  - check_mem
-  - check_requiered_reboot.sh
-
-icinga2_plugins_download: []
-#   - url: 'https://gitlab.com/coremedia-as-code/monitoring/monitoring-plugins/raw/master/icinga2/check_coremedia_licenses.py'
-#     dest: 'check_coremedia_licenses.py'
-#     checksum: ''
-#     validate: false
-#   - url: 'https://www.claudiokuenzler.com/monitoring-plugins/check_smart.pl'
-#     dest: 'check_smart.pl'
-#     checksum: 'sha256:a137f37aac35e66f90a34fccca5251d7da6a0847e3f1caab9c97b5fe5b5d183d.'
-#   - url: 'https://raw.githubusercontent.com/bodsch/check_arch_updates/1.0/check_arch_updates'
-#     dest: 'check_arch_updates'
-#     checksum: 'sha256:7afa562aaedb63f6e93cfebfa4a9a3ea49fecda62d4dae3d8ff919b76c117c41'

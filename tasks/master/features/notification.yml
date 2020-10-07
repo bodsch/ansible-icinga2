@@ -10,7 +10,8 @@
 
 - name: define graphite feature state
   set_fact:
-    feature_notification_state: "{{ 'present' if icinga2_master_features_enabled | join('|') | regex_search('notification') else 'absent' }}"
+    feature_notification_state: "{{ 'present' if icinga2_master_features_enabled | join('|') |
+      regex_search('notification') else 'absent' }}"
 
 - name: configure notification feature
   template:
