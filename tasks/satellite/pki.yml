@@ -15,9 +15,9 @@
     icinga2_pki_fqdn_cert: "{{ icinga2_pki_dir }}/{{ ansible_fqdn }}.crt"
     icinga2_pki_master_cert: "{{ icinga2_pki_dir }}/trusted-master.crt"
 
+# compare checksum for ca.cert
+#
 - block:
-    # compare checksum for ca.cert
-    #
     - name: copy ca.crt from primary icinga2 master
       fetch:
         src: "{{ icinga2_pki_ca_cert }}"
@@ -35,7 +35,6 @@
       delegate_to: localhost
       register: primary_master_ca_file
 
-    #
     - name: check for existing '{{ icinga2_pki_ca_cert }}'
       stat:
         path: "{{ icinga2_pki_ca_cert }}"
@@ -99,7 +98,6 @@
   register: __ca_crt
 
 - block:
-    #
     - name: "copy ca.crt to '{{ ansible_fqdn }}'"
       copy:
         src: files/{{ icinga2_primary_master }}/ca.crt

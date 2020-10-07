@@ -1,9 +1,9 @@
 ---
 
-# configure graphite writer
 - name: define graphite feature state
   set_fact:
-    feature_graphite_state: "{{ 'present' if icinga2_master_features_enabled | join('|') | regex_search('graphite') else 'absent' }}"
+    feature_graphite_state: "{{ 'present' if icinga2_master_features_enabled | join('|') |
+      regex_search('graphite') else 'absent' }}"
 
 - name: configure graphite feature
   template:

@@ -24,7 +24,6 @@
     icinga2_mode: master
 
     icinga2_masters:
-      #debian-10:
       instance:
 
     icinga2_sudo_cmd:
@@ -70,6 +69,7 @@
 
   roles:
     - role: mariadb
+    - role: monitoring-tools
     - role: bodsch.icinga2
 
   # tasks:
@@ -87,4 +87,3 @@
   #
   #     tags:
   #       - downtime_schedule
-

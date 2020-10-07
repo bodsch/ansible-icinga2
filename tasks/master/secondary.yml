@@ -2,7 +2,6 @@
 
 # secondary master
 #
-
 - name: set facts
   set_fact:
     icinga2_pki_ca_key: "{{ icinga2_pki_dir }}/ca.key"
@@ -29,7 +28,6 @@
   register: __ca_crt
 
 - block:
-    #
     - name: "create a ticket from icinga2 master for the secondary master '{{ ansible_fqdn }}'"
       shell: |
         icinga2 pki ticket --cn {{ icinga2_certificate_cn }}
@@ -57,8 +55,8 @@
         mode: 0660
 
     - name: configure icinga2 secondary master pki
-    ## http://lowendbox.com/blog/server-monitoring-with-icinga-2-part-2-the-node-ubuntu-host/
-    ## http://serverfault.com/questions/647805/how-to-set-up-icinga2-remote-client-without-using-cli-wizard
+      ## http://lowendbox.com/blog/server-monitoring-with-icinga-2-part-2-the-node-ubuntu-host/
+      ## http://serverfault.com/questions/647805/how-to-set-up-icinga2-remote-client-without-using-cli-wizard
       command: "{{ item }}"
       with_items:
         - icinga2 pki new-cert
@@ -108,76 +106,20 @@
         group: "{{ icinga2_group }}"
         mode: 0660
         backup: true
-
-
   when: ( not __fqdn_key.stat.exists and
     icinga2_primary_master is defined and
     icinga2_primary_master != ansible_fqdn)
 
-- block:
-
-#    - name: create zone entry under '/etc/icinga2/zones.d' on master '{{ icinga2_primary_master }}'
-#      file:
-#        dest: /etc/icinga2/zones.d/{{ ansible_fqdn }}
-#        state: directory
-#      delegate_to: "{{ icinga2_primary_master }}"
-
-    # - name: create zone file on master '{{ icinga2_primary_master }}'
-    #   template:
-    #     src: etc/icinga2/hosts.conf.j2
-    #     dest: /etc/icinga2/zones.d/master/{{ ansible_fqdn }}.conf
-    #   delegate_to: "{{ icinga2_primary_master }}"
-    #   notify:
-    #     - restart icinga2 master
-
-    - name: create host object file for secondary master on master '{{ icinga2_primary_master }}'
-      template:
-        src: etc/icinga2/satellite-zone.conf.j2
-        dest: /etc/icinga2/zones.d/master/{{ ansible_fqdn }}.conf
-        owner: "{{ icinga2_user }}"
-        group: "{{ icinga2_group }}"
-        mode: 0660
-      delegate_to: "{{ icinga2_primary_master }}"
-      notify:
-        - restart icinga2 master
-
-    # - name: fix permissions for icinga2 pki directory  # noqa 301
-    #   command: "{{ item }}"
-    #   args:
-    #     warn: false
-    #   with_items:
-    #     - chown -R {{ icinga2_user }}:{{ icinga2_user }} {{ icinga2_pki_dir }}
-
-    # - name: create zone entry on master '{{ icinga2_primary_master }}'
-    #   file:
-    #     dest: /etc/icinga2/zones.d/{{ icinga2_certificate_cn }}
-    #     state: directory
-    #   delegate_to: "{{ icinga2_primary_master }}"
-
-    # - name: create zone file on master '{{ icinga2_primary_master }}'
-    #   template:
-    #     src: etc/icinga2/satellite.conf.j2
-    #     dest: /etc/icinga2/satellites.d/{{ icinga2_certificate_cn }}.conf
-    #   delegate_to: "{{ icinga2_primary_master }}"
-    #   notify:
-    #     - restart icinga2 master
-
-    # - name: create host object file on master '{{ icinga2_primary_master }}'
-    #   template:
-    #     src: etc/icinga2/satellite-zone.conf.j2
-    #     dest: /etc/icinga2/zones.d/{{ icinga2_certificate_cn }}/{{ icinga2_certificate_cn }}.conf
-    #   delegate_to: "{{ icinga2_primary_master }}"
-    #   notify:
-    #     - restart icinga2 master
-
-    # en: icinga2_fqdn_ticket is defined and icinga2_fqdn_ticket | length != 0
-
-    # - name: ensure that satellite has api connetions
-    #   stat:
-    #     path: "{{ icinga2_certificate_cn }}/_etc/{{ icinga2_certificate_cn }}.conf"
-    #   register: __satellite_api_connections
-
-
+- name: create host object file for secondary master on master '{{ icinga2_primary_master }}'
+  template:
+    src: etc/icinga2/satellite-zone.conf.j2
+    dest: /etc/icinga2/zones.d/master/{{ ansible_fqdn }}.conf
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
+    mode: 0660
+  delegate_to: "{{ icinga2_primary_master }}"
+  notify:
+    - restart icinga2 master
   when: icinga2_primary_master is defined and icinga2_primary_master != ansible_fqdn
 
 - name: create icinga2 constants.conf

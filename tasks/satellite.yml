@@ -2,15 +2,12 @@
 
 - include_tasks: check_installed.yml
 
-- block:
-
-    - name: install icinga2 packages
-      package:
-        name: "{{ item }}"
-        state: present
-      loop:
-        "{{ icinga2_dependencies }}"
-
+- name: install icinga2 packages
+  package:
+    name: "{{ item }}"
+    state: present
+  loop:
+    "{{ icinga2_dependencies }}"
   when: ansible_os_family | lower != 'archlinux'
 
 # TODO
@@ -31,7 +28,7 @@
       become_user: aur_builder
       shell: |
         cd ~/icinga2/
-        grep pkgver= PKGBUILD |awk -F '=' '{printf $2}'
+        grep pkgver= PKGBUILD | awk -F '=' '{printf $2}'
       register: __packaged_icinga2_version
 
     - name: set package icinga2 version
@@ -44,29 +41,6 @@
         - name: compare versiones
           debug:
             msg: current installed version {{ icinga2_installed_version }} - we need an update to version {{ packaged_icinga2_version }}
-
-        # - name: install build tools
-        #   package:
-        #     name: '{{item}}'
-        #     state: present
-        #   loop:
-        #     - base-devel
-        #     - cmake
-        #
-        # - name: create sudo rules for aur_builder
-        #   copy:
-        #     content: '%aur_builder ALL=(ALL) NOPASSWD: ALL'
-        #     dest: /etc/sudoers.d/aur
-        #     validate: 'visudo -cf %s'
-        #
-        # - name: create build group
-        #   group:
-        #     name: aur_builder
-        #
-        # - name: create build user
-        #   user:
-        #     name: aur_builder
-        #     group: aur_builder
 
         - name: build icinga2 package
           become: true

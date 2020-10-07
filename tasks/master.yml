@@ -2,15 +2,7 @@
 
 - include_tasks: check_installed.yml
 
-# - name: install packages for support databases
-#   package:
-#     name: "{{ item }}"
-#     state: present
-#   loop:
-#     - "{{ icinga2_mariadb_packages }}"
-
 - block:
-    #
     - name: create policy-rc.d
       copy:
         dest: /usr/sbin/policy-rc.d
@@ -36,11 +28,6 @@
         state: absent
   when:
     not icinga2_installed
-
-# - name: install icinga2-ido package
-#   package:
-#     name: icinga2-ido-mysql
-#     state: present
 
 - include_tasks: check_installed.yml
 
@@ -158,9 +145,8 @@
   when: icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
 
 - block:
-    #
     - name: check configuration  # noqa 301
-      shell: >
+      shell: |
         icinga2 daemon --validate --log-level debug --config /etc/icinga2/icinga2.conf
       register: icinga2_validate_config
 
@@ -168,19 +154,7 @@
       service:
         name: icinga2
         state: restarted
-      ignore_errors: true # https://github.com/ansible/ansible/issues/71528
       register: _restart_icinga2_master
-
-    # - debug:
-    #     msg: "{{ _restart_icinga2_master.msg }}"
-    #   when: _restart_icinga2_master.failed
-
-    - name: restart icinga2 master (fix https://github.com/ansible/ansible/issues/71528)  # noqa 303 306
-      shell: |
-        systemctl restart icinga2
-      when:
-        - _restart_icinga2_master.failed
-        - _restart_icinga2_master.msg == "Service is in unknown state"
 
     - name: wait for primary master to startup
       wait_for:

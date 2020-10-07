@@ -13,8 +13,6 @@
     state: present
 
 - block:
-    # configure ido-mysql
-    #
     - name: create database upgrade script
       template:
         src: database-upgrade.sh.j2
@@ -33,15 +31,6 @@
       retries: 10
       delay: 10
 
-    # - name: Create a new database with name '{{ icinga2_ido.database }}'
-    #   mysql_db:
-    #     name: '{{ icinga2_ido.database }}'
-    #     login_host: "{{ icinga2_ido.host }}"
-    #     login_user: "{{ icinga2_ido.user }}"
-    #     login_password: "{{ icinga2_ido.password }}"
-    #     state: present
-    #   register: _mysql_ido_schema
-
     - name: check mysql database version
       shell: >
         mysql \
@@ -56,7 +45,6 @@
       changed_when: false
       ignore_errors: true
       no_log: true
-      # when: not _mysql_ido_schema.failed | bool
 
     - name: create the mysql ido schema
       mysql_db:
@@ -71,13 +59,11 @@
       check_mode: false
       when: _mysql_ido_version.stdout | string | length == 0
 
-    # TODO
-    # update database schema
     - name: update database schema  # noqa 305
-      shell: /usr/local/bin/database-upgrade.sh
+      command:
+        cmd: /usr/local/bin/database-upgrade.sh
       changed_when: false
       # no_log: false
-
   when: icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
 
 - name: configure ido-mysql feature

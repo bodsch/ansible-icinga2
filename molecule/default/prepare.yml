@@ -1,9 +1,7 @@
 ---
 
 - hosts: all
-
   tasks:
-
     - debug:
         msg:
           - "ansible_os_family                  : {{ ansible_os_family }}"
@@ -13,7 +11,6 @@
           - "ansible_python_version             : {{ ansible_python.version.major }}"
 
     - block:
-
         - name: Install required packages on Debian
           apt:
             # name:

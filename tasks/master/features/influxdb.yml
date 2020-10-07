@@ -1,9 +1,9 @@
 ---
 
-# configure influxdb writer
 - name: define influxdb feature state
   set_fact:
-    feature_influxdb_state: "{{ 'present' if icinga2_master_features_enabled | join('|') | regex_search('influxdb') else 'absent' }}"
+    feature_influxdb_state: "{{ 'present' if icinga2_master_features_enabled | join('|') |
+      regex_search('influxdb') else 'absent' }}"
 
 - name: enable influxdb feature
   icinga2_feature:

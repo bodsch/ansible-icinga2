@@ -1,7 +1,6 @@
 ---
 
 - block:
-
     - name: ensure aide is already installed
       stat:
         path: /usr/bin/aide
@@ -20,7 +19,6 @@
         dest: /etc/aide/aide.conf.d/99_aide_local_icinga2
         mode: 0644
       when: _aide_installed.stat.exists
-
   when: (
     icinga2_aide_enabled is defined and
     icinga2_aide_enabled)

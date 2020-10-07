@@ -2,7 +2,8 @@
 
 - name: define gelf feature state
   set_fact:
-    feature_gelf_state: "{{ 'present' if icinga2_master_features_enabled | join('|') | regex_search('gelf') else 'absent' }}"
+    feature_gelf_state: "{{ 'present' if icinga2_master_features_enabled | join('|') |
+      regex_search('gelf') else 'absent' }}"
 
 - name: configure gelf feature
   template:

@@ -1,9 +1,5 @@
 ---
 
-# merge multiple dictionary variables:
-#   - icinga2_apply_service_default from vars/main.yml
-#   - icinga2_apply_service from defaults/main.yml or from playbook
-#
 - name: merge icinga2_apply_service configuration between defaults and custom
   set_fact:
     icinga2_apply_service: "{{ icinga2_apply_service_default |
@@ -15,7 +11,6 @@
       combine( icinga2_checkcommands, recursive=True ) }}"
 
 - block:
-
     - name: create global-templates file for service definitions
       template:
         src: etc/icinga2/zones.d/global-templates/services.conf.j2
