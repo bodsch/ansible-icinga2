@@ -1,8 +1,8 @@
 
 # quiet: true
 
-#skip_list:
-#  - 106  # Role name {} does not match ``^[a-z][a-z0-9_]+$`` pattern
+skip_list:
+  - 106  # Role name {} does not match ``^[a-z][a-z0-9_]+$`` pattern
 #  - 303
 #  - 305
 #  - 204
