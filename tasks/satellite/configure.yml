@@ -19,17 +19,22 @@
     owner: "{{ icinga2_user }}"
     group: "{{ icinga2_group }}"
     mode: 0666
-  when: not icinga2_satellite_has_api_connection | bool
+  # when: not icinga2_satellite_has_api_connection | bool
   notify:
     - check configuration
     - restart icinga2
 
-- name: remove static zone file on icinga2 satellite
-  file:
-    dest: /etc/icinga2/zones.conf
-    state: absent
-  when: icinga2_satellite_has_api_connection | bool
-  notify:
-    - check configuration
-    - restart icinga2
-    - restart icinga2 master
+# - name: remove static zone file on icinga2 satellite
+#   copy:
+#     dest: /etc/icinga2/zones.conf
+#     content: |
+#       // icinga2_satellite_has_api_connection
+#     owner: "{{ icinga2_user }}"
+#     group: "{{ icinga2_group }}"
+#     mode: 0666
+#   when: icinga2_satellite_has_api_connection | bool
+#   notify:
+#     - check configuration
+#     - restart icinga2
+#     - restart icinga2 master
+#
