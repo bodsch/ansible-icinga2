@@ -21,9 +21,9 @@
       template:
         src: etc/icinga2/features/api.conf.j2
         dest: /etc/icinga2/features-available/api.conf
-        owner: root
-        group: root
-        mode: 0660
+        owner: "{{ icinga2_user }}"
+        group: "{{ icinga2_group }}"
+        mode: 0666
 
     - name: enable api feature
       icinga2_feature:

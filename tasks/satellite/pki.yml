@@ -57,23 +57,36 @@
       when: satellite_ca_file.stat.checksum is defined and
         not icinga2_remove_old_cert
 
-- name: configure icinga2
+- name: create icinga2.conf
   template:
-    src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
+    src: etc/icinga2/icinga2.conf.j2
+    dest: /etc/icinga2/icinga2.conf
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
     mode: 0666
-  with_items:
-    - src: etc/icinga2/icinga2.conf.j2
-      dest: /etc/icinga2/icinga2.conf
-    - src: etc/icinga2/constants.conf.j2
-      dest: /etc/icinga2/constants.conf
-    - src: etc/icinga2/features/mainlog.conf.j2
-      dest: /etc/icinga2/features-available/mainlog.conf
+
+- name: create constants.conf
+  template:
+    src: etc/icinga2/constants.conf.j2
+    dest: /etc/icinga2/constants.conf
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
+    mode: 0666
+
+- name: create mainlog.conf
+  template:
+    src: etc/icinga2/features/mainlog.conf.j2
+    dest: /etc/icinga2/features-available/mainlog.conf
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
+    mode: 0666
 
 - name: configure icinga2 api
   template:
     src: etc/icinga2/features/api.conf.j2
     dest: /etc/icinga2/features-available/api.conf
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
     mode: 0666
 
 - name: "create '{{ icinga2_pki_dir }}'"
@@ -81,7 +94,8 @@
     dest: "{{ icinga2_pki_dir }}"
     state: directory
     owner: "{{ icinga2_user }}"
-    mode: 0750
+    group: "{{ icinga2_group }}"
+    mode: 0755
 
 - name: "check if existing key '{{ icinga2_pki_fqdn_key }}'"
   stat:
@@ -104,7 +118,7 @@
         dest: "{{ icinga2_pki_ca_cert }}"
         owner: "{{ icinga2_user }}"
         group: "{{ icinga2_user }}"
-        mode: 0660
+        mode: 0666
 
     - name: "create a pki ticket at '{{ icinga2_primary_master }}'"
       shell: |
@@ -166,7 +180,9 @@
   file:
     dest: /etc/icinga2/zones.d/{{ icinga2_satellite_zone }}
     state: directory
-    mode: 0750
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
+    mode: 0755
   delegate_to: "{{ icinga2_primary_master }}"
 
 # create on both masters!
@@ -174,7 +190,9 @@
   template:
     src: etc/icinga2/satellite.conf.j2
     dest: /etc/icinga2/satellites.d/{{ icinga2_satellite_zone }}.conf
-    mode: 0660
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
+    mode: 0666
   delegate_to: "{{ item.key }}"
   with_dict:
     "{{ icinga2_masters }}"
@@ -185,7 +203,9 @@
   template:
     src: etc/icinga2/satellite-zone.conf.j2
     dest: /etc/icinga2/zones.d/{{ icinga2_satellite_zone }}/{{ icinga2_certificate_cn }}.conf
-    mode: 0660
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
+    mode: 0666
   delegate_to: "{{ icinga2_primary_master }}"
   notify:
     - restart icinga2 master

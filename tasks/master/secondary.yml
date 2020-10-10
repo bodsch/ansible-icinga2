@@ -15,6 +15,7 @@
     dest: "{{ icinga2_pki_dir }}"
     state: directory
     owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
     mode: 0750
 
 - name: "check for existing '{{ icinga2_pki_fqdn_key }}'"
@@ -104,7 +105,7 @@
         dest: /etc/icinga2/zones.conf
         owner: "{{ icinga2_user }}"
         group: "{{ icinga2_group }}"
-        mode: 0660
+        mode: 0666
         backup: true
   when: ( not __fqdn_key.stat.exists and
     icinga2_primary_master is defined and
@@ -116,7 +117,7 @@
     dest: /etc/icinga2/zones.d/master/{{ ansible_fqdn }}.conf
     owner: "{{ icinga2_user }}"
     group: "{{ icinga2_group }}"
-    mode: 0660
+    mode: 0666
   delegate_to: "{{ icinga2_primary_master }}"
   notify:
     - restart icinga2 master
@@ -128,7 +129,7 @@
     dest: /etc/icinga2/constants.conf
     owner: "{{ icinga2_user }}"
     group: "{{ icinga2_group }}"
-    mode: 0660
+    mode: 0666
   notify:
     - check configuration
 

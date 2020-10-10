@@ -9,6 +9,11 @@
   tags:
     - icinga2
 
+- include: install.yml
+  become: true
+  tags:
+    - icinga2
+
 - include_tasks: master.yml
   when: icinga2_mode == 'master'
   tags:

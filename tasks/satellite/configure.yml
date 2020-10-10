@@ -4,6 +4,8 @@
   template:
     src: etc/icinga2/global-templates.conf.j2
     dest: /etc/icinga2/global-templates.conf
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
     mode: 0666
     backup: true
   notify:
@@ -14,6 +16,8 @@
   template:
     src: etc/icinga2/zones.conf.j2
     dest: /etc/icinga2/zones.conf
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
     mode: 0666
   when: not icinga2_satellite_has_api_connection | bool
   notify:
