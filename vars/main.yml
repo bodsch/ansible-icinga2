@@ -11,16 +11,16 @@ _icinga2_mariadb_packages:
   redhat-8:
     - mariadb
     - python3-PyMySQL
-  centos:
-    - MariaDB-client
-    - python36-devel
-  centos-7:
-    - mariadb
-    - python36-PyMySQL
-    - python2-PyMySQL
-    - MySQL-python
-  centos-8:
-    - python36-devel
+  # centos:
+  #   - MariaDB-client
+  #   - python36-devel
+  # centos-7:
+  #   - mariadb
+  #   - python36-PyMySQL
+  #   - python2-PyMySQL
+  #   - MySQL-python
+  # centos-8:
+  #   - python36-devel
   debian:
     - python3-mysqldb
   debian-9:
@@ -40,10 +40,10 @@ _icinga2_mariadb_python_packages:
     - mysqlclient
 
 icinga2_mariadb_packages: "{{
-          _icinga2_mariadb_packages[ansible_distribution | lower ~ '-' ~ ansible_distribution_major_version ] |
-  default(_icinga2_mariadb_packages[ansible_distribution | lower] |
-  default(_icinga2_mariadb_packages[ansible_os_family | lower~ '-' ~ ansible_distribution_major_version] |
+          _icinga2_mariadb_packages[ansible_os_family | lower ~ '-' ~ ansible_distribution_major_version ] |
   default(_icinga2_mariadb_packages[ansible_os_family | lower] |
+  default(_icinga2_mariadb_packages[ansible_distribution | lower~ '-' ~ ansible_distribution_major_version] |
+  default(_icinga2_mariadb_packages[ansible_distribution | lower] |
   default(_icinga2_mariadb_packages['default'])))) }}"
 
 icinga2_mariadb_python_packages: "{{
