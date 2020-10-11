@@ -19,6 +19,7 @@
 #
 - block:
     - name: copy ca.crt from primary icinga2 master
+      remote_user: "{{ ansible_ssh_user }}"
       fetch:
         src: "{{ icinga2_pki_ca_cert }}"
         dest: files/{{ icinga2_primary_master }}/ca.crt
@@ -121,6 +122,7 @@
         mode: 0666
 
     - name: "create a pki ticket at '{{ icinga2_primary_master }}'"
+      remote_user: "{{ ansible_ssh_user }}"
       shell: |
         icinga2 pki ticket --cn {{ icinga2_certificate_cn }}
       register: ticket
@@ -177,6 +179,7 @@
   when: not __satellite_key.stat.exists
 
 - name: create zone entry under '/etc/icinga2/zones.d' on master '{{ icinga2_primary_master }}'
+  remote_user: "{{ ansible_ssh_user }}"
   file:
     dest: /etc/icinga2/zones.d/{{ icinga2_satellite_zone }}
     state: directory
@@ -187,6 +190,7 @@
 
 # create on both masters!
 - name: create zone file on master
+  remote_user: "{{ ansible_ssh_user }}"
   template:
     src: etc/icinga2/satellite.conf.j2
     dest: /etc/icinga2/satellites.d/{{ icinga2_satellite_zone }}.conf
@@ -200,6 +204,7 @@
     - restart icinga2 master
 
 - name: create host object file for satellite on master '{{ icinga2_primary_master }}'
+  remote_user: "{{ ansible_ssh_user }}"
   template:
     src: etc/icinga2/satellite-zone.conf.j2
     dest: /etc/icinga2/zones.d/{{ icinga2_satellite_zone }}/{{ icinga2_certificate_cn }}.conf

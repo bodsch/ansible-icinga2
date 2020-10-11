@@ -20,6 +20,7 @@
     state: restarted
 
 - name: restart icinga2 master
+  remote_user: "{{ ansible_ssh_user }}"
   shell: >
     /etc/icinga2/restart_icinga2.sh '{{ ansible_fqdn }}'
   delegate_to: "{{ item.key }}"
