@@ -54,7 +54,7 @@
     icinga2_salt: tmpams80tqx
 
   roles:
-    - role: ansible-icinga2
+    - role: bodsch.icinga2
 
   # tasks:
   #   # - include: ../../tasks/master/features.yml
