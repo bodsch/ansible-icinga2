@@ -32,6 +32,15 @@
     - icinga2_validate_primary_master
     - icinga2_mode == 'master'
 
+- name: information
+  debug:
+    msg:
+      - "fqdn           : {{ ansible_fqdn }}"
+      - "mode           : {{ icinga2_mode }}"
+      - "primary_master : {{ icinga2_primary_master }}"
+      - "satellite_zone : {{ icinga2_satellite_zone | default({}) }}"
+      - "certificate_cn : {{ icinga2_certificate_cn }}"
+
 # ----------------------------------------------------------------------------------
 
 # read a present salt from ansible facts
@@ -81,17 +90,6 @@
     owner: root
     group: root
     mode: 0755
-
-- name: create custom fact file
-  template:
-    src: facts.d/icinga2.fact.j2
-    dest: /etc/ansible/facts.d/icinga2.fact
-    owner: root
-    group: root
-    mode: 0755
-
-- name: do facts module to get latest information
-  setup:
 
 # debian based
 #

@@ -13,6 +13,7 @@ Tested on
 * Debian 9 / 10
 * Ubuntu 18.04 / 18.10 / 19.10
 * CentOS 7
+* Arch Linux
 
 ## Contribution
 

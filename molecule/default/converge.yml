@@ -1,26 +1,12 @@
 ---
-- hosts: all
+- name: converge
+  hosts: all
   any_errors_fatal: false
+
   environment:
     NETRC: ''
+
   vars:
-
-    mysql_python_package_debian: "{{ 'python3-mysqldb' if ansible_python.version.major == 3 else 'python-mysqldb' }}"
-
-    mysql_bind_address: 127.0.0.1
-    mysql_max_connections: 20
-
-    mysql_root_password_update: true
-
-    mysql_databases:
-      - name: icinga2_ido
-
-    mysql_users:
-      - name: icinga2_ido
-        host: 127.0.0.1
-        password: icinga2
-        priv: "icinga2_ido.*:ALL"
-
     icinga2_mode: master
 
     icinga2_masters:
@@ -68,8 +54,6 @@
     icinga2_salt: tmpams80tqx
 
   roles:
-    - role: mariadb
-    - role: monitoring-tools
     - role: bodsch.icinga2
 
   # tasks:

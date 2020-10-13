@@ -2,7 +2,7 @@
 
 - name: monitoring-tools
   src: https://github.com/bodsch/ansible-monitoring-plugins.git
-  version: 1.0.0
+  version: 1.1.0
 
 - name: mariadb
   src: https://github.com/geerlingguy/ansible-role-mysql.git

@@ -1,7 +1,28 @@
 ---
+- name: prepare container
+  hosts: all
+  gather_facts: true
 
-- hosts: all
-  tasks:
+  vars:
+
+    mysql_python_package_debian: "{{ 'python3-mysqldb' if ansible_python.version.major == 3 else 'python-mysqldb' }}"
+
+    mysql_bind_address: 127.0.0.1
+    mysql_max_connections: 20
+
+    mysql_root_password_update: true
+
+    mysql_databases:
+      - name: icinga2_ido
+
+    mysql_users:
+      - name: icinga2_ido
+        host: 127.0.0.1
+        password: icinga2
+        priv: "icinga2_ido.*:ALL"
+
+  pre_tasks:
+
     - debug:
         msg:
           - "ansible_os_family                  : {{ ansible_os_family }}"
@@ -36,3 +57,7 @@
             - ansible_distribution_release in ['jessie', 'stretch', 'xenial']
 
       when: ansible_os_family | lower == 'debian'
+
+  roles:
+    - role: mariadb
+    - role: monitoring-tools

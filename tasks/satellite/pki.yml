@@ -18,7 +18,7 @@
 # compare checksum for ca.cert
 #
 - block:
-    - name: copy ca.crt from primary icinga2 master
+    - name: copy ca.crt from primary icinga2 master {{ icinga2_primary_master }}
       remote_user: "{{ ansible_ssh_user }}"
       fetch:
         src: "{{ icinga2_pki_ca_cert }}"
@@ -57,6 +57,29 @@
         - /var/lib/icinga2/ca
       when: satellite_ca_file.stat.checksum is defined and
         not icinga2_remove_old_cert
+
+    - name: read facts from '{{ icinga2_primary_master }}'"
+      remote_user: "{{ ansible_ssh_user }}"
+      delegate_to: "{{ icinga2_primary_master }}"
+      setup:
+        gather_subset:
+          - '!all'
+          - '!any'
+          - facter
+
+    - name: get icinga2 user from '{{ icinga2_primary_master }}'"
+      delegate_to: "{{ icinga2_primary_master }}"
+      remote_user: "{{ ansible_ssh_user }}"
+      set_fact:
+        icinga2_master_user: "{{ ansible_local.icinga2.icinga2_user | default( icinga2_user ) }}"
+        icinga2_master_group: "{{ ansible_local.icinga2.icinga2_group | default( icinga2_group ) }}"
+
+    - name: read facts from '{{ ansible_fqdn }}'"
+      setup:
+        gather_subset:
+          - '!all'
+          - '!any'
+          - facter
 
 - name: create icinga2.conf
   template:
@@ -122,16 +145,29 @@
         mode: 0666
 
     - name: "create a pki ticket at '{{ icinga2_primary_master }}'"
+      delegate_to: "{{ icinga2_primary_master }}"
       remote_user: "{{ ansible_ssh_user }}"
       shell: |
-        icinga2 pki ticket --cn {{ icinga2_certificate_cn }}
+        icinga2 pki ticket --cn {{ icinga2_certificate_cn }} --salt {{ icinga2_salt }}
       register: ticket
-      delegate_to: "{{ icinga2_primary_master }}"
       when: icinga2_salt is defined
 
     - name: set facts
       set_fact:
         icinga2_fqdn_ticket: "{{ ticket.stdout }}"
+
+    # todo
+    # check icinga master port 5665
+    - name: wait for primary icinga2 master to be accessible
+      wait_for:
+        host: '{{ icinga2_primary_master }}'
+        port: "{{ icinga2_master_port | default(5665) }}"
+        delay: 5
+        connect_timeout: 3
+        msg: "waiting for {{ icinga2_primary_master }}:5665 to be opened"
+      ignore_errors: false
+      retries: 10
+      delay: 10
 
     - name: configure icinga2 satellite pki
       command: "{{ item }}"
@@ -179,39 +215,39 @@
   when: not __satellite_key.stat.exists
 
 - name: create zone entry under '/etc/icinga2/zones.d' on master '{{ icinga2_primary_master }}'
+  delegate_to: "{{ icinga2_primary_master }}"
   remote_user: "{{ ansible_ssh_user }}"
   file:
     dest: /etc/icinga2/zones.d/{{ icinga2_satellite_zone }}
     state: directory
-    owner: "{{ icinga2_user }}"
-    group: "{{ icinga2_group }}"
+    owner: "{{ icinga2_master_user }}"
+    group: "{{ icinga2_master_group }}"
     mode: 0755
-  delegate_to: "{{ icinga2_primary_master }}"
 
 # create on both masters!
 - name: create zone file on master
+  delegate_to: "{{ item.key }}"
   remote_user: "{{ ansible_ssh_user }}"
   template:
     src: etc/icinga2/satellite.conf.j2
     dest: /etc/icinga2/satellites.d/{{ icinga2_satellite_zone }}.conf
-    owner: "{{ icinga2_user }}"
-    group: "{{ icinga2_group }}"
+    owner: "{{ icinga2_master_user }}"
+    group: "{{ icinga2_master_group }}"
     mode: 0666
-  delegate_to: "{{ item.key }}"
   with_dict:
     "{{ icinga2_masters }}"
   notify:
     - restart icinga2 master
 
 - name: create host object file for satellite on master '{{ icinga2_primary_master }}'
+  delegate_to: "{{ icinga2_primary_master }}"
   remote_user: "{{ ansible_ssh_user }}"
   template:
     src: etc/icinga2/satellite-zone.conf.j2
     dest: /etc/icinga2/zones.d/{{ icinga2_satellite_zone }}/{{ icinga2_certificate_cn }}.conf
-    owner: "{{ icinga2_user }}"
-    group: "{{ icinga2_group }}"
+    owner: "{{ icinga2_master_user }}"
+    group: "{{ icinga2_master_group }}"
     mode: 0666
-  delegate_to: "{{ icinga2_primary_master }}"
   notify:
     - restart icinga2 master
 
