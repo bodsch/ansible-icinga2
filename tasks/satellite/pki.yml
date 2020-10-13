@@ -124,7 +124,7 @@
     - name: "create a pki ticket at '{{ icinga2_primary_master }}'"
       remote_user: "{{ ansible_ssh_user }}"
       shell: |
-        icinga2 pki ticket --cn {{ icinga2_certificate_cn }}
+        icinga2 pki ticket --cn {{ icinga2_certificate_cn }} --salt {{ icinga2_salt }}
       register: ticket
       delegate_to: "{{ icinga2_primary_master }}"
       when: icinga2_salt is defined
@@ -132,6 +132,19 @@
     - name: set facts
       set_fact:
         icinga2_fqdn_ticket: "{{ ticket.stdout }}"
+
+    # todo
+    # check icinga master port 5665
+    - name: wait for primary icinga2 master to be accessible
+      wait_for:
+        host: '{{ icinga2_primary_master }}'
+        port: "{{ icinga2_master_port | default(5665) }}"
+        delay: 5
+        connect_timeout: 3
+        msg: "waiting for {{ icinga2_primary_master }}:5665 to be opened"
+      ignore_errors: false
+      retries: 10
+      delay: 10
 
     - name: configure icinga2 satellite pki
       command: "{{ item }}"
