@@ -7,6 +7,14 @@
   loop:
     - "{{ icinga2_mariadb_packages }}"
 
+- name: install python packages for support databases
+  pip:
+    name: "{{ item }}"
+    executable: pip3
+    state: present
+  loop:
+    - "{{ icinga2_mariadb_python_packages }}"
+
 - name: install icinga2-ido package
   package:
     name: icinga2-ido-mysql

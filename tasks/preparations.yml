@@ -23,9 +23,9 @@
 
 - name: assert wrong primary master
   assert:
-    that:
-      - icinga2_mode == 'master'
-      - icinga2_primary_master == ansible_fqdn
+    that: ansible_fqdn in (icinga2_masters | list) or
+       icinga2_mode == 'master' and
+       icinga2_primary_master == ansible_fqdn
     msg: primary icinga2 master is not identical with ansible_fqdn ('{{ icinga2_primary_master }}' vs. '{{ ansible_fqdn }}')
     quiet: true
   when:
@@ -40,6 +40,7 @@
       - "primary_master : {{ icinga2_primary_master }}"
       - "satellite_zone : {{ icinga2_satellite_zone | default({}) }}"
       - "certificate_cn : {{ icinga2_certificate_cn }}"
+      - "masters        : {{ icinga2_masters | list }}"
 
 # ----------------------------------------------------------------------------------
 

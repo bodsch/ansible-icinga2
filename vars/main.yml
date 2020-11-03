@@ -23,10 +23,11 @@ _icinga2_mariadb_packages:
   #   - python36-devel
   debian:
     - python3-mysqldb
-  debian-9:
-    - python-mysqldb
-  ubuntu:
-    - python3-mysqldb
+    - python3-pip
+#  debian-9:
+#    - python-mysqldb
+#  ubuntu:
+#    - python3-mysqldb
 
 _icinga2_mariadb_python_packages:
   default:
