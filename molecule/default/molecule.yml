@@ -9,7 +9,7 @@ lint: |
   set -e
   yamllint .
   ansible-lint .
-  flake8
+  flake8 .
 
 platforms:
   - name: instance
@@ -36,7 +36,7 @@ scenario:
     - create
     - prepare
     - converge
-    # - verify
+    - verify
     - destroy
 
 verifier:

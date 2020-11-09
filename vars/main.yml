@@ -38,7 +38,7 @@ _icinga2_mariadb_python_packages:
     - mysqlclient
   redhat:
     - PyMySQL
-    - mysqlclient
+
 
 icinga2_mariadb_packages: "{{
           _icinga2_mariadb_packages[ansible_os_family | lower ~ '-' ~ ansible_distribution_major_version ] |

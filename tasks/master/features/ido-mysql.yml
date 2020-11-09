@@ -10,7 +10,7 @@
 - name: install python packages for support databases
   pip:
     name: "{{ item }}"
-    executable: pip3
+    executable: "{{ 'pip3' if ansible_python.version.major > 2 else 'pip2' }}"
     state: present
   loop:
     - "{{ icinga2_mariadb_python_packages }}"
