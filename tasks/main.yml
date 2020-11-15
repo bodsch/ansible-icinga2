@@ -14,13 +14,18 @@
   tags:
     - icinga2
 
-- include_tasks: master.yml
+- include_tasks: master/main.yml
   when: icinga2_mode == 'master'
   tags:
     - icinga2
 
-- include_tasks: satellite.yml
+- include_tasks: satellite/main.yml
   when: icinga2_mode == 'satellite'
+  tags:
+    - icinga2
+
+- include_tasks: agent/main.yml
+  when: icinga2_mode == 'agent'
   tags:
     - icinga2
 

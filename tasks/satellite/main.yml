@@ -1,0 +1,7 @@
+---
+
+- include: pki.yml
+- include: configure.yml
+- include: features.yml
+
+# /var/lib/icinga2/api/zones-stage/startup.log

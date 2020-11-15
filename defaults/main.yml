@@ -29,13 +29,15 @@ icinga2_rootdir: /usr/share/icinga2
 icinga2_sudo_cmd: []
 #  - /sbin/service foo restart
 
-# 'master' or 'satellite'
+# 'master' or 'satellite' or 'agent'
 icinga2_mode: master
 
 icinga2_ha: false
 icinga2_masters: []
 
 icinga2_satellites: []
+
+icinga2_agent_parent: ''
 
 # master internal name
 icinga2_server: '{{ inventory_hostname }}'

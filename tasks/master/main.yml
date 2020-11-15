@@ -1,0 +1,118 @@
+---
+
+- name: create restart script
+  copy:
+    src: icinga2/restart_icinga2.sh
+    dest: /etc/icinga2/restart_icinga2.sh
+    owner: root
+    group: root
+    mode: 0755
+
+- name: create icinga2 constants.conf
+  template:
+    src: etc/icinga2/constants.conf.j2
+    dest: /etc/icinga2/constants.conf
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
+    mode: 0666
+  notify:
+    - check configuration
+    - restart icinga2
+
+- name: ensure right permissions for icinga2 pki dir
+  file:
+    dest: "{{ icinga2_pki_dir }}"
+    state: directory
+    mode: 0755
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
+
+- name: configure zones
+  template:
+    src: etc/icinga2/zones.conf.j2
+    dest: /etc/icinga2/zones.conf
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
+    mode: 0666
+    backup: true
+
+- name: create directory for master zone
+  file:
+    path: /etc/icinga2/zones.d/master
+    state: directory
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
+    mode: 0755
+  when: icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
+
+# only on primary master!
+- name: create hosts.conf
+  template:
+    src: etc/icinga2/hosts.conf.j2
+    dest: /etc/icinga2/zones.d/master/{{ ansible_fqdn }}.conf
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
+    mode: 0666
+    backup: true
+  notify:
+    - check configuration
+    - restart icinga2
+  tags:
+    - configure
+  when: icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
+
+- name: create groups.conf
+  template:
+    src: etc/icinga2/groups.conf.j2
+    dest: /etc/icinga2/groups.conf
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
+    mode: 0666
+    backup: true
+  notify:
+    - check configuration
+    - restart icinga2
+  tags:
+    - configure
+  when: icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
+
+- name: create '{{ icinga2_local_scriptsdir }}' directory
+  file:
+    path: "{{ icinga2_local_scriptsdir }}"
+    state: directory
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
+    mode: 0755
+
+- include_tasks: pki.yml
+  when: icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
+
+- include_tasks: configure.yml
+- include_tasks: features.yml
+
+- include_tasks: global-templates.yml
+  when: icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
+
+- block:
+    - name: check configuration  # noqa 301
+      shell: |
+        icinga2 daemon --validate --log-level debug --config /etc/icinga2/icinga2.conf
+      register: icinga2_validate_config
+
+    - name: restart icinga2 master
+      service:
+        name: icinga2
+        state: restarted
+      register: _restart_icinga2_master
+
+    - name: wait for primary master to startup
+      wait_for:
+        host: "{{ icinga2_primary_master }}"
+        port: "{{ icinga2_master_port | default(5665) }}"
+        delay: 5
+        connect_timeout: 3
+
+  when: icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
+
+- include_tasks: secondary.yml
+  when: icinga2_primary_master is defined and icinga2_primary_master != ansible_fqdn

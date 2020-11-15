@@ -1,0 +1,25 @@
+---
+
+# https://icinga.com/docs/icinga2/latest/doc/06-distributed-monitoring/#node-setup-with-agentssatellites
+
+# [root@icinga2-agent1.localdomain /]# mkdir -p /var/lib/icinga2/certs
+# [root@icinga2-agent1.localdomain /]# chown -R icinga:icinga /var/lib/icinga2/certs
+#
+# [root@icinga2-agent1.localdomain /]# icinga2 pki new-cert --cn icinga2-agent1.localdomain \
+# --key /var/lib/icinga2/certs/icinga2-agent1.localdomain.key \
+# --cert /var/lib/icinga2/certs/icinga2-agent1.localdomain.crt
+#
+# icinga2 pki save-cert \
+# --trustedcert /var/lib/icinga2/certs/trusted-parent.crt \
+# --host icinga2-master1.localdomain
+#
+# icinga2 node setup --ticket ead2d570e18c78abf285d6b85524970a0f69c22d \
+# --cn icinga2-agent1.localdomain \
+# --endpoint icinga2-master1.localdomain \
+# --zone icinga2-agent1.localdomain \
+# --parent_zone master \
+# --parent_host icinga2-master1.localdomain \
+# --trustedcert /var/lib/icinga2/certs/trusted-parent.crt \
+# --accept-commands --accept-config \
+# --disable-confd
+#
