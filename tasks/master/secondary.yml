@@ -43,13 +43,20 @@
     - name: copy ca.crt from primary icinga2 master
       fetch:
         src: "{{ icinga2_pki_ca_cert }}"
-        dest: files/ca.crt
+        dest: ../files/{{ icinga2_primary_master }}/ca.crt
+        flat: true
+      delegate_to: '{{ icinga2_primary_master }}'
+
+    - name: copy ca.crt from primary icinga2 master
+      fetch:
+        src: "{{ icinga2_pki_ca_cert }}"
+        dest: ../files/{{ icinga2_primary_master }}/ca.crt
         flat: true
       delegate_to: '{{ icinga2_primary_master }}'
 
     - name: "copy ca.crt to '{{ ansible_fqdn }}'"
       copy:
-        src: files/ca.crt
+        src: ../files/{{ icinga2_primary_master }}/ca.crt
         dest: "{{ icinga2_pki_ca_cert }}"
         owner: "{{ icinga2_user }}"
         group: "{{ icinga2_group }}"

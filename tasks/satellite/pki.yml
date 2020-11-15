@@ -18,22 +18,30 @@
 # compare checksum for ca.cert
 #
 - block:
+    - name: "create local directory to store certicates"
+      become: false
+      delegate_to: localhost
+      file:
+        dest: "../files/{{ icinga2_primary_master }}"
+        state: directory
+        mode: 0755
+
     - name: copy ca.crt from primary icinga2 master {{ icinga2_primary_master }}
       remote_user: "{{ ansible_ssh_user }}"
+      delegate_to: '{{ icinga2_primary_master }}'
       fetch:
         src: "{{ icinga2_pki_ca_cert }}"
-        dest: files/{{ icinga2_primary_master }}/ca.crt
+        dest: ../files/{{ icinga2_primary_master }}/ca.crt
         flat: true
-      delegate_to: '{{ icinga2_primary_master }}'
 
     - name: check local ca.crt
+      become: false
+      delegate_to: localhost
       stat:
-        path: "files/{{ icinga2_primary_master }}/ca.crt"
+        path: "../files/{{ icinga2_primary_master }}/ca.crt"
         checksum_algorithm: sha1
         get_checksum: true
-      become: false
       run_once: true
-      delegate_to: localhost
       register: primary_master_ca_file
 
     - name: check for existing '{{ icinga2_pki_ca_cert }}'
@@ -138,7 +146,7 @@
 - block:
     - name: "copy ca.crt to '{{ ansible_fqdn }}'"
       copy:
-        src: files/{{ icinga2_primary_master }}/ca.crt
+        src: ../files/{{ icinga2_primary_master }}/ca.crt
         dest: "{{ icinga2_pki_ca_cert }}"
         owner: "{{ icinga2_user }}"
         group: "{{ icinga2_user }}"

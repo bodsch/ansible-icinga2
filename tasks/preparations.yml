@@ -4,15 +4,22 @@
   set_fact:
     icinga2_primary_master: "{{ icinga2_masters | primary_master }}"
 
-- name: define satellite zone
-  set_fact:
-    icinga2_satellite_zone: "{{ icinga2_satellites | satellite_zone(ansible_fqdn) }}"
-  when: icinga2_mode == 'satellite' and icinga2_satellites is defined and icinga2_satellites | count > 0
+- block:
+    - name: define satellite zone
+      set_fact:
+        icinga2_satellite_zone: "{{ icinga2_satellites | satellite_zone(ansible_fqdn) }}"
+      when:
+        - icinga2_satellites is defined
+        - icinga2_satellites | count > 0
 
-- name: define satellite zone
-  set_fact:
-    icinga2_satellite_zone: "{{ ansible_fqdn }}"
-  when: icinga2_mode == 'satellite' and icinga2_satellites is defined and icinga2_satellites | count == 0
+    - name: define satellite zone
+      set_fact:
+        icinga2_satellite_zone: "{{ ansible_fqdn }}"
+      when:
+        - icinga2_satellites is defined
+        - icinga2_satellites | count == 0
+  when:
+    - icinga2_mode == 'satellite'
 
 - name: assert missing primary master
   assert:
@@ -49,11 +56,11 @@
 - name: set fact for salt
   set_fact:
     icinga2_salt: "{{ ansible_local.icinga2.salt }}"
-  when: (
-    ansible_local.icinga2 is defined and
-    ansible_local.icinga2.salt is defined and
-    ansible_local.icinga2.salt | length != 0 and
-    icinga2_salt != ansible_local.icinga2.salt)
+  when:
+    - ansible_local.icinga2 is defined
+    - ansible_local.icinga2.salt is defined
+    - ansible_local.icinga2.salt | length != 0
+    - icinga2_salt != ansible_local.icinga2.salt
 
 - name: assert missing salt
   assert:

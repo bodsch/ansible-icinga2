@@ -16,11 +16,13 @@ class FilterModule(object):
     """
         Ansible file jinja2 tests
     """
+
     def filters(self):
         return {
             'primary_master': self.filter_primary,
             'reorder_master': self.filter_reorder,
-            'satellite_zone': self.satellite_zone
+            'satellite_zone': self.satellite_zone,
+            'agent_parents': self.agent_parents
         }
 
     """
@@ -36,21 +38,22 @@ class FilterModule(object):
 
       returns 'blackbox.matrix.lan'
     """
-    def filter_primary(self, mydict):
+
+    def filter_primary(self, data):
         seen = ''
 
-        count = len(mydict.keys())
+        count = len(data.keys())
 
-        display.vv("found: {} entries in {}".format(count, mydict))
+        display.vv("found: {} entries in {}".format(count, data))
 
         if(count == 1):
-            k = mydict.keys()
+            k = data.keys()
             keys = list(k)
             display.v("key: {}".format(k))
             display.v("{}".format(keys))
             seen = keys[0]
         else:
-            for k, i in mydict.items():
+            for k, i in data.items():
                 _type = None
 
                 if(isinstance(i, dict)):
@@ -63,7 +66,7 @@ class FilterModule(object):
         display.vv("found primary: {}".format(seen))
 
         if(seen == ''):
-            k = mydict.keys()
+            k = data.keys()
             keys = list(k)
             display.v("key: {}".format(k))
             display.v("{}".format(keys))
@@ -86,14 +89,15 @@ class FilterModule(object):
         icinga.boone-schulz.de:
 
     """
-    def filter_reorder(self, mydict):
+
+    def filter_reorder(self, data):
         seen = ''
 
-        count = len(mydict.keys())
+        count = len(data.keys())
 
-        display.vv("found: {} entries in {}".format(count, mydict))
+        display.vv("found: {} entries in {}".format(count, data))
 
-        seen = self.__transform(mydict)
+        seen = self.__transform(data)
 
         display.v("return reorder: {}".format(seen))
 
@@ -102,15 +106,16 @@ class FilterModule(object):
     """
 
     """
-    def satellite_zone(self, mydict, ansible_fqdn):
+
+    def satellite_zone(self, data, ansible_fqdn):
         seen = ansible_fqdn
 
-        count = len(mydict.keys())
+        count = len(data.keys())
 
-        display.vv("found: {} entries in {}".format(count, mydict))
+        display.vv("found: {} entries in {}".format(count, data))
         display.vv("search zone for '{}'".format(ansible_fqdn))
 
-        for zone, zone_entries in mydict.items():
+        for zone, zone_entries in data.items():
             keys = zone_entries.keys()
             key_list = list(keys)
             found = self.__search(key_list, ansible_fqdn)
@@ -127,8 +132,30 @@ class FilterModule(object):
     """
 
     """
-    def __transform(self, multilevelDict):
 
+    def agent_parents(self, data, satellites, ansible_fqdn):
+        result = []
+        result.append(satellites)
+
+        #display.vv("data       '{}' ({})".format(data, type(data)))
+        #display.vv("satellites '{}' ({})".format(satellites, type(satellites)))
+        #display.vv("fqdn       '{}' ({})".format(ansible_fqdn, type(ansible_fqdn)))
+
+        if(isinstance(data, dict) and data.get(satellites)):
+            result = list(data.get(satellites).keys())
+
+        display.v("parent(s) for '{}' are {}".format(ansible_fqdn, result))
+
+        return result
+
+    """
+
+    """
+
+    def __transform(self, multilevelDict):
+        """
+
+        """
         new = {}
 
         for key, value in multilevelDict.items():
@@ -150,6 +177,7 @@ class FilterModule(object):
     """
 
     """
+
     def __search(self, list, fqdn):
         for i in range(len(list)):
             if list[i] == fqdn:

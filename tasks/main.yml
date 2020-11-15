@@ -1,5 +1,68 @@
 ---
 
+# - name: set facts
+#   set_fact:
+#     icinga2_pki_ca_key: "{{ icinga2_pki_dir }}/ca.key"
+#     icinga2_pki_ca_cert: "{{ icinga2_pki_dir }}/ca.crt"
+#     icinga2_pki_fqdn_key: "{{ icinga2_pki_dir }}/{{ ansible_fqdn }}.key"
+#     icinga2_pki_fqdn_cert: "{{ icinga2_pki_dir }}/{{ ansible_fqdn }}.crt"
+#     icinga2_pki_master_cert: "{{ icinga2_pki_dir }}/trusted-master.crt"
+#
+# - name: define parent icinga
+#   set_fact:
+#     icinga2_agent_parents: "{{ icinga2_satellites | agent_parents(icinga2_agent_parent, ansible_fqdn) }}"
+#
+# - name: information
+#   debug:
+#     msg:
+#       - "agent parent : {{ icinga2_agent_parents }}"
+#
+#
+# - name: "create local directory to store certicates"
+#   become: false
+#   delegate_to: localhost
+#   file:
+#     dest: "../files/{{ item }}"
+#     state: directory
+#     mode: 0755
+#   loop:
+#     "{{ icinga2_agent_parents }}"
+#
+#
+# - name: wait for parent icinga2 to be accessible
+#   wait_for:
+#     host: '{{ item }}'
+#     port: "{{ icinga2_master_port | default(5665) }}"
+#     state: present         # Port should be open
+#     timeout: 2
+#     msg: "waiting for {{ item }}:5665 to be opened"
+#   ignore_errors: true
+#   register: _parent_avail
+#   loop:
+#     "{{ icinga2_agent_parents }}"
+#
+# - name: remove unavailable hosts from list
+#   set_fact:
+#     icinga2_agent_parents: "{{ icinga2_agent_parents | difference( _parent_avail.results | select('failed') | map(attribute='item') ) }}"
+#
+# - debug:
+#     msg: "{{ icinga2_agent_parents | list | first }}"
+#
+# - name: copy .crt from satellites
+#   remote_user: "{{ ansible_ssh_user }}"
+#   delegate_to: '{{ item }}'
+#   fetch:
+#     src: "{{ icinga2_pki_dir }}/{{ item }}.crt"
+#     dest: ../files/{{ item }}/
+#     flat: true
+#   loop:
+#     "{{ icinga2_agent_parents }}"
+
+# - name: Append result message to result list msg
+#   debug:
+#     msg: "{{ _parent_avail.results | select('failed') | map(attribute='item') }}"
+
+
 - name: define primary icinga2 master
   set_fact:
     icinga2_primary_master: "{{ icinga2_masters | reorder_master }}"

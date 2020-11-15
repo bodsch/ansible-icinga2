@@ -1,5 +1,204 @@
 ---
 
+- name: assert missing salt
+  assert:
+    that:
+      - icinga2_salt | length != 0
+    msg: icinga2 salt is missing
+    quiet: true
+
+- name: set facts
+  set_fact:
+    icinga2_pki_ca_key: "{{ icinga2_pki_dir }}/ca.key"
+    icinga2_pki_ca_cert: "{{ icinga2_pki_dir }}/ca.crt"
+    icinga2_pki_fqdn_key: "{{ icinga2_pki_dir }}/{{ ansible_fqdn }}.key"
+    icinga2_pki_fqdn_cert: "{{ icinga2_pki_dir }}/{{ ansible_fqdn }}.crt"
+    icinga2_pki_master_cert: "{{ icinga2_pki_dir }}/trusted-master.crt"
+
+- name: create icinga2.conf
+  template:
+    src: etc/icinga2/icinga2.conf.j2
+    dest: /etc/icinga2/icinga2.conf
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
+    mode: 0666
+
+- name: create constants.conf
+  template:
+    src: etc/icinga2/constants.conf.j2
+    dest: /etc/icinga2/constants.conf
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
+    mode: 0666
+
+- name: create mainlog.conf
+  template:
+    src: etc/icinga2/features/mainlog.conf.j2
+    dest: /etc/icinga2/features-available/mainlog.conf
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
+    mode: 0666
+
+- name: configure icinga2 api
+  template:
+    src: etc/icinga2/features/api.conf.j2
+    dest: /etc/icinga2/features-available/api.conf
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
+    mode: 0666
+
+- name: "create '{{ icinga2_pki_dir }}'"
+  file:
+    dest: "{{ icinga2_pki_dir }}"
+    state: directory
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
+    mode: 0755
+
+- name: "check if existing key '{{ icinga2_pki_fqdn_key }}'"
+  stat:
+    path: "{{ icinga2_pki_fqdn_key }}"
+    checksum_algorithm: sha1
+    get_checksum: true
+  register: __certificate_key
+
+- name: "check for existing '{{ icinga2_pki_ca_cert }}'"
+  stat:
+    path: "{{ icinga2_pki_ca_cert }}"
+    checksum_algorithm: sha1
+    get_checksum: true
+  register: __ca_crt
+
+- name: define parent icinga
+  set_fact:
+    icinga2_agent_parents: "{{ icinga2_satellites | agent_parents(icinga2_agent_parent, ansible_fqdn) }}"
+
+- name: information
+  debug:
+    msg:
+      - "agent parent : {{ icinga2_agent_parents }}"
+
+- name: "create local ../files/{{ item }}"
+  become: false
+  delegate_to: localhost
+  file:
+    dest: "../files/{{ item }}"
+    state: directory
+    mode: 0755
+  loop:
+    "{{ icinga2_agent_parents }}"
+
+- name: wait for parent icinga2 to be accessible
+  wait_for:
+    host: '{{ item }}'
+    port: "{{ icinga2_master_port | default(5665) }}"
+    state: present         # Port should be open
+    timeout: 2
+    msg: "waiting for {{ item }}:5665 to be opened"
+  ignore_errors: true
+  register: _parent_avail
+  loop:
+    "{{ icinga2_agent_parents }}"
+
+- name: remove unavailable hosts from list
+  set_fact:
+    icinga2_agent_parents: "{{ icinga2_agent_parents | difference( _parent_avail.results | select('failed') | map(attribute='item') ) }}"
+
+- name: copy .crt from satellites
+  remote_user: "{{ ansible_ssh_user }}"
+  delegate_to: '{{ item }}'
+  fetch:
+    src: "{{ icinga2_pki_dir }}/{{ item }}.crt"
+    dest: ../files/{{ item }}/
+    flat: true
+  loop:
+    "{{ icinga2_agent_parents }}"
+
+- block:
+    - name: "create a pki ticket at '{{ icinga2_primary_master }}'"
+      delegate_to: "{{ icinga2_primary_master }}"
+      remote_user: "{{ ansible_ssh_user }}"
+      shell: |
+        icinga2 pki ticket --cn {{ icinga2_certificate_cn }} --salt {{ icinga2_salt }}
+      register: ticket
+      when: icinga2_salt is defined
+
+    - name: set facts
+      set_fact:
+        icinga2_fqdn_ticket: "{{ ticket.stdout }}"
+
+    - name: wait for parent icinga2 to be accessible
+      wait_for:
+        host: "{{ icinga2_agent_parents | first }}"
+        port: "{{ icinga2_master_port | default(5665) }}"
+        delay: 5
+        connect_timeout: 3
+        msg: "waiting for {{ icinga2_agent_parents | first }}:5665 to be opened"
+      ignore_errors: false
+      retries: 10
+      delay: 10
+
+    - name: copy trusted-parent.crt to {{ icinga2_pki_dir }}
+      copy:
+        src: ../files/{{ icinga2_agent_parents | first }}/{{ icinga2_agent_parents | first }}.crt
+        dest: "{{ icinga2_pki_dir }}/trusted-parent.crt"
+        owner: "{{ icinga2_user }}"
+        group: "{{ icinga2_user }}"
+        mode: 0660
+
+    - name: configure icinga2 satellite pki
+      command: "{{ item }}"
+      with_items:
+        - icinga2 pki new-cert
+          --cn {{ icinga2_certificate_cn }}
+          --key {{ icinga2_pki_fqdn_key }}
+          --cert {{ icinga2_pki_fqdn_cert }}
+
+#        - icinga2 pki save-cert
+#          --trustedcert {{ icinga2_pki_dir }}/trusted-parent.crt
+#          --host {{ icinga2_agent_parents | first }}
+
+    #     - icinga2 pki request
+    #       --host {{ icinga2_primary_master }}
+    #       --port {{ icinga2_master_port | default(5665) }}
+    #       --ticket {{ icinga2_fqdn_ticket }}
+    #       --key {{ icinga2_pki_fqdn_key }}
+    #       --cert {{ icinga2_pki_fqdn_cert }}
+    #       --trustedcert {{ icinga2_pki_master_cert }}
+    #       --ca {{ icinga2_pki_ca_key }}
+
+        - icinga2 node setup
+          --ticket {{ icinga2_fqdn_ticket }}
+          --endpoint {{ icinga2_agent_parents | first }}
+          --cn {{ ansible_fqdn }}
+          --zone {{ ansible_fqdn }}
+          --parent_host {{ icinga2_agent_parents | first }}
+          --trustedcert {{ icinga2_pki_dir }}/trusted-parent.crt
+
+      become: true
+      when: not __certificate_key.stat.exists and ticket.stdout is defined
+      notify:
+        - check configuration
+        - restart icinga2
+
+    - name: fix permissions for icinga2 pki directory
+      file:
+        path: "{{ icinga2_pki_dir }}"
+        owner: "{{ icinga2_user }}"
+        group: "{{ icinga2_user }}"
+        recurse: true
+
+  when: not __certificate_key.stat.exists
+
+
+#    3  20201115 13:04:59  icinga2 pki new-cert --cn $(hostname -f) --key /var/lib/icinga2/certs/$(hostname -f).key --cert /var/lib/icinga2/certs/$(hostname -f).cert
+#   15  20201115 13:19:52  icinga2 pki save-cert --trustedcert /var/lib/icinga2/certs/trusted-parent.crt --host satellite-3.icinga.local
+#   37  20201115 13:36:28  icinga2 node setup --ticket 038bd404b5874a1465188ba252e65f56d783794d --cn $(hostname -f) --endpoint satellite-3.icinga.local --zone $(hostname -f) --parent_zone satellite-3.icinga.local
+#                           --parent_host satellite-3.icinga.local --trustedcert /var/lib/icinga2/certs/trusted-parent.crt --accept-commands --accept-config --disable-confd
+#   38  20201115 13:36:45  icinga2 daemon --validate --log-level debug --config /etc/icinga2/icinga2.conf
+
+
+
 # https://icinga.com/docs/icinga2/latest/doc/06-distributed-monitoring/#node-setup-with-agentssatellites
 
 # [root@icinga2-agent1.localdomain /]# mkdir -p /var/lib/icinga2/certs
