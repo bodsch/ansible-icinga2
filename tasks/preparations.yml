@@ -19,7 +19,7 @@
         - icinga2_satellites is defined
         - icinga2_satellites | count == 0
   when:
-    - icinga2_mode == 'satellite'
+    - icinga2_mode in ['satellite', 'agent']
 
 - name: assert missing primary master
   assert:

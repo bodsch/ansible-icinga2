@@ -1,0 +1,51 @@
+// {{ ansible_managed }}
+// {{ ansible_fqdn }}
+
+{% if icinga2_mode == 'agent' %}
+// {{ icinga2_agent_parent }}
+
+{% if icinga2_agent_parent in icinga2_satellites.keys() %}
+// agent connect to a HA satellite pair
+// {{ icinga2_satellite_zone }}
+// {{ icinga2_satellites.keys() }}
+// {{ icinga2_satellites }}
+
+{% if icinga2_satellite_zone is defined %}
+// defined zone: {{ icinga2_satellite_zone }}
+{% if icinga2_satellites is mapping %}
+// mapping
+{%- if icinga2_satellites[icinga2_satellite_zone] is defined -%}
+{%- set _keys = icinga2_satellites[icinga2_satellite_zone].keys() -%}
+// {{ _keys }}
+{% for s in _keys %}
+
+object Endpoint "{{ s }}" {
+     {%- if icinga2_satellites[icinga2_satellite_zone][s]['ip'] is defined %} host = "{{ icinga2_satellites[icinga2_satellite_zone][s]['ip'] }}"; {% endif %}
+  port = "5665" }
+    {% endfor %}
+object Zone "{{ icinga2_satellite_zone }}" { endpoints = [ "{{ _keys | join( '", "') }}" ] ; parent = "master" }
+   {%- else -%}
+object Endpoint "{{ icinga2_satellite_zone }}" { host = "{{ icinga2_satellite_zone }}"; port = "5665" }
+object Zone "{{ icinga2_satellite_zone }}" { endpoints = [ "{{ icinga2_satellite_zone }}" ] ; parent = "master" }
+   {% endif %}
+  {%- else %}
+{% set _ip = lookup('pipe', 'host ' + icinga2_satellite_zone   + ' | grep "has address" | cut -d" " -f4') %}
+   {%- if _ip | length == 0 %}
+{% set _ip = icinga2_satellite_zone %}
+   {% endif %}
+object Endpoint "{{ icinga2_satellite_zone }}" { host = "{{ _ip }}"; port = "5665" }
+object Zone "{{ icinga2_satellite_zone }}" { endpoints = [ "{{ icinga2_satellite_zone }}" ] ; parent = "master" }
+  {% endif -%}
+ {% endif -%}
+
+{% else %}
+// agent connect to an singulair satellite
+object Endpoint "{{ ansible_fqdn }}" {  }
+object Zone "{{ ansible_fqdn }}" { endpoints = [ "{{ ansible_fqdn }}" ] ; parent = "{{ icinga2_agent_parent }}" }
+
+
+{% endif %}
+
+
+
+{% endif -%}

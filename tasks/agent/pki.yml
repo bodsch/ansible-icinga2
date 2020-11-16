@@ -15,6 +15,63 @@
     icinga2_pki_fqdn_cert: "{{ icinga2_pki_dir }}/{{ ansible_fqdn }}.crt"
     icinga2_pki_master_cert: "{{ icinga2_pki_dir }}/trusted-master.crt"
 
+# compare checksum for ca.cert
+#
+- block:
+
+    - name: check local ca.crt
+      become: false
+      delegate_to: localhost
+      stat:
+        path: "../files/{{ icinga2_primary_master }}/ca.crt"
+        checksum_algorithm: sha1
+        get_checksum: true
+      run_once: true
+      register: primary_master_ca_file
+
+    - name: check for existing '{{ icinga2_pki_ca_cert }}'
+      stat:
+        path: "{{ icinga2_pki_ca_cert }}"
+        checksum_algorithm: sha1
+        get_checksum: true
+      register: agent_ca_file
+
+    - name: set facts
+      set_fact:
+        icinga2_remove_old_cert: "{{ primary_master_ca_file.stat.checksum | string == agent_ca_file.stat.checksum | string }}"
+      when: agent_ca_file.stat.checksum is defined
+
+    - name: remove old certs file from agent
+      file:
+        path: /var/lib/icinga2/certs
+        state: absent
+      when:
+        - agent_ca_file.stat.checksum is defined
+        - not icinga2_remove_old_cert
+
+    - name: read facts from '{{ icinga2_primary_master }}'"
+      remote_user: "{{ ansible_ssh_user }}"
+      delegate_to: "{{ icinga2_primary_master }}"
+      setup:
+        gather_subset:
+          - '!all'
+          - '!any'
+          - facter
+
+    - name: get icinga2 user from '{{ icinga2_primary_master }}'"
+      delegate_to: "{{ icinga2_primary_master }}"
+      remote_user: "{{ ansible_ssh_user }}"
+      set_fact:
+        icinga2_master_user: "{{ ansible_local.icinga2.icinga2_user | default( icinga2_user ) }}"
+        icinga2_master_group: "{{ ansible_local.icinga2.icinga2_group | default( icinga2_group ) }}"
+
+    - name: read facts from '{{ ansible_fqdn }}'"
+      setup:
+        gather_subset:
+          - '!all'
+          - '!any'
+          - facter
+
 - name: create icinga2.conf
   template:
     src: etc/icinga2/icinga2.conf.j2
@@ -76,7 +133,7 @@
 - name: information
   debug:
     msg:
-      - "agent parent : {{ icinga2_agent_parents }}"
+      - "agents parent: {{ icinga2_agent_parents }}"
 
 - name: "create local ../files/{{ item }}"
   become: false
@@ -88,33 +145,33 @@
   loop:
     "{{ icinga2_agent_parents }}"
 
-- name: wait for parent icinga2 to be accessible
-  wait_for:
-    host: '{{ item }}'
-    port: "{{ icinga2_master_port | default(5665) }}"
-    state: present         # Port should be open
-    timeout: 2
-    msg: "waiting for {{ item }}:5665 to be opened"
-  ignore_errors: true
-  register: _parent_avail
-  loop:
-    "{{ icinga2_agent_parents }}"
-
-- name: remove unavailable hosts from list
-  set_fact:
-    icinga2_agent_parents: "{{ icinga2_agent_parents | difference( _parent_avail.results | select('failed') | map(attribute='item') ) }}"
-
-- name: copy .crt from satellites
-  remote_user: "{{ ansible_ssh_user }}"
-  delegate_to: '{{ item }}'
-  fetch:
-    src: "{{ icinga2_pki_dir }}/{{ item }}.crt"
-    dest: ../files/{{ item }}/
-    flat: true
-  loop:
-    "{{ icinga2_agent_parents }}"
-
 - block:
+    - name: wait for parent icinga2 to be accessible
+      wait_for:
+        host: '{{ item }}'
+        port: "{{ icinga2_master_port | default(5665) }}"
+        state: present         # Port should be open
+        timeout: 2
+        msg: "waiting for {{ item }}:5665 to be opened"
+      ignore_errors: true
+      register: _parent_avail
+      loop:
+        "{{ icinga2_agent_parents }}"
+
+    - name: remove unavailable hosts from list
+      set_fact:
+        icinga2_agent_parents: "{{ icinga2_agent_parents | difference( _parent_avail.results | select('failed') | map(attribute='item') ) }}"
+
+    - name: copy .crt from satellites
+      remote_user: "{{ ansible_ssh_user }}"
+      delegate_to: '{{ item }}'
+      fetch:
+        src: "{{ icinga2_pki_dir }}/{{ item }}.crt"
+        dest: ../files/{{ item }}/
+        flat: true
+      loop:
+        "{{ icinga2_agent_parents }}"
+
     - name: "create a pki ticket at '{{ icinga2_primary_master }}'"
       delegate_to: "{{ icinga2_primary_master }}"
       remote_user: "{{ ansible_ssh_user }}"
@@ -127,16 +184,16 @@
       set_fact:
         icinga2_fqdn_ticket: "{{ ticket.stdout }}"
 
-    - name: wait for parent icinga2 to be accessible
-      wait_for:
-        host: "{{ icinga2_agent_parents | first }}"
-        port: "{{ icinga2_master_port | default(5665) }}"
-        delay: 5
-        connect_timeout: 3
-        msg: "waiting for {{ icinga2_agent_parents | first }}:5665 to be opened"
-      ignore_errors: false
-      retries: 10
-      delay: 10
+    # - name: wait for parent icinga2 to be accessible
+    #   wait_for:
+    #     host: "{{ icinga2_agent_parents | first }}"
+    #     port: "{{ icinga2_master_port | default(5665) }}"
+    #     delay: 5
+    #     connect_timeout: 3
+    #     msg: "waiting for {{ icinga2_agent_parents | first }}:5665 to be opened"
+    #   ignore_errors: false
+    #   retries: 10
+    #   delay: 10
 
     - name: copy trusted-parent.crt to {{ icinga2_pki_dir }}
       copy:
@@ -189,6 +246,31 @@
         recurse: true
 
   when: not __certificate_key.stat.exists
+
+- name: create zone entry under '/etc/icinga2/zones.d' on master '{{ icinga2_primary_master }}'
+  delegate_to: "{{ icinga2_primary_master }}"
+  remote_user: "{{ ansible_ssh_user }}"
+  file:
+    dest: /etc/icinga2/zones.d/{{ ansible_fqdn }}
+    state: directory
+    owner: "{{ icinga2_master_user }}"
+    group: "{{ icinga2_master_group }}"
+    mode: 0755
+
+# create on both masters!
+- name: create zone file on master
+  delegate_to: "{{ item.key }}"
+  remote_user: "{{ ansible_ssh_user }}"
+  template:
+    src: etc/icinga2/agent.conf.j2
+    dest: /etc/icinga2/satellites.d/{{ ansible_fqdn }}.conf
+    owner: "{{ icinga2_master_user }}"
+    group: "{{ icinga2_master_group }}"
+    mode: 0666
+  with_dict:
+    "{{ icinga2_masters }}"
+  notify:
+    - restart icinga2 master
 
 
 #    3  20201115 13:04:59  icinga2 pki new-cert --cn $(hostname -f) --key /var/lib/icinga2/certs/$(hostname -f).key --cert /var/lib/icinga2/certs/$(hostname -f).cert
