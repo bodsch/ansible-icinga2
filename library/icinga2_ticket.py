@@ -5,8 +5,8 @@
 # BSD 2-clause (see LICENSE or https://opensource.org/licenses/BSD-2-Clause)
 
 from __future__ import absolute_import, division, print_function
-import json
-import os
+# import json
+# import os
 
 from ansible.module_utils.basic import AnsibleModule
 
@@ -47,11 +47,11 @@ class Icinga2TicketHelper(object):
         self.module.log(msg = "Generates an Icinga 2 ticket.")
 
         rc, out = self._exec([
-          "ticket",
-          "--cn",
-          self.common_name,
-          "--salt",
-          self.salt
+            "ticket",
+            "--cn",
+            self.common_name,
+            "--salt",
+            self.salt
         ])
         self.module.log(msg = "  rc : '{}'".format(rc))
         self.module.log(msg = "  out: '{}'".format(out))
@@ -62,7 +62,6 @@ class Icinga2TicketHelper(object):
             result['changed'] = True
         else:
             result['failed'] = True
-
 
         return result
 

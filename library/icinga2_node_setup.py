@@ -5,7 +5,7 @@
 # BSD 2-clause (see LICENSE or https://opensource.org/licenses/BSD-2-Clause)
 
 from __future__ import absolute_import, division, print_function
-import json
+# import json
 import os
 
 from ansible.module_utils.basic import AnsibleModule
@@ -199,7 +199,7 @@ class Icinga2NodeSetupHelper(object):
 
         key  = os.path.join(os.path.join(self.lib_directory, 'certs', '{}.key.orig'.format(self.common_name)))
         cert = os.path.join(os.path.join(self.lib_directory, 'certs', '{}.crt.orig'.format(self.common_name)))
-        #ca_key = os.path.join(os.path.join(self.lib_directory, 'certs', 'ca.key'))
+        # ca_key = os.path.join(os.path.join(self.lib_directory, 'certs', 'ca.key'))
         trusted_master = os.path.join(os.path.join(self.lib_directory, 'certs', 'trusted-master.crt'))
         saved_ticket   = os.path.join(os.path.join(self.lib_directory, 'certs', 'ticket'))
 
@@ -208,7 +208,6 @@ class Icinga2NodeSetupHelper(object):
         self.module.log(msg = "  zone       : '{}'".format(self.zone))
         self.module.log(msg = "  parent_host: '{}'".format(self.parent_host))
         self.module.log(msg = "  trusted    : '{}'".format(trusted_master))
-
 
         if(not os.path.isfile(saved_ticket) and not os.path.isfile(key) and not os.path.isfile(cert)):
             rc, out = self._exec([
@@ -233,7 +232,6 @@ class Icinga2NodeSetupHelper(object):
         else:
             result['ansible_module_results'] = "skip, node already created"
             self.module.log(msg = "skip, node already created")
-
 
         return result
 
