@@ -15,23 +15,10 @@
         hostname: "{{ inventory_hostname }}"
         common_name: "{{ icinga2_certificate_cn }}"
         force: false
-
-    # - name: create icinga2 CA
-    #   command: "{{ item }}"
-    #   with_items:
-    #     - icinga2 pki new-ca
-    #     - icinga2 pki new-cert
-    #       --cn {{ icinga2_certificate_cn }}
-    #       --key {{ icinga2_pki_dir }}/{{ inventory_hostname }}.key
-    #       --csr {{ icinga2_pki_dir }}/{{ inventory_hostname }}.csr
-    #     - icinga2 pki sign-csr
-    #       --csr {{ icinga2_pki_dir }}/{{ inventory_hostname }}.csr
-    #       --cert {{ icinga2_pki_dir }}/{{ inventory_hostname }}.crt
-    #   when:
-    #     not _icinga2_ca_file.stat.exists
-    #   tags:
-    #     - icinga2
-    #   ignore_errors: false
+      when:
+        - not _icinga2_ca_file.stat.exists
+      tags:
+        - icinga2
 
     # renew stat with the ca and cert files
     #
@@ -68,8 +55,10 @@
       with_items:
         - key
         - crt
-      when: (
-        inventory_hostname != icinga2_certificate_cn and
-        not _icinga2_certificate_file.stat.exists)
+      when:
+        - inventory_hostname != icinga2_certificate_cn
+        - not _icinga2_certificate_file.stat.exists
 
-  when: icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
+  when:
+    - icinga2_primary_master is defined
+    - icinga2_primary_master == ansible_fqdn

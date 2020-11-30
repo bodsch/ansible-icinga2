@@ -7,16 +7,8 @@
     icinga2_pki_ca_key: "{{ icinga2_pki_dir }}/ca.key"
     icinga2_pki_ca_cert: "{{ icinga2_pki_dir }}/ca.crt"
     icinga2_pki_fqdn_key: "{{ icinga2_pki_dir }}/{{ ansible_fqdn }}.key"
-    icinga2_pki_fqdn_cert: "{{ icinga2_pki_dir }}/{{ ansible_fqdn }}.crt"
-    icinga2_pki_master_cert: "{{ icinga2_pki_dir }}/trusted-master.crt"
-
-- debug:
-    msg:
-      - "pki ca.key        : {{ icinga2_pki_ca_key }}"
-      - "pki ca.crt        : {{ icinga2_pki_ca_cert }}"
-      - "pki fqdn.key      : {{ icinga2_pki_fqdn_key }}"
-      - "pki fqdn.crt      : {{ icinga2_pki_fqdn_cert }}"
-      - "pki master.crt    : {{ icinga2_pki_master_cert }}"
+    # icinga2_pki_fqdn_cert: "{{ icinga2_pki_dir }}/{{ ansible_fqdn }}.crt"
+    # icinga2_pki_master_cert: "{{ icinga2_pki_dir }}/trusted-master.crt"
 
 - name: "create '{{ icinga2_pki_dir }}'"
   file:
