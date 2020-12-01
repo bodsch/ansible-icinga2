@@ -16,6 +16,7 @@ class FilterModule(object):
     """
         Ansible file jinja2 tests
     """
+
     def filters(self):
         return {
             'primary_master': self.filter_primary,
@@ -36,6 +37,7 @@ class FilterModule(object):
 
       returns 'blackbox.matrix.lan'
     """
+
     def filter_primary(self, mydict):
         seen = ''
 
@@ -86,6 +88,7 @@ class FilterModule(object):
         icinga.boone-schulz.de:
 
     """
+
     def filter_reorder(self, mydict):
         seen = ''
 
@@ -102,6 +105,7 @@ class FilterModule(object):
     """
 
     """
+
     def satellite_zone(self, mydict, ansible_fqdn):
         seen = ansible_fqdn
 
@@ -127,6 +131,7 @@ class FilterModule(object):
     """
 
     """
+
     def __transform(self, multilevelDict):
 
         new = {}
@@ -150,6 +155,7 @@ class FilterModule(object):
     """
 
     """
+
     def __search(self, list, fqdn):
         for i in range(len(list)):
             if list[i] == fqdn:

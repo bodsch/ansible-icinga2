@@ -145,19 +145,16 @@
         mode: 0666
 
     - name: "create a pki ticket at '{{ icinga2_primary_master }}'"
-      delegate_to: "{{ icinga2_primary_master }}"
-      remote_user: "{{ ansible_ssh_user }}"
-      shell: |
-        icinga2 pki ticket --cn {{ icinga2_certificate_cn }} --salt {{ icinga2_salt }}
+      icinga2_ticket:
+        common_name: "{{ icinga2_certificate_cn }}"
+        salt: "{{ icinga2_salt }}"
       register: ticket
-      when: icinga2_salt is defined
+      delegate_to: "{{ icinga2_primary_master }}"
 
     - name: set facts
       set_fact:
-        icinga2_fqdn_ticket: "{{ ticket.stdout }}"
+        icinga2_fqdn_ticket: "{{ ticket.ticket }}"
 
-    # todo
-    # check icinga master port 5665
     - name: wait for primary icinga2 master to be accessible
       wait_for:
         host: '{{ icinga2_primary_master }}'
@@ -169,38 +166,18 @@
       retries: 10
       delay: 10
 
-    - name: configure icinga2 satellite pki
-      command: "{{ item }}"
-      with_items:
-        - icinga2 pki new-cert
-          --cn {{ icinga2_certificate_cn }}
-          --key {{ icinga2_pki_fqdn_key }}
-          --cert {{ icinga2_pki_fqdn_cert }}
-
-        - icinga2 pki save-cert
-          --key {{ icinga2_pki_fqdn_key }}
-          --cert {{ icinga2_pki_fqdn_cert }}
-          --trustedcert {{ icinga2_pki_master_cert }}
-          --host {{ icinga2_primary_master }}
-
-        - icinga2 pki request
-          --host {{ icinga2_primary_master }}
-          --port {{ icinga2_master_port | default(5665) }}
-          --ticket {{ icinga2_fqdn_ticket }}
-          --key {{ icinga2_pki_fqdn_key }}
-          --cert {{ icinga2_pki_fqdn_cert }}
-          --trustedcert {{ icinga2_pki_master_cert }}
-          --ca {{ icinga2_pki_ca_key }}
-
-        - icinga2 node setup
-          --ticket {{ icinga2_fqdn_ticket }}
-          --endpoint {{ icinga2_primary_master }}
-          --zone {{ ansible_fqdn }}
-          --parent_host {{ icinga2_primary_master }}
-          --trustedcert {{ icinga2_pki_master_cert }}
-
+    - name: configure icinga2 secondary master pki
       become: true
-      when: not __satellite_key.stat.exists and ticket.stdout is defined
+      icinga2_node_setup:
+        common_name: "{{ icinga2_certificate_cn }}"
+        ca_key: "{{ icinga2_pki_ca_key }}"
+        ticket: "{{ icinga2_fqdn_ticket }}"
+        parent_icinga2_host: "{{ icinga2_primary_master }}"
+        zone: "{{ ansible_fqdn }}"
+        endpoint: "{{ icinga2_primary_master }}"
+      when:
+        - not __satellite_key.stat.exists
+        - icinga2_fqdn_ticket is defined
       notify:
         - check configuration
         - restart icinga2

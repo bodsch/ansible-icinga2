@@ -7,8 +7,8 @@
     icinga2_pki_ca_key: "{{ icinga2_pki_dir }}/ca.key"
     icinga2_pki_ca_cert: "{{ icinga2_pki_dir }}/ca.crt"
     icinga2_pki_fqdn_key: "{{ icinga2_pki_dir }}/{{ ansible_fqdn }}.key"
-    icinga2_pki_fqdn_cert: "{{ icinga2_pki_dir }}/{{ ansible_fqdn }}.crt"
-    icinga2_pki_master_cert: "{{ icinga2_pki_dir }}/trusted-master.crt"
+    # icinga2_pki_fqdn_cert: "{{ icinga2_pki_dir }}/{{ ansible_fqdn }}.crt"
+    # icinga2_pki_master_cert: "{{ icinga2_pki_dir }}/trusted-master.crt"
 
 - name: "create '{{ icinga2_pki_dir }}'"
   file:
@@ -30,15 +30,15 @@
 
 - block:
     - name: "create a ticket from icinga2 master for the secondary master '{{ ansible_fqdn }}'"
-      shell: |
-        icinga2 pki ticket --cn {{ icinga2_certificate_cn }}
+      icinga2_ticket:
+        common_name: "{{ icinga2_certificate_cn }}"
+        salt: "{{ icinga2_salt }}"
       register: ticket
       delegate_to: "{{ icinga2_primary_master }}"
-      when: icinga2_salt is defined
 
     - name: set facts
       set_fact:
-        icinga2_fqdn_ticket: "{{ ticket.stdout }}"
+        icinga2_fqdn_ticket: "{{ ticket.ticket }}"
 
     - name: copy ca.crt from primary icinga2 master
       fetch:
@@ -56,38 +56,17 @@
         mode: 0660
 
     - name: configure icinga2 secondary master pki
-      ## http://lowendbox.com/blog/server-monitoring-with-icinga-2-part-2-the-node-ubuntu-host/
-      ## http://serverfault.com/questions/647805/how-to-set-up-icinga2-remote-client-without-using-cli-wizard
-      command: "{{ item }}"
-      with_items:
-        - icinga2 pki new-cert
-          --cn {{ icinga2_certificate_cn }}
-          --key {{ icinga2_pki_fqdn_key }}
-          --cert {{ icinga2_pki_fqdn_cert }}
-
-        - icinga2 pki save-cert
-          --key {{ icinga2_pki_fqdn_key }}
-          --cert {{ icinga2_pki_fqdn_cert }}
-          --trustedcert {{ icinga2_pki_master_cert }}
-          --host {{ icinga2_primary_master }}
-
-        - icinga2 pki request
-          --host {{ icinga2_primary_master }}
-          --port {{ icinga2_master_port | default(5665) }}
-          --ticket {{ icinga2_fqdn_ticket }}
-          --key {{ icinga2_pki_fqdn_key }}
-          --cert {{ icinga2_pki_fqdn_cert }}
-          --trustedcert {{ icinga2_pki_master_cert }}
-          --ca {{ icinga2_pki_ca_key }}
-
-        - icinga2 node setup
-          --ticket {{ icinga2_fqdn_ticket }}
-          --endpoint {{ icinga2_primary_master }}
-          --zone {{ ansible_fqdn }}
-          --parent_host {{ icinga2_primary_master }}
-          --trustedcert {{ icinga2_pki_master_cert }}
       become: true
-      when: not __fqdn_key.stat.exists and ticket.stdout is defined
+      icinga2_node_setup:
+        common_name: "{{ icinga2_certificate_cn }}"
+        ca_key: "{{ icinga2_pki_ca_key }}"
+        ticket: "{{ icinga2_fqdn_ticket }}"
+        parent_icinga2_host: "{{ icinga2_primary_master }}"
+        zone: "{{ icinga2_primary_master }}"
+        endpoint: "{{ icinga2_primary_master }}"
+      when:
+        - not __fqdn_key.stat.exists
+        - icinga2_fqdn_ticket is defined
       notify:
         - check configuration
         - restart icinga2
@@ -107,9 +86,10 @@
         group: "{{ icinga2_group }}"
         mode: 0666
         backup: true
-  when: ( not __fqdn_key.stat.exists and
-    icinga2_primary_master is defined and
-    icinga2_primary_master != ansible_fqdn)
+  when:
+    - not __fqdn_key.stat.exists
+    - icinga2_primary_master is defined
+    - icinga2_primary_master != ansible_fqdn
 
 - name: create host object file for secondary master on master '{{ icinga2_primary_master }}'
   template:
