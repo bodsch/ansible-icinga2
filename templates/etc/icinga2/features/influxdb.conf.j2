@@ -18,11 +18,11 @@ object InfluxdbWriter "influxdb" {
   {{ k }} = {
 {% for k2, v2 in v.items() | sort %}
 {% if k2 == "tags" %}
+  tags = {
 {% for k3, v3 in v2.items() | sort %}
-    tags = {
       {{ k3  }} = "{{ v3 }}"
-    }
 {% endfor %}
+    }
 {% else %}
     {{ k2  }} = "{{ v2 }}"
 {% endif %}
