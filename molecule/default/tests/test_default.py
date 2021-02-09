@@ -1,6 +1,12 @@
+
+from ansible.parsing.dataloader import DataLoader
+from ansible.template import Templar
 import pytest
 import os
 import testinfra.utils.ansible_runner
+
+# import pprint
+# pp = pprint.PrettyPrinter()
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('all')
@@ -8,18 +14,27 @@ testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
 
 @pytest.fixture()
 def get_vars(host):
-    defaults_files = "file=../../defaults/main.yml name=role_defaults"
-    vars_files = "file=../../vars/main.yml name=role_vars"
+    """
 
-    ansible_vars = host.ansible(
-        "include_vars",
-        defaults_files)["ansible_facts"]["role_defaults"]
+    """
+    cwd = os.getcwd()
 
-    ansible_vars.update(host.ansible(
-        "include_vars",
-        vars_files)["ansible_facts"]["role_vars"])
+    file_defaults = "file={}/defaults/main.yml name=role_defaults".format(cwd)
+    file_vars = "file={}/vars/main.yml name=role_vars".format(cwd)
+    file_molecule = "file=molecule/default/group_vars/all/vars.yml name=test_vars"
 
-    return ansible_vars
+    defaults_vars = host.ansible("include_vars", file_defaults).get("ansible_facts").get("role_defaults")
+    vars_vars = host.ansible("include_vars", file_vars).get("ansible_facts").get("role_vars")
+    molecule_vars = host.ansible("include_vars", file_molecule).get("ansible_facts").get("test_vars")
+
+    ansible_vars = defaults_vars
+    ansible_vars.update(vars_vars)
+    ansible_vars.update(molecule_vars)
+
+    templar = Templar(loader=DataLoader(), variables=ansible_vars)
+    result = templar.template(ansible_vars, fail_on_undefined=False)
+
+    return result
 
 
 @pytest.mark.parametrize("dirs", [
@@ -31,6 +46,10 @@ def get_vars(host):
 ])
 def test_directories(host, dirs):
     d = host.file(dirs)
+    # major_version = host.ansible("setup").get("ansible_facts").get("ansible_local").get("sqlplus").get("version").get("major")
+    # content = host.file('/etc/profile.d/sqlplus.sh').content_string
+    # user_name = get_vars.get('sqlplus_oracle_user').get('name')
+    #
     assert d.is_directory
     assert d.exists
 

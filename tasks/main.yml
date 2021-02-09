@@ -9,21 +9,6 @@
   tags:
     - icinga2
 
-# - name: "create a ticket from icinga2 master for the secondary master '{{ ansible_fqdn }}'"
-#   icinga2_ticket:
-#     common_name: "{{ icinga2_certificate_cn }}"
-#     salt: "{{ icinga2_salt }}"
-#   #shell: |
-#   #  icinga2 pki ticket --cn {{ icinga2_certificate_cn }}
-#   register: ticket
-#   delegate_to: "{{ icinga2_primary_master }}"
-#   #when: icinga2_salt is defined
-#   when: icinga2_primary_master is defined and icinga2_primary_master != ansible_fqdn
-#
-# - debug:
-#     msg:
-#       - "ticket        : {{ ticket }}"
-
 - include: install.yml
   become: true
   tags:

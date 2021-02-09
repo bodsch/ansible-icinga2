@@ -31,10 +31,10 @@ _icinga2_mariadb_packages:
 
 _icinga2_mariadb_python_packages:
   default:
-    - PyMySQL
+    # - PyMySQL
     - mysqlclient
   debian:
-    - PyMySQL
+    # - PyMySQL
     - mysqlclient
   redhat:
     - PyMySQL

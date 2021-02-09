@@ -13,15 +13,19 @@ lint: |
 
 platforms:
   - name: instance
-    image: "geerlingguy/docker-${MOLECULE_DISTRO:-debian10}-ansible:latest"
+    image: "diodonfrost/ansible-${DISTRIBUTION:-debian:10}"
     command: ${MOLECULE_DOCKER_COMMAND:-""}
-    volumes:
-      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
     privileged: true
     pre_build_image: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
 
 provisioner:
   name: ansible
+  ansible_args:
+    - --diff
+    # - -vv
   config_options:
     defaults:
       deprecation_warnings: True
