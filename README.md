@@ -1,6 +1,8 @@
-# Icinga2 ansible role
+
 
 Ansible role to setup Icinga2 master or satellite.
+
+![CI](https://github.com/bodsch/ansible-icinga2/workflows/CI/badge.svg)
 
 ## Requirements & Dependencies
 
@@ -12,7 +14,8 @@ Tested on
 
 * Debian 9 / 10
 * Ubuntu 18.04 / 18.10 / 19.10
-* CentOS 7
+* CentOS 7 / 8
+* Oracle Linux 8
 * Arch Linux
 
 ## Contribution
