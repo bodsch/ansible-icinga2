@@ -17,12 +17,12 @@ jobs:
 
   lint:
     name: Lint
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
       - name: check out the codebase.
         uses: actions/checkout@v2
         with:
-          path: 'ansible-fail2ban'
+          path: 'ansible-icinga2'
 
       - name: set up python.
         uses: actions/setup-python@v2
