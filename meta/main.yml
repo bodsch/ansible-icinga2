@@ -27,7 +27,6 @@ galaxy_info:
         - 7
         - 8
     - name: ArchLinux
-    - name: ArtixLinux
 
   galaxy_tags:
     - monitoring
