@@ -19,21 +19,21 @@
 #
 - block:
     - name: copy ca.crt from primary icinga2 master {{ icinga2_primary_master }}
+      delegate_to: '{{ icinga2_primary_master }}'
       remote_user: "{{ ansible_ssh_user }}"
       fetch:
         src: "{{ icinga2_pki_ca_cert }}"
         dest: files/{{ icinga2_primary_master }}/ca.crt
         flat: true
-      delegate_to: '{{ icinga2_primary_master }}'
 
     - name: check local ca.crt
+      delegate_to: localhost
+      become: false
       stat:
         path: "files/{{ icinga2_primary_master }}/ca.crt"
         checksum_algorithm: sha1
         get_checksum: true
-      become: false
       run_once: true
-      delegate_to: localhost
       register: primary_master_ca_file
 
     - name: check for existing '{{ icinga2_pki_ca_cert }}'
@@ -46,7 +46,8 @@
     - name: set facts
       set_fact:
         icinga2_remove_old_cert: "{{ primary_master_ca_file.stat.checksum | string == satellite_ca_file.stat.checksum | string }}"
-      when: satellite_ca_file.stat.checksum is defined
+      when:
+        - satellite_ca_file.stat.checksum is defined
 
     - name: remove old ca file from satellite
       file:
@@ -55,12 +56,13 @@
       loop:
         - /var/lib/icinga2/certs
         - /var/lib/icinga2/ca
-      when: satellite_ca_file.stat.checksum is defined and
-        not icinga2_remove_old_cert
+      when:
+        - satellite_ca_file.stat.checksum is defined
+        - not icinga2_remove_old_cert
 
     - name: read facts from '{{ icinga2_primary_master }}'"
-      remote_user: "{{ ansible_ssh_user }}"
       delegate_to: "{{ icinga2_primary_master }}"
+      remote_user: "{{ ansible_ssh_user }}"
       setup:
         gather_subset:
           - '!all'
@@ -189,7 +191,8 @@
         group: "{{ icinga2_user }}"
         recurse: true
 
-  when: not __satellite_key.stat.exists
+  when:
+    - not __satellite_key.stat.exists
 
 - name: create zone entry under '/etc/icinga2/zones.d' on master '{{ icinga2_primary_master }}'
   delegate_to: "{{ icinga2_primary_master }}"

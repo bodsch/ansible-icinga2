@@ -40,20 +40,13 @@
       retries: 10
       delay: 10
 
-    - name: check mysql database version
-      shell: >
-        mysql \
-          --host={{ icinga2_ido.host }} \
-          --user={{ icinga2_ido.user }} \
-          --password={{ icinga2_ido.password }} \
-          --batch \
-          --skip-column-names \
-          --execute \
-          "select version from {{ icinga2_ido.database }}.icinga_dbversion"
+    - name: get mysql ido version
+      icinga2_ido_version:
+        dba_host: "{{ icinga2_ido.host }}"
+        dba_user: "{{ icinga2_ido.user }}"
+        dba_password: "{{ icinga2_ido.password }}"
+        dba_database: "{{ icinga2_ido.database }}"
       register: _mysql_ido_version
-      changed_when: false
-      ignore_errors: true
-      no_log: true
 
     - name: create the mysql ido schema
       mysql_db:
@@ -66,14 +59,17 @@
       register: mysql_create_ido_schema
       changed_when: false
       check_mode: false
-      when: _mysql_ido_version.stdout | string | length == 0
+      when:
+        - not _mysql_ido_version.exists
 
-    - name: update database schema  # noqa 305
+    - name: update database schema  # noqa 'command-instead-of-shell'
       command:
         cmd: /usr/local/bin/database-upgrade.sh
       changed_when: false
       # no_log: false
-  when: icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
+  when:
+    - icinga2_primary_master is defined
+    - icinga2_primary_master == ansible_fqdn
 
 - name: configure ido-mysql feature
   template:

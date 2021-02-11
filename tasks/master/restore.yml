@@ -19,7 +19,8 @@
         dest: /usr/local/bin/restore-icinga2.sh
         mode: 0755
   when:
-    - icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
+    - icinga2_primary_master is defined
+    - icinga2_primary_master == ansible_fqdn
 
 - block:
     - name: define primary icinga2 master
@@ -38,7 +39,8 @@
         mode: 0640
       delegate_to: '{{ icinga2_primary_master }}'
       when:
-        - icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
+        - icinga2_primary_master is defined
+        - icinga2_primary_master == ansible_fqdn
         - icinga2_restore_script.stat.exists
 
     - name: transfer latest checksum to {{ icinga2_primary_master }}
@@ -48,17 +50,20 @@
         mode: 0640
       delegate_to: '{{ icinga2_primary_master }}'
       when:
-        - icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
+        - icinga2_primary_master is defined
+        - icinga2_primary_master == ansible_fqdn
         - icinga2_restore_script.stat.exists
 
     - name: run restore script
       shell: >
         /usr/local/bin/restore-icinga2.sh /var/tmp/latest.tar.bz2
       when:
-        - icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
+        - icinga2_primary_master is defined
+        - icinga2_primary_master == ansible_fqdn
         - icinga2_restore_script.stat.exists
   when:
-    - icinga2_master_backup_enabled is defined and icinga2_master_backup_enabled | bool
+    - icinga2_master_backup_enabled is defined
+    - icinga2_master_backup_enabled | bool
 
   tags:
     - icinga2_master

@@ -1,14 +1,8 @@
 
-# quiet: true
-
 skip_list:
   - 'role-name'  # Role name {} does not match ``^[a-z][a-z0-9_]+$`` pattern
 # '301' with 'no-changed-when'
 # '303' with 'command-instead-of-module'
 # '306' with 'risky-shell-pipe'
 # '305' with 'command-instead-of-shell'
-
-#  - 303
-#  - 305
-#  - 204
 

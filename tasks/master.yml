@@ -43,7 +43,9 @@
     owner: "{{ icinga2_user }}"
     group: "{{ icinga2_group }}"
     mode: 0755
-  when: icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
+  when:
+    - icinga2_primary_master is defined
+    - icinga2_primary_master == ansible_fqdn
 
 # only on primary master!
 - name: create hosts.conf
@@ -59,7 +61,9 @@
     - restart icinga2
   tags:
     - configure
-  when: icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
+  when:
+    - icinga2_primary_master is defined
+    - icinga2_primary_master == ansible_fqdn
 
 - name: create groups.conf
   template:
@@ -74,7 +78,9 @@
     - restart icinga2
   tags:
     - configure
-  when: icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
+  when:
+    - icinga2_primary_master is defined
+    - icinga2_primary_master == ansible_fqdn
 
 - name: create '{{ icinga2_local_scriptsdir }}' directory
   file:
@@ -85,19 +91,34 @@
     mode: 0755
 
 - include_tasks: master/pki.yml
-  when: icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
+  when:
+    - icinga2_primary_master is defined
+    - icinga2_primary_master == ansible_fqdn
 
 - include_tasks: master/configure.yml
 - include_tasks: master/features.yml
 
 - include_tasks: master/global-templates.yml
-  when: icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
+  when:
+    - icinga2_primary_master is defined
+    - icinga2_primary_master == ansible_fqdn
 
 - block:
-    - name: check configuration  # noqa 301
-      shell: |
-        icinga2 daemon --validate --log-level debug --config /etc/icinga2/icinga2.conf
+    - name: validate icinga2 configuration
+      icinga2_daemon:
+        parameters:
+          - --validate
+          - --log-level debug
+          - --config /etc/icinga2/icinga2.conf
       register: icinga2_validate_config
+
+    - name: validated config
+      debug:
+        var: icinga2_validate_config
+      when:
+        - icinga2_validate_config is defined
+        - icinga2_validate_config.failed is defined
+        - not icinga2_validate_config
 
     - name: restart icinga2 master
       service:
@@ -112,7 +133,11 @@
         delay: 5
         connect_timeout: 3
 
-  when: icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
+  when:
+    - icinga2_primary_master is defined
+    - icinga2_primary_master == ansible_fqdn
 
 - include_tasks: master/secondary.yml
-  when: icinga2_primary_master is defined and icinga2_primary_master != ansible_fqdn
+  when:
+    - icinga2_primary_master is defined
+    - not icinga2_primary_master == ansible_fqdn
