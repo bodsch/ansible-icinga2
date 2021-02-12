@@ -1,5 +1,7 @@
 [flake8]
 
+ignore = F841
+
 exclude =
   # No need to traverse our git directory
   .git,
