@@ -11,14 +11,16 @@
         dest: /etc/aide/aide.conf.d
         state: directory
         mode: 0755
-      when: _aide_installed.stat.exists
+      when:
+        - _aide_installed.stat.exists
 
     - name: add additional aide HIDS configuration
       copy:
         src: aide/aide.conf.d/99_aide_local_icinga2
         dest: /etc/aide/aide.conf.d/99_aide_local_icinga2
         mode: 0644
-      when: _aide_installed.stat.exists
-  when: (
-    icinga2_aide_enabled is defined and
-    icinga2_aide_enabled)
+      when:
+        - _aide_installed.stat.exists
+  when:
+    - icinga2_aide_enabled is defined
+    - icinga2_aide_enabled

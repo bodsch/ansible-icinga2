@@ -8,7 +8,7 @@
       become_user: aur_builder
       shell: |
         cd ~
-        git clone https://github.com/bodsch/aur-icinga2 icinga2
+        git clone {{ icinga2_repo_archlinux }} icinga2
         cd icinga2/
         git pull
 
@@ -24,7 +24,10 @@
       set_fact:
         packaged_icinga2_version: "{{ __packaged_icinga2_version.stdout }}"
         cacheable: true
-      when: __packaged_icinga2_version is defined and __packaged_icinga2_version.rc is defined and __packaged_icinga2_version.rc == 0
+      when:
+        - __packaged_icinga2_version is defined
+        - __packaged_icinga2_version.rc is defined
+        - __packaged_icinga2_version.rc == 0
 
     - block:
         - name: compare versiones
@@ -39,16 +42,16 @@
             makepkg --syncdeps --install --noprogressbar --noconfirm
       when: packaged_icinga2_version is version( icinga2_installed_version ,'>')
 
-  when: (
-    icinga2_use_external_repo | bool and
-    ansible_os_family | lower == 'archlinux')
+  when:
+    - icinga2_use_external_repo | bool
+    - ansible_os_family | lower == 'archlinux'
 
 - block:
     - name: create policy-rc.d
       copy:
         dest: /usr/sbin/policy-rc.d
         content: |
-          #!/bin/bash
+          #!/bin/sh
           exit 101
         mode: 0755
 
@@ -73,26 +76,27 @@
 
 - include_tasks: check_installed.yml
 
-- name: detect icinga2_user  # noqa 301 306
-  shell: |
-    grep ": \${ICINGA2_USER" /usr/lib/icinga2/prepare-dirs | cut -d'=' -f2 | cut -d'"' -f2
+- name: detect icinga2_user
+  icinga2_prepared_vars:
+    variable: ICINGA2_USER
   register: _icinga2_user
 
-- name: set icinga2_user to {{ _icinga2_user.stdout }}
-  set_fact:
-    icinga2_user: "{{ _icinga2_user.stdout }}"
-  when: _icinga2_user.stdout is defined
-
-- name: detect icinga2_group  # noqa 301 306
-  shell: |
-    grep ": \${ICINGA2_GROUP" /usr/lib/icinga2/prepare-dirs | cut -d'=' -f2 | cut -d'"' -f2
+- name: detect icinga2_group
+  icinga2_prepared_vars:
+    variable: ICINGA2_GROUP
   register: _icinga2_group
 
-- name: set icinga2_group to {{ _icinga2_group.stdout }}
+- name: set icinga2_user to {{ _icinga2_user.value }}
   set_fact:
-    icinga2_group: "{{ _icinga2_group.stdout }}"
-  when: _icinga2_group.stdout is defined
+    icinga2_user: "{{ _icinga2_user.value }}"
+  when:
+    - _icinga2_user.value is defined
 
+- name: set icinga2_group to {{ _icinga2_group.value }}
+  set_fact:
+    icinga2_group: "{{ _icinga2_group.value }}"
+  when:
+    - _icinga2_group.value is defined
 
 - name: create custom fact file
   template:

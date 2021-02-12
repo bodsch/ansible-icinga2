@@ -62,7 +62,8 @@
         flat: true
       delegate_to: '{{ icinga2_primary_master }}'
       when:
-        - icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
+        - icinga2_primary_master is defined
+        - icinga2_primary_master == ansible_fqdn
         - icinga2_backup_script.stat.exists
 
     - name: transfer latestes checksum to ansible host
@@ -72,10 +73,12 @@
         flat: true
       delegate_to: '{{ icinga2_primary_master }}'
       when:
-        - icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
+        - icinga2_primary_master is defined
+        - icinga2_primary_master == ansible_fqdn
         - icinga2_backup_script.stat.exists
   when:
-    - icinga2_master_backup_enabled is defined and icinga2_master_backup_enabled | bool
+    - icinga2_master_backup_enabled is defined
+    - icinga2_master_backup_enabled | bool
 
   tags:
     - icinga2_master

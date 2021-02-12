@@ -119,7 +119,8 @@ class FilterModule(object):
             key_list = list(keys)
             found = self.__search(key_list, ansible_fqdn)
 
-            display.vv("zone : {} -> values {} ({})".format(zone, key_list, found))
+            display.vv("zone : {} -> values {} ({})".format(
+                zone, key_list, found))
 
             if(found):
                 seen = zone

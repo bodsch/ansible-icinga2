@@ -49,11 +49,11 @@
 - name: set fact for salt
   set_fact:
     icinga2_salt: "{{ ansible_local.icinga2.salt }}"
-  when: (
-    ansible_local.icinga2 is defined and
-    ansible_local.icinga2.salt is defined and
-    ansible_local.icinga2.salt | length != 0 and
-    icinga2_salt != ansible_local.icinga2.salt)
+  when:
+    - ansible_local.icinga2 is defined
+    - ansible_local.icinga2.salt is defined
+    - ansible_local.icinga2.salt | length != 0
+    - icinga2_salt != ansible_local.icinga2.salt
 
 - name: assert missing salt
   assert:
@@ -111,7 +111,9 @@
       apt:
         update_cache: true
 
-  when: ansible_os_family | lower == 'debian' and icinga2_use_external_repo | bool
+  when:
+    - ansible_os_family | lower == 'debian'
+    - icinga2_use_external_repo | bool
 
 # redhat based
 #
@@ -149,7 +151,7 @@
         gpgcheck: 1
         enabled: 1
 
-    - name: update rpm cache  # noqa 303
+    - name: update rpm cache  # noqa 'command-instead-of-module'
       command: yum clean metadata
       args:
         warn: false
@@ -184,7 +186,9 @@
         name: aur_builder
         group: aur_builder
 
-  when: ansible_os_family | lower == 'archlinux' and icinga2_use_external_repo | bool
+  when:
+    - ansible_os_family | lower == 'archlinux'
+    - icinga2_use_external_repo | bool
 
 - name: create sudo rules for icinga
   template:

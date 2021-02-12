@@ -55,4 +55,6 @@
         - check configuration
         - restart icinga2
 
-  when: icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
+  when:
+    - icinga2_primary_master is defined
+    - icinga2_primary_master == ansible_fqdn

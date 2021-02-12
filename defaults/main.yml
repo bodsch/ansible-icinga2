@@ -3,6 +3,8 @@ icinga2_version: ''
 
 icinga2_use_external_repo: true
 
+icinga2_repo_archlinux: https://aur.archlinux.org/icinga2.git
+
 icinga2_validate_primary_master: true
 
 icinga2_certificate_cn: '{{ ansible_fqdn }}'

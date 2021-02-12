@@ -17,7 +17,8 @@
         group: "{{ icinga2_group }}"
         mode: 0755
   when:
-    - icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
+    - icinga2_primary_master is defined
+    - icinga2_primary_master == ansible_fqdn
 
 - name: create satellite directory
   file:
@@ -100,4 +101,5 @@
         - check configuration
         - restart icinga2
   when:
-    - icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
+    - icinga2_primary_master is defined
+    - icinga2_primary_master == ansible_fqdn

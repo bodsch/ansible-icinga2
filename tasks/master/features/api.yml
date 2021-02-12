@@ -19,4 +19,5 @@
         owner: "{{ icinga2_user }}"
         group: "{{ icinga2_group }}"
         mode: 0660
-  when: icinga2_master_features_enabled | join('|') | regex_search('api')
+  when:
+    - icinga2_master_features_enabled | join('|') | regex_search('api')

@@ -6,7 +6,11 @@
       combine( icinga2_ido, recursive=True ) }}"
 
 - include: ido-mysql.yml
-  when: icinga2_ido.enabled | bool and icinga2_master_features_enabled | join('|') | regex_search('ido-mysql')
+  when:
+    - icinga2_ido.enabled | bool
+    - icinga2_master_features_enabled | join('|') | regex_search('ido-mysql')
 
 - include: ido-pgsql.yml
-  when: icinga2_ido.enabled | bool and icinga2_master_features_enabled | join('|') | regex_search('ido-pgsql')
+  when:
+    - icinga2_ido.enabled | bool
+    - icinga2_master_features_enabled | join('|') | regex_search('ido-pgsql')
