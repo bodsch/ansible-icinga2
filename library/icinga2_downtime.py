@@ -150,27 +150,27 @@ class Icinga2Api(object):
         """
           Initialize all needed Variables
         """
-        self.icinga_host     = module.params.get("host")
-        self.icinga_port     = module.params.get("port")
+        self.icinga_host = module.params.get("host")
+        self.icinga_port = module.params.get("port")
         self.icinga_username = module.params.get("username")
         self.icinga_password = module.params.get("password")
-        self.state           = module.params.get("state")
-        self.hostname        = module.params.get("hostname")
-        self.hostnames       = module.params.get("hostnames")
-        self.start_time      = module.params.get("start_time")
-        self.end_time        = module.params.get("end_time")
-        self.duration        = module.params.get("duration")
-        self.object_type     = module.params.get("object_type")
-        self.all_services    = module.params.get("all_services")
-        self.author          = module.params.get("author")
-        self.comment         = module.params.get("comment")
-        self.fixed           = module.params.get("fixed")
-        self.filter_vars     = None
-        self.trigger_name    = None
+        self.state = module.params.get("state")
+        self.hostname = module.params.get("hostname")
+        self.hostnames = module.params.get("hostnames")
+        self.start_time = module.params.get("start_time")
+        self.end_time = module.params.get("end_time")
+        self.duration = module.params.get("duration")
+        self.object_type = module.params.get("object_type")
+        self.all_services = module.params.get("all_services")
+        self.author = module.params.get("author")
+        self.comment = module.params.get("comment")
+        self.fixed = module.params.get("fixed")
+        self.filter_vars = None
+        self.trigger_name = None
 
-        self.icinga_url      = "{0}:{1}/v1".format(self.icinga_host, self.icinga_port)
+        self.icinga_url = "{0}:{1}/v1".format(self.icinga_host, self.icinga_port)
 
-        self.connection      = Session()
+        self.connection = Session()
         self.connection.headers.update({'Accept': 'application/json'})
         self.connection.auth = (self.icinga_username, self.icinga_password)
 
@@ -178,8 +178,8 @@ class Icinga2Api(object):
 
     def run(self):
         res = dict(
-            changed = False,
-            ansible_module_results = "none"
+            changed=False,
+            ansible_module_results="none"
         )
 
         print("hostname  : {} ({})".format(self.hostname, type(self.hostname)))
@@ -218,36 +218,36 @@ class Icinga2Api(object):
                             'duration': self.duration
                         }
                         if self.fixed:
-                            payload.update(fixed = True)
+                            payload.update(fixed=True)
                         else:
-                            payload.update(fixed = False)
+                            payload.update(fixed=False)
 
                         if self.filter_vars:
-                            payload.update(filter_vars = self.filter_vars)
+                            payload.update(filter_vars=self.filter_vars)
 
                         if self.trigger_name:
-                            payload.update(trigger_name = self.trigger_name)
+                            payload.update(trigger_name=self.trigger_name)
 
                         if self.object_type == 'Host' and self.all_services is True:
-                            payload.update(all_services = True)
+                            payload.update(all_services=True)
 
-                        module.log(msg = "downtime for: {}".format(h))
-                        module.log(msg = "payload: {}".format(payload))
+                        module.log(msg="downtime for: {}".format(h))
+                        module.log(msg="payload: {}".format(payload))
 
                         code, msg = self.__schedule_downtime(payload)
 
-                        module.log(msg = "{}: {}".format(code, msg))
+                        module.log(msg="{}: {}".format(code, msg))
 
                         r[h] = dict(
-                            msg = msg,
-                            status_code = code,
+                            msg=msg,
+                            status_code=code,
                         )
 
                     else:
-                        module.log(msg = "404: host {} is not known".format(h))
+                        module.log(msg="404: host {} is not known".format(h))
                         r[h] = dict(
-                            msg = "host {} is not known".format(h),
-                            status_code = 404,
+                            msg="host {} is not known".format(h),
+                            status_code=404,
                         )
 
                 res['result'] = r
@@ -265,7 +265,7 @@ class Icinga2Api(object):
 
         return res
 
-    def __call_url(self, method = 'GET', path = None, data = None, headers = None):
+    def __call_url(self, method='GET', path=None, data=None, headers=None):
         """
 
         """
@@ -283,7 +283,7 @@ class Icinga2Api(object):
             if(method == 'GET'):
                 ret = self.connection.get(
                     url,
-                    verify = False
+                    verify=False
                 )
                 self.connection.close()
 
@@ -291,8 +291,8 @@ class Icinga2Api(object):
                 self.connection.close()
                 ret = self.connection.post(
                     url,
-                    data = data,
-                    verify = False
+                    data=data,
+                    verify=False
                 )
 
             else:
@@ -316,7 +316,7 @@ class Icinga2Api(object):
         """
 
         """
-        code   = 0
+        code = 0
 
         data = {
             "type": "Host",
@@ -325,10 +325,10 @@ class Icinga2Api(object):
         }
 
         code, ret = self.__call_url(
-            method  = 'POST',
-            path    = "objects/hosts",
-            data    = module.jsonify(data),
-            headers = {'Accept': 'application/json', 'X-HTTP-Method-Override': 'GET'}
+            method='POST',
+            path="objects/hosts",
+            data=module.jsonify(data),
+            headers={'Accept': 'application/json', 'X-HTTP-Method-Override': 'GET'}
         )
 
         results = ret['results']
@@ -336,7 +336,7 @@ class Icinga2Api(object):
         if(code == 200 and len(results) != 0):
             # code   = results[0]['code']
             # status = results[0]['status']
-            attrs  = results[0]['attrs']
+            attrs = results[0]['attrs']
 
             if attrs.get('name') == hostname:
                 return True
@@ -347,16 +347,16 @@ class Icinga2Api(object):
         """
 
         """
-        code   = 0
+        code = 0
         status = "no status available"
 
-        path   = 'actions/schedule-downtime'
+        path = 'actions/schedule-downtime'
 
         code, ret = self.__call_url(
-            method  = 'POST',
-            path    = path,
-            data    = module.jsonify(data),
-            headers = {'Accept': 'application/json', 'X-HTTP-Method-Override': 'POST'}
+            method='POST',
+            path=path,
+            data=module.jsonify(data),
+            headers={'Accept': 'application/json', 'X-HTTP-Method-Override': 'POST'}
         )
 
         results = ret['results']
@@ -364,7 +364,7 @@ class Icinga2Api(object):
         if(len(results) != 0):
             # print(json.dumps(results[0]))
 
-            code   = int(results[0]['code'])
+            code = int(results[0]['code'])
             status = results[0]['status']
 
         return code, status
@@ -377,22 +377,22 @@ class Icinga2Api(object):
 def main():
     global module
     module = AnsibleModule(
-        argument_spec = dict(
-            state        = dict(default="present", choices=["absent", "present"]),
-            host         = dict(required=True),
-            port         = dict(required=False, default='5665'),
-            username     = dict(required=True, no_log=False),
-            password     = dict(required=True, no_log=True),
-            hostname     = dict(required=False, default=None),
-            hostnames    = dict(required=False, type='list'),
-            start_time   = dict(required=True, default=None),
-            end_time     = dict(required=True, default=None),
-            duration     = dict(required=True, default=None, type='int'),
-            object_type  = dict(default='Host', choices=["Service", "Host"]),
-            all_services = dict(required=False, default=True, type='bool'),
-            author       = dict(required=False, default='ansible'),
-            comment      = dict(required=False, default='generated downtime'),
-            fixed        = dict(required=False, default=False, type='bool'),
+        argument_spec=dict(
+            state=dict(default="present", choices=["absent", "present"]),
+            host=dict(required=True),
+            port=dict(required=False, default='5665'),
+            username=dict(required=True, no_log=False),
+            password=dict(required=True, no_log=True),
+            hostname=dict(required=False, default=None),
+            hostnames=dict(required=False, type='list'),
+            start_time=dict(required=True, default=None),
+            end_time=dict(required=True, default=None),
+            duration=dict(required=True, default=None, type='int'),
+            object_type=dict(default='Host', choices=["Service", "Host"]),
+            all_services=dict(required=False, default=True, type='bool'),
+            author=dict(required=False, default='ansible'),
+            comment=dict(required=False, default='generated downtime'),
+            fixed=dict(required=False, default=False, type='bool'),
         ),
         supports_check_mode=False,
     )

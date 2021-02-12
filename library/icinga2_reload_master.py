@@ -22,7 +22,7 @@ class SimpleFlock:
       It will create/truncate/delete the lock file as necessary.
     """
 
-    def __init__(self, path, timeout = None):
+    def __init__(self, path, timeout=None):
         self._path = path
         self._timeout = timeout
         self._fd = None
@@ -71,25 +71,25 @@ class Icinga2ReloadMaster(object):
         """
           Initialize all needed Variables
         """
-        self.module      = module
+        self.module = module
 
-        self._icinga2    = module.get_bin_path('icinga2', True)
-        self.requester   = module.params.get("requester")
+        self._icinga2 = module.get_bin_path('icinga2', True)
+        self.requester = module.params.get("requester")
 
-        self.pid_file    = "/run/icinga2/icinga2.pid"
-        self.lock_file   = "/run/icinga2/reload.lock"
+        self.pid_file = "/run/icinga2/icinga2.pid"
+        self.lock_file = "/run/icinga2/reload.lock"
 
     def run(self):
         ''' ... '''
         result = dict(
-            failed = True,
-            ansible_module_results = 'failed'
+            failed=True,
+            ansible_module_results='failed'
         )
 
-        self.module.log(msg = "Acquiring lock...")
+        self.module.log(msg="Acquiring lock...")
 
         with SimpleFlock(self.lock_file, 2):
-            self.module.log(msg = "Lock acquired.")
+            self.module.log(msg="Lock acquired.")
 
             # pid = int(open(pid_file).read())
 
@@ -98,17 +98,17 @@ class Icinga2ReloadMaster(object):
             if(pid is None):
 
                 return dict(
-                    failed = True,
-                    msg = "pid file {pid} not found.".format(pid = self.pid_file)
+                    failed=True,
+                    msg="pid file {pid} not found.".format(pid=self.pid_file)
                 )
 
-            self.module.log(msg = "= '{}'".format(pid))
+            self.module.log(msg="= '{}'".format(pid))
 
-            self.module.log(msg = "send SIGHUP")
+            self.module.log(msg="send SIGHUP")
 
             os.kill(pid, signal.SIGHUP)
 
-            self.module.log(msg = "done")
+            self.module.log(msg="done")
 
             time.sleep(2)
 
@@ -122,19 +122,19 @@ class Icinga2ReloadMaster(object):
             # if(rc == 0):
             #    result['failed'] = False
 
-        self.module.log(msg = "Lock released.")
+        self.module.log(msg="Lock released.")
 
         result['failed'] = False
 
         return dict(
-            failed = False
+            failed=False
         )
 
     def _exec(self):
         '''   '''
         cmd = ['/usr/lib/icinga2/safe-reload', self._icinga2]
 
-        self.module.log(msg = "cmd: {}".format(cmd))
+        self.module.log(msg="cmd: {}".format(cmd))
 
         rc, out, err = self.module.run_command(cmd, check_rc=True)
         return rc, out, err
@@ -151,7 +151,7 @@ class Icinga2ReloadMaster(object):
                 return int(inputFile.read().strip())
         except Exception:
             # No pid file --- maybe it was not running?
-            self.module.log(msg = "File not found: {}".format(self.pid_file))
+            self.module.log(msg="File not found: {}".format(self.pid_file))
             return None
 
 
@@ -163,8 +163,8 @@ class Icinga2ReloadMaster(object):
 def main():
 
     module = AnsibleModule(
-        argument_spec = dict(
-            requester   = dict(required=True, type='str'),
+        argument_spec=dict(
+            requester=dict(required=True, type='str'),
         ),
         supports_check_mode=True,
     )

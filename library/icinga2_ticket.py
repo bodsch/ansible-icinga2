@@ -24,27 +24,27 @@ class Icinga2TicketHelper(object):
         """
           Initialize all needed Variables
         """
-        self.module       = module
+        self.module = module
 
-        self._icinga2     = module.get_bin_path('icinga2', True)
+        self._icinga2 = module.get_bin_path('icinga2', True)
 
-        self.common_name  = module.params.get("common_name")
-        self.salt     = module.params.get("salt")
+        self.common_name = module.params.get("common_name")
+        self.salt = module.params.get("salt")
 
-        module.log(msg = "icinga2     : {}".format(self._icinga2))
-        module.log(msg = "common_name : {}".format(self.common_name))
-        module.log(msg = "salt        : {}".format(self.salt))
+        module.log(msg="icinga2     : {}".format(self._icinga2))
+        module.log(msg="common_name : {}".format(self.common_name))
+        module.log(msg="salt        : {}".format(self.salt))
 
     def run(self):
         ''' ... '''
         result = dict(
-            failed = False,
-            changed = False,
-            ansible_module_results = "none"
+            failed=False,
+            changed=False,
+            ansible_module_results="none"
         )
 
         # Generates an Icinga 2 ticket
-        self.module.log(msg = "Generates an Icinga 2 ticket.")
+        self.module.log(msg="Generates an Icinga 2 ticket.")
 
         rc, out = self._exec([
             "ticket",
@@ -53,8 +53,8 @@ class Icinga2TicketHelper(object):
             "--salt",
             self.salt
         ])
-        self.module.log(msg = "  rc : '{}'".format(rc))
-        self.module.log(msg = "  out: '{}'".format(out))
+        self.module.log(msg="  rc : '{}'".format(rc))
+        self.module.log(msg="  out: '{}'".format(out))
 
         result['ticket'] = "{}".format(out.rstrip())
 
@@ -73,7 +73,7 @@ class Icinga2TicketHelper(object):
         '''   '''
         cmd = [self._icinga2, 'pki'] + args
 
-        self.module.log(msg = "cmd: {}".format(cmd))
+        self.module.log(msg="cmd: {}".format(cmd))
 
         rc, out, err = self.module.run_command(cmd, check_rc=True)
         return rc, out
@@ -87,9 +87,9 @@ class Icinga2TicketHelper(object):
 def main():
 
     module = AnsibleModule(
-        argument_spec = dict(
-            common_name  = dict(required=True),
-            salt = dict(required=True)
+        argument_spec=dict(
+            common_name=dict(required=True),
+            salt=dict(required=True)
         ),
         supports_check_mode=True,
     )

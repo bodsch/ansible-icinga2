@@ -21,13 +21,13 @@ class Icinga2PreparedVars(object):
         """
           Initialize all needed Variables
         """
-        self.module       = module
+        self.module = module
 
         self.default_file = module.params.get("default_file")
-        self.variable     = module.params.get("variable")
+        self.variable = module.params.get("variable")
 
-        module.log(msg = "default_file: {})".format(self.default_file))
-        module.log(msg = "variable    : {})".format(self.variable))
+        module.log(msg="default_file: {})".format(self.default_file))
+        module.log(msg="variable    : {})".format(self.variable))
 
     def run(self):
         ''' ... '''
@@ -42,11 +42,11 @@ class Icinga2PreparedVars(object):
         result = re.search(pattern, _list)
         result = result.group(1)
 
-        self.module.log(msg = "return: {}".format(result))
+        self.module.log(msg="return: {}".format(result))
 
         return dict(
-            failed = False,
-            value = result
+            failed=False,
+            value=result
         )
 
 # ===========================================
@@ -57,9 +57,9 @@ class Icinga2PreparedVars(object):
 def main():
 
     module = AnsibleModule(
-        argument_spec = dict(
-            default_file = dict(required=False, default='/usr/lib/icinga2/prepare-dirs'),
-            variable     = dict(required=True),
+        argument_spec=dict(
+            default_file=dict(required=False, default='/usr/lib/icinga2/prepare-dirs'),
+            variable=dict(required=True),
         ),
         supports_check_mode=True,
     )

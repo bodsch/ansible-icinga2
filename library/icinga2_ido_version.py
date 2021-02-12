@@ -72,7 +72,7 @@ class Icinga2IdoVersion(object):
         res = dict(
             failed=False,
             exists=state,
-            ido_version = ido_version
+            ido_version=ido_version
         )
 
         self.module.log(msg="result: {}".format(res))

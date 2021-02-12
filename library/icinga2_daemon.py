@@ -19,16 +19,16 @@ class Icinga2Daemon(object):
         """
           Initialize all needed Variables
         """
-        self.module       = module
+        self.module = module
 
-        self._icinga2     = module.get_bin_path('icinga2', True)
-        self.parameters   = module.params.get("parameters")
+        self._icinga2 = module.get_bin_path('icinga2', True)
+        self.parameters = module.params.get("parameters")
 
     def run(self):
         ''' ... '''
         result = dict(
-            failed = True,
-            ansible_module_results = 'failed'
+            failed=True,
+            ansible_module_results='failed'
         )
 
         # # icinga2 daemon --validate --log-level debug --config /etc/icinga2/icinga2.conf
@@ -37,9 +37,9 @@ class Icinga2Daemon(object):
         # self.module.log(msg = "= '{}'".format(parameter_list))
 
         rc, out, err = self._exec(parameter_list)
-        self.module.log(msg = "  rc : '{}'".format(rc))
-        self.module.log(msg = "  out: '{}'".format(out))
-        self.module.log(msg = "  err: '{}'".format(err))
+        self.module.log(msg="  rc : '{}'".format(rc))
+        self.module.log(msg="  out: '{}'".format(out))
+        self.module.log(msg="  err: '{}'".format(err))
 
         result['ansible_module_results'] = "Command returns {}".format(out)
 
@@ -52,7 +52,7 @@ class Icinga2Daemon(object):
         '''   '''
         cmd = [self._icinga2, 'daemon'] + args
 
-        self.module.log(msg = "cmd: {}".format(cmd))
+        self.module.log(msg="cmd: {}".format(cmd))
 
         rc, out, err = self.module.run_command(cmd, check_rc=True)
         return rc, out, err
@@ -84,8 +84,8 @@ class Icinga2Daemon(object):
 def main():
 
     module = AnsibleModule(
-        argument_spec = dict(
-            parameters   = dict(required=True, type='list'),
+        argument_spec=dict(
+            parameters=dict(required=True, type='list'),
         ),
         supports_check_mode=True,
     )
