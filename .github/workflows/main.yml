@@ -32,7 +32,8 @@ jobs:
       - name: install dependencies.
         run: |
           sudo apt-get update
-          sudo apt-get install -y ansible ansible-lint yamllint flake8
+          sudo apt-get install -y python3-pip python3-setuptools
+          sudo pip3 install ansible ansible-lint yamllint flake8
 
       - name: YAMLlint
         run: yamllint .
@@ -96,7 +97,7 @@ jobs:
         env:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'
-          MOLECULE_DISTRIBUTION: ${{ matrix.image }}
+          DISTRIBUTION: ${{ matrix.image }}
 
   publish:
     if: github.ref == 'refs/heads/master'
