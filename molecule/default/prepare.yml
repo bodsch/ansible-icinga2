@@ -5,33 +5,26 @@
 
   pre_tasks:
 
-    - block:
-        - name: Install required packages on Debian
-          apt:
-            name:
-              - net-tools
-            #   # required to add key to apt keyring
-            #   - gnupg
-            #   # required to verify icinga2 is running
-            #   - procps
-            update_cache: true
+    - name: update package cache
+      apt:
+        update_cache: true
+      when:
+        - ansible_os_family | lower == 'debian'
 
-        - name: Install Backports repository on Debian Stretch
-          apt_repository:
-            repo: deb http://deb.debian.org/debian {{ ansible_distribution_release }}-backports main
-            state: present
-            update_cache: true
-          when:
-            - ansible_distribution_release == 'stretch'
+    - name: disable app armor
+      shell: |
+        sudo apt-get install apparmor-profiles
+        sudo ln -s /etc/apparmor.d/usr.sbin.mysqld /etc/apparmor.d/disable/
+        sudo apparmor_parser -R /etc/apparmor.d/usr.sbin.mysqld
+      when:
+        - ansible_os_family | lower == 'debian'
 
-        - name: Install apt-transport-https on older Debian/Ubuntu versions
-          apt:
-            name:
-              - apt-transport-https
-          when:
-            - ansible_distribution_release in ['jessie', 'stretch', 'xenial']
-
-      when: ansible_os_family | lower == 'debian'
+    - name: install netstat
+      package:
+        name: [ net-tools, iproute2 ]
+        state: present
+      when:
+        - ansible_os_family | lower in [ 'archlinux', 'debian' ]
 
     - debug:
         msg:
