@@ -12,10 +12,17 @@
         - ansible_os_family | lower == 'debian'
 
     - name: disable app armor
-      shell: |
-        sudo apt-get install -y apparmor-profiles
-        sudo ln -s /etc/apparmor.d/usr.sbin.mysqld /etc/apparmor.d/disable/
-        sudo apparmor_parser -R /etc/apparmor.d/usr.sbin.mysqld
+      block:
+        - name: install apparmor profiles
+          package:
+            name: apparmor-profiles
+            state: present
+
+        - name: stop apparmor
+          service:
+            name: apparmor.service
+            state: stopped
+            enabled: false
       when:
         - ansible_os_family | lower == 'debian'
 
