@@ -3,6 +3,7 @@
 dependencies: []
 
 galaxy_info:
+  role_name: ansible-icinga2
   author: Bodo Schulz
   description: ansible role for handling icinga2 as master or satellite
   license: "BSD"
