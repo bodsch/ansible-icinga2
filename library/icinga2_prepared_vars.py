@@ -26,8 +26,8 @@ class Icinga2PreparedVars(object):
         self.default_file = module.params.get("default_file")
         self.variable = module.params.get("variable")
 
-        module.log(msg="default_file: {})".format(self.default_file))
-        module.log(msg="variable    : {})".format(self.variable))
+        module.log(msg="default_file: {}".format(self.default_file))
+        module.log(msg="variable    : {}".format(self.variable))
 
     def run(self):
         ''' ... '''

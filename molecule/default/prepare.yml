@@ -5,26 +5,61 @@
 
   pre_tasks:
 
-    - name: update package cache
-      apt:
-        update_cache: true
+    - block:
+        - name: update package cache
+          apt:
+            update_cache: true
+
+        - name: Install Backports repository on Debian Stretch
+          apt_repository:
+            repo: deb http://deb.debian.org/debian {{ ansible_distribution_release }}-backports main
+            state: present
+            update_cache: true
+          when:
+            - ansible_distribution_release == 'stretch'
+
+        - name: Install apt-transport-https on older Debian/Ubuntu versions
+          apt:
+            name:
+              - apt-transport-https
+          when:
+            - ansible_distribution_release in ['jessie', 'stretch', 'xenial']
       when:
         - ansible_os_family | lower == 'debian'
 
+    # only for ubuntu .. with enabled apparmor, the mysql will not start!
+    #
     - name: disable app armor
       block:
-        - name: install apparmor profiles
-          package:
-            name: apparmor-profiles
-            state: present
+        - name: teardown apparmor
+          shell:
+            /etc/init.d/apparmor stop
+            /etc/init.d/apparmor teardown
+            update-rc.d apparmor remove
+          when:
+            - ansible_distribution_major_version | int == 18
 
-        - name: stop apparmor
-          service:
-            name: apparmor.service
-            state: stopped
-            enabled: false
+        - name: teardown apparmor
+          shell: |
+            /etc/init.d/apparmor stop
+            update-rc.d apparmor remove
+            systemctl stop snapd.apparmor
+            systemctl disable snapd.apparmor
+            systemctl mask snapd.apparmor
+            systemctl stop snapd
+            systemctl disable snapd
+            systemctl mask snapd
+            systemctl stop snapd.socket
+            systemctl disable snapd.socket
+            systemctl mask snapd.socket
+            aa-teardown
+            apt purge -y apparmor
+            apt purge -y snapd
+          when:
+            - ansible_distribution_major_version | int == 20
+
       when:
-        - ansible_os_family | lower == 'debian'
+        - ansible_distribution | lower == 'ubuntu'
 
     - name: install netstat
       package:
