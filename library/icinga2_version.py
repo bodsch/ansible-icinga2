@@ -33,23 +33,29 @@ class Icinga2Version(object):
         )
 
         rc, out, err = self._exec(['--version'])
-        self.module.log(msg="  rc : '{}'".format(rc))
-        self.module.log(msg="  out: '{}' ({})".format(out, type(out)))
-        self.module.log(msg="  err: '{}'".format(err))
 
-        # icinga2 - The Icinga 2 network monitoring daemon (version: r2.12.3-1)
-        pattern = re.compile(r"icinga2.*\(.*r(?P<version>.*)-.*\)")
-        version = re.search(pattern, out)
-        version = version.group(1)
+        version_string = "unknown"
 
-        self.module.log(msg="version: {}".format(version))
+        # debian:
+        #  "icinga2 - The Icinga 2 network monitoring daemon (version: r2.12.3-1)"
+        # CentOS Linux:
+        #  "icinga2 - The Icinga 2 network monitoring daemon (version: 2.12.3)"
+        pattern_1 = re.compile(r"icinga2.*\(.*version: (?P<version>.*).*\)")
+        pattern_2 = re.compile(r"(?P<version>(\d+\.)?(\d+\.)?(\*|\d+))")
+
+        version = re.search(pattern_1, out)
+
+        if(version):
+            version = re.search(pattern_2, version.group('version'))
+            version_string = version.group('version')
+
+        self.module.log(msg="version: {}".format(version_string))
 
         result['rc'] = rc
 
         if(rc == 0):
-
             result['failed'] = False
-            result['version'] = version
+            result['version'] = version_string
 
         return result
 
@@ -60,6 +66,9 @@ class Icinga2Version(object):
         self.module.log(msg="cmd: {}".format(cmd))
 
         rc, out, err = self.module.run_command(cmd, check_rc=True)
+        # self.module.log(msg="  rc : '{}'".format(rc))
+        # self.module.log(msg="  out: '{}' ({})".format(out, type(out)))
+        # self.module.log(msg="  err: '{}'".format(err))
         return rc, out, err
 
 
