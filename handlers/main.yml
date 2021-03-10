@@ -21,7 +21,7 @@
     name: icinga2
     state: restarted
 
-- name: restart master
+- name: restart icinga2 master
   icinga2_reload_master:
     requester: '{{ ansible_fqdn }}'
   ignore_errors: false
