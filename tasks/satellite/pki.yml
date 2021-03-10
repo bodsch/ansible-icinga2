@@ -20,7 +20,7 @@
 - block:
     - name: copy ca.crt from primary icinga2 master {{ icinga2_primary_master }}
       delegate_to: '{{ icinga2_primary_master }}'
-      remote_user: "{{ ansible_ssh_user }}"
+      remote_user: "{{ ansible_user }}"
       fetch:
         src: "{{ icinga2_pki_ca_cert }}"
         dest: files/{{ icinga2_primary_master }}/ca.crt
@@ -62,7 +62,7 @@
 
     - name: read facts from '{{ icinga2_primary_master }}'"
       delegate_to: "{{ icinga2_primary_master }}"
-      remote_user: "{{ ansible_ssh_user }}"
+      remote_user: "{{ ansible_user }}"
       setup:
         gather_subset:
           - '!all'
@@ -71,7 +71,7 @@
 
     - name: get icinga2 user from '{{ icinga2_primary_master }}'"
       delegate_to: "{{ icinga2_primary_master }}"
-      remote_user: "{{ ansible_ssh_user }}"
+      remote_user: "{{ ansible_user }}"
       set_fact:
         icinga2_master_user: "{{ ansible_local.icinga2.icinga2_user | default( icinga2_user ) }}"
         icinga2_master_group: "{{ ansible_local.icinga2.icinga2_group | default( icinga2_group ) }}"
@@ -196,7 +196,7 @@
 
 - name: create zone entry under '/etc/icinga2/zones.d' on master '{{ icinga2_primary_master }}'
   delegate_to: "{{ icinga2_primary_master }}"
-  remote_user: "{{ ansible_ssh_user }}"
+  remote_user: "{{ ansible_user }}"
   file:
     dest: /etc/icinga2/zones.d/{{ icinga2_satellite_zone }}
     state: directory
@@ -207,7 +207,7 @@
 # create on both masters!
 - name: create zone file on master
   delegate_to: "{{ item.key }}"
-  remote_user: "{{ ansible_ssh_user }}"
+  remote_user: "{{ ansible_user }}"
   template:
     src: etc/icinga2/satellite.conf.j2
     dest: /etc/icinga2/satellites.d/{{ icinga2_satellite_zone }}.conf
@@ -221,7 +221,7 @@
 
 - name: create host object file for satellite on master '{{ icinga2_primary_master }}'
   delegate_to: "{{ icinga2_primary_master }}"
-  remote_user: "{{ ansible_ssh_user }}"
+  remote_user: "{{ ansible_user }}"
   template:
     src: etc/icinga2/satellite-zone.conf.j2
     dest: /etc/icinga2/zones.d/{{ icinga2_satellite_zone }}/{{ icinga2_certificate_cn }}.conf
