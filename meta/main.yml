@@ -3,7 +3,7 @@
 dependencies: []
 
 galaxy_info:
-  role_name: ansible-icinga2
+  role_name: icinga2
   namespace: bodsch
 
   author: Bodo Schulz
