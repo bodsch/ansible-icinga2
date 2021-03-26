@@ -11,9 +11,10 @@ from ansible.module_utils._text import to_native
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.six.moves import configparser
 
-from ansible.module_utils.mysql import (
-    mysql_driver
-)
+try:
+    from ansible.module_utils.mysql import mysql_driver
+except ImportError:
+    from ansible_collections.community.mysql.plugins.module_utils.mysql import mysql_driver
 
 
 DOCUMENTATION = """
