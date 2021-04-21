@@ -1,10 +1,12 @@
 ---
 - name: converge
-  hosts: all
+  hosts: instance
   any_errors_fatal: false
 
   environment:
     NETRC: ''
+    http_proxy: "{{ lookup('env','HTTP_PROXY') }}"
+    https_proxy: "{{ lookup('env','HTTPS_PROXY') }}"
 
   pre_tasks:
     - name: detect python3

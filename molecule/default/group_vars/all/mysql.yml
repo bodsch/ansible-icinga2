@@ -2,7 +2,7 @@
 
 mysql_python_package_debian: "{{ 'python3-mysqldb' if ansible_python.version.major == 3 else 'python-mysqldb' }}"
 
-mysql_bind_address: 127.0.0.1
+mysql_bind_address: 0.0.0.0
 mysql_max_connections: 20
 
 mysql_root_password_update: true
@@ -12,6 +12,6 @@ mysql_databases:
 
 mysql_users:
   - name: icinga2_ido
-    host: 127.0.0.1
+    host: "%"
     password: icinga2
     priv: "icinga2_ido.*:ALL"

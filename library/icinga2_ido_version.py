@@ -155,6 +155,10 @@ class Icinga2IdoVersion(object):
                 "dba_password are correct or %s has the credentials. "
                 "Exception message: %s" % (config_file, to_native(e)))
 
+            self.module.fail_json(
+                msg=to_native(e)
+            )
+
         return db_connection.cursor(), db_connection
 
     def __parse_from_mysql_config_file(self, cnf):

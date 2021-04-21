@@ -77,5 +77,11 @@
           - "python version       : {{ ansible_python.version.major }}"
 
   roles:
-    - role: mariadb
     - role: monitoring-tools
+
+- name: prepare container
+  hosts: database
+  gather_facts: true
+
+  roles:
+    - role: mariadb
