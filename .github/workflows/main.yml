@@ -32,7 +32,8 @@ jobs:
       - name: install dependencies.
         run: |
           set -e
-          sudo chown -R runner:runner /home/runner/.cache
+          whoami
+          mkdir -p ~/.cache/pip
           sudo apt-get update
           sudo apt-get install -y python3-pip python3-setuptools
           sudo pip3 install ansible ansible-base ansible-lint yamllint flake8 PyYAML>=5.3.1
