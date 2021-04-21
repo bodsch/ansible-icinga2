@@ -17,6 +17,7 @@ icinga2_api:
 icinga2_ido:
   username: icinga2_ido
   password: icinga2
+  host: database
   # socket: /var/lib/mysql/mysql.sock
   cleanup:
     acknowledgements_age: 48h

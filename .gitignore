@@ -1,4 +1,5 @@
 .tox
+.cache
 __pycache__
 .galaxy_install_info
 *.kate-swp
