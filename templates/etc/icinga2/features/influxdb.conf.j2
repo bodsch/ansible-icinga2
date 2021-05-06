@@ -3,7 +3,7 @@
 {# https://icinga.com/docs/icinga2/latest/doc/14-features/#influxdb-writer #}
 
 {% set _attr = ['host','port','database','flush_threshold','flush_interval',
-  'host_template','service_template'] %}
+  'host_template','service_template','enable_send_thresholds','enable_send_metadata'] %}
 
 {% if icinga2_features.influxdb is defined and icinga2_features.influxdb.host is defined %}
 object InfluxdbWriter "influxdb" {
