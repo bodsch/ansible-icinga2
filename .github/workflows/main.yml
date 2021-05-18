@@ -94,12 +94,17 @@ jobs:
             sudo ln -s /etc/apparmor.d/usr.sbin.mysqld /etc/apparmor.d/disable/
             sudo apparmor_parser -R /etc/apparmor.d/usr.sbin.mysqld
 
-      - name: test with tox
+      - name: test default
         run: |
-          cd ../
-          mv ansible-icinga2 bodsch.icinga2
-          cd bodsch.icinga2
           tox -e py$(printf "${{ matrix.python-version }}" | tr -d '.')-ansible$(printf "${{ matrix.ansible-version }}" | tr -d '.') -- molecule test
+        env:
+          PY_COLORS: '1'
+          ANSIBLE_FORCE_COLOR: '1'
+          DISTRIBUTION: ${{ matrix.image }}
+
+      - name: test master with satellite
+        run: |
+          tox -e py$(printf "${{ matrix.python-version }}" | tr -d '.')-ansible$(printf "${{ matrix.ansible-version }}" | tr -d '.') -- molecule test --scenario-name master-satellite
         env:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'

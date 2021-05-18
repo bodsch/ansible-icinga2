@@ -300,11 +300,11 @@ class Icinga2Api(object):
 
             ret.raise_for_status()
 
-            # print("------------------------------------------------------------------")
-            # print(" text    : {}".format(ret.text))
-            # print(" headers : {}".format(ret.headers))
-            # print(" code    : {}".format(ret.status_code))
-            # print("------------------------------------------------------------------")
+            # self.module.log(msg="------------------------------------------------------------------")
+            # self.module.log(msg=" text    : {}".format(ret.text))
+            # self.module.log(msg=" headers : {}".format(ret.headers))
+            # self.module.log(msg=" code    : {}".format(ret.status_code))
+            # self.module.log(msg="------------------------------------------------------------------")
 
             return ret.status_code, json.loads(ret.text)
 
