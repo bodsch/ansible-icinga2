@@ -58,17 +58,17 @@ jobs:
       fail-fast: false
       matrix:
         image:
-          - debian:9
+          # - debian:9
           - debian:10
-          - ubuntu:18.04
-          - ubuntu:20.04
-          - centos:8
-          - oraclelinux:8
+          # - ubuntu:18.04
+          # - ubuntu:20.04
+          # - centos:8
+          # - oraclelinux:8
         python-version:
-          - '3.8'
+          # - '3.8'
           - '3.9'
         ansible-version:
-          - '2.9'
+          # - '2.9'
           - '2.10'
 
     steps:
@@ -104,7 +104,11 @@ jobs:
 
       - name: test master with satellite
         run: |
-          tox -e py$(printf "${{ matrix.python-version }}" | tr -d '.')-ansible$(printf "${{ matrix.ansible-version }}" | tr -d '.') -- molecule test --scenario-name master-satellite
+          tox
+            -e py$(printf "${{ matrix.python-version }}" | tr -d '.')-ansible$(printf "${{ matrix.ansible-version }}" | tr -d '.')
+            --
+            molecule test
+            --scenario-name master-satellite
         env:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'

@@ -27,39 +27,39 @@
       when:
         - ansible_os_family | lower == 'debian'
 
-    # only for ubuntu .. with enabled apparmor, the mysql will not start!
+    # # only for ubuntu .. with enabled apparmor, the mysql will not start!
+    # #
+    # - name: disable app armor
+    #   block:
+    #     - name: teardown apparmor
+    #       shell:
+    #         /etc/init.d/apparmor stop
+    #         /etc/init.d/apparmor teardown
+    #         update-rc.d apparmor remove
+    #       when:
+    #         - ansible_distribution_major_version | int == 18
     #
-    - name: disable app armor
-      block:
-        - name: teardown apparmor
-          shell:
-            /etc/init.d/apparmor stop
-            /etc/init.d/apparmor teardown
-            update-rc.d apparmor remove
-          when:
-            - ansible_distribution_major_version | int == 18
-
-        - name: teardown apparmor
-          shell: |
-            /etc/init.d/apparmor stop
-            update-rc.d apparmor remove
-            systemctl stop snapd.apparmor
-            systemctl disable snapd.apparmor
-            systemctl mask snapd.apparmor
-            systemctl stop snapd
-            systemctl disable snapd
-            systemctl mask snapd
-            systemctl stop snapd.socket
-            systemctl disable snapd.socket
-            systemctl mask snapd.socket
-            aa-teardown
-            apt purge -y apparmor
-            apt purge -y snapd
-          when:
-            - ansible_distribution_major_version | int == 20
-
-      when:
-        - ansible_distribution | lower == 'ubuntu'
+    #     - name: teardown apparmor
+    #       shell: |
+    #         /etc/init.d/apparmor stop
+    #         update-rc.d apparmor remove
+    #         systemctl stop snapd.apparmor
+    #         systemctl disable snapd.apparmor
+    #         systemctl mask snapd.apparmor
+    #         systemctl stop snapd
+    #         systemctl disable snapd
+    #         systemctl mask snapd
+    #         systemctl stop snapd.socket
+    #         systemctl disable snapd.socket
+    #         systemctl mask snapd.socket
+    #         aa-teardown
+    #         apt purge -y apparmor
+    #         apt purge -y snapd
+    #       when:
+    #         - ansible_distribution_major_version | int == 20
+    #
+    #   when:
+    #     - ansible_distribution | lower == 'ubuntu'
 
     - name: install netstat
       package:
@@ -77,6 +77,8 @@
           - "python version       : {{ ansible_python.version.major }}"
 
   roles:
+    - role: apparmor
+    - role: snapd
     - role: monitoring-tools
 
 - name: prepare container
