@@ -23,11 +23,11 @@ platforms:
     docker_networks:
       - name: icinga2
         ipam_config:
-          - subnet: "10.11.0.0/16"
-            gateway: "10.11.0.254"
+          - subnet: "10.15.0.0/16"
+            gateway: "10.15.0.254"
     networks:
       - name: icinga2
-        ipv4_address: "10.11.0.1"
+        ipv4_address: "10.15.0.10"
 
   - name: instance
     image: "diodonfrost/ansible-${DISTRIBUTION:-debian:10}"
@@ -39,7 +39,7 @@ platforms:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
     networks:
       - name: icinga2
-        ipv4_address: "10.11.0.2"
+        ipv4_address: "10.15.0.20"
 
   - name: satellite
     image: "diodonfrost/ansible-${DISTRIBUTION:-debian:10}"
@@ -51,7 +51,7 @@ platforms:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
     networks:
       - name: icinga2
-        ipv4_address: "10.11.0.10"
+        ipv4_address: "10.15.0.30"
 
 provisioner:
   name: ansible

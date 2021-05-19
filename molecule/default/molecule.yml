@@ -21,13 +21,13 @@ platforms:
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
     docker_networks:
-      - name: icinga
+      - name: icinga_default
         ipam_config:
           - subnet: "10.11.0.0/16"
             gateway: "10.11.0.254"
     networks:
-      - name: icinga
-        ipv4_address: "10.11.0.1"
+      - name: icinga_default
+        ipv4_address: "10.11.0.10"
 
   - name: instance
     image: "diodonfrost/ansible-${DISTRIBUTION:-debian:10}"
@@ -38,15 +38,11 @@ platforms:
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
     networks:
-      - name: icinga
-        ipv4_address: "10.11.0.2"
-
+      - name: icinga_default
+        ipv4_address: "10.11.0.20"
 
 provisioner:
   name: ansible
-  ansible_args:
-    - --diff
-    # - -vv
   config_options:
     defaults:
       deprecation_warnings: True

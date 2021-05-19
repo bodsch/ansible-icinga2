@@ -149,11 +149,7 @@ jobs:
 
       - name: test master with satellite
         run: |
-          tox
-            -e py$(printf "${{ matrix.python-version }}" | tr -d '.')-ansible$(printf "${{ matrix.ansible-version }}" | tr -d '.')
-            --
-            molecule test
-            --scenario-name master-satellite
+          tox -e py$(printf "${{ matrix.python-version }}" | tr -d '.')-ansible$(printf "${{ matrix.ansible-version }}" | tr -d '.') -- molecule test --scenario-name master-satellite
         env:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'
