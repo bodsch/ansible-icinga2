@@ -21,12 +21,12 @@ platforms:
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
     docker_networks:
-      - name: icinga
+      - name: icinga2
         ipam_config:
           - subnet: "10.11.0.0/16"
             gateway: "10.11.0.254"
     networks:
-      - name: icinga
+      - name: icinga2
         ipv4_address: "10.11.0.1"
 
   - name: instance
@@ -38,7 +38,7 @@ platforms:
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
     networks:
-      - name: icinga
+      - name: icinga2
         ipv4_address: "10.11.0.2"
 
   - name: satellite
@@ -50,7 +50,7 @@ platforms:
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
     networks:
-      - name: icinga
+      - name: icinga2
         ipv4_address: "10.11.0.10"
 
 provisioner:
