@@ -163,7 +163,8 @@ jobs:
   publish:
     if: github.ref == 'refs/heads/master'
     needs:
-      - test
+      - standard
+      - master_with_satellite
     runs-on: ubuntu-18.04
     steps:
       - name: galaxy
