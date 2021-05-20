@@ -1,3 +1,7 @@
 {{ ansible_managed | comment }}
 
 deb https://packages.icinga.com/{{ ansible_distribution | lower }} icinga-{{ ansible_distribution_release | lower }} main
+{% if ansible_distribution_major_version | int == 9 %}
+# debian 9 needs backports
+deb http://deb.debian.org/debian stretch-backports main
+{% endif %}
