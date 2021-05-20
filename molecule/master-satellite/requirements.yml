@@ -6,8 +6,9 @@
   version: 1.0.0
 
 - name: apparmor
-  src: https://github.com/Oefenweb/ansible-apparmor.git
+  src: https://github.com/bodsch/ansible-apparmor.git
   scm: git
+  version: 1.0.0
 
 - name: monitoring-tools
   src: https://github.com/bodsch/ansible-monitoring-plugins.git
