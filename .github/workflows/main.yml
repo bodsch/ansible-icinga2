@@ -49,7 +49,7 @@ jobs:
           flake8 --version
           flake8 .
 
-  test:
+  standard:
     name: "${{ matrix.image }} / python: ${{ matrix.python-version }}, ansible: ${{ matrix.ansible-version }}"
     needs:
       - lint
@@ -94,21 +94,73 @@ jobs:
             sudo ln -s /etc/apparmor.d/usr.sbin.mysqld /etc/apparmor.d/disable/
             sudo apparmor_parser -R /etc/apparmor.d/usr.sbin.mysqld
 
-      - name: test with tox
+      - name: test default
         run: |
-          cd ../
-          mv ansible-icinga2 bodsch.icinga2
-          cd bodsch.icinga2
           tox -e py$(printf "${{ matrix.python-version }}" | tr -d '.')-ansible$(printf "${{ matrix.ansible-version }}" | tr -d '.') -- molecule test
         env:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'
           DISTRIBUTION: ${{ matrix.image }}
 
+  master_with_satellite:
+    name: "${{ matrix.image }} / python: ${{ matrix.python-version }}, ansible: ${{ matrix.ansible-version }}"
+    needs:
+      - lint
+    runs-on: ubuntu-18.04
+    strategy:
+      fail-fast: false
+      matrix:
+        image:
+          - debian:9
+          - debian:10
+          - ubuntu:18.04
+          - ubuntu:20.04
+          - centos:8
+          - oraclelinux:8
+        python-version:
+          - '3.8'
+          - '3.9'
+        ansible-version:
+          - '2.9'
+          - '2.10'
+
+    steps:
+      - name: check out the codebase.
+        uses: actions/checkout@v2
+        with:
+          path: 'ansible-icinga2'
+
+      - name: set up python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r test-requirements.txt
+
+      # See: https://github.com/geerlingguy/ansible-role-mysql/issues/422
+      - name: Disable AppArmor
+        run: |
+            sudo apt-get install apparmor-profiles
+            sudo ln -s /etc/apparmor.d/usr.sbin.mysqld /etc/apparmor.d/disable/
+            sudo apparmor_parser -R /etc/apparmor.d/usr.sbin.mysqld
+
+      - name: test master with satellite
+        run: |
+          tox -e py$(printf "${{ matrix.python-version }}" | tr -d '.')-ansible$(printf "${{ matrix.ansible-version }}" | tr -d '.') -- molecule test --scenario-name master-satellite
+        env:
+          PY_COLORS: '1'
+          ANSIBLE_FORCE_COLOR: '1'
+          DISTRIBUTION: ${{ matrix.image }}
+
+
   publish:
     if: github.ref == 'refs/heads/master'
     needs:
-      - test
+      - standard
+      - master_with_satellite
     runs-on: ubuntu-18.04
     steps:
       - name: galaxy

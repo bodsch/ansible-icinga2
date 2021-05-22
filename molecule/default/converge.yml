@@ -26,7 +26,7 @@
       setup:
 
   roles:
-    - role: bodsch.icinga2
+    - role: ansible-icinga2
 
   # tasks:
   #   # - include: ../../tasks/master/features.yml
