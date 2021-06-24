@@ -119,6 +119,8 @@ icinga2_apply_service_default:
     assign_where: '"memory" in host.vars.services'
     ignore_where: 'host.vars.os == "Windows"'
 
+icinga2_dependencies_default: {}
+
 icinga2_checkcommands_default:
   system_uptime:
     import: plugin-check-command

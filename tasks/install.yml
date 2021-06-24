@@ -57,11 +57,9 @@
 
     - name: install icinga2 packages
       package:
-        name: "{{ item }}"
+        name: "{{ icinga2_dependencies }}"
         state: present
       register: icinga2_installer
-      loop:
-        - "{{ icinga2_dependencies }}"
 
     - name: do facts module to get latest information
       setup:

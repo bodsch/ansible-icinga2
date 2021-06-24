@@ -5,6 +5,11 @@
     icinga2_apply_service: "{{ icinga2_apply_service_default |
       combine( icinga2_apply_service, recursive=True ) }}"
 
+- name: merge icinga2_dependencies configuration between defaults and custom
+  set_fact:
+    icinga2_dependencies: "{{ icinga2_dependencies_default |
+      combine( icinga2_dependencies, recursive=True ) }}"
+
 - name: merge icinga2_checkcommands_default configuration between defaults and custom
   set_fact:
     icinga2_checkcommands: "{{ icinga2_checkcommands_default |
@@ -21,6 +26,17 @@
       notify:
         - check configuration
         - restart icinga2
+
+    # - name: create global-templates file for dependency definitions
+    #   template:
+    #     src: etc/icinga2/zones.d/global-templates/dependencies.conf.j2
+    #     dest: /etc/icinga2/zones.d/global-templates/dependencies.conf
+    #     owner: "{{ icinga2_user }}"
+    #     group: "{{ icinga2_group }}"
+    #     mode: 0660
+    #   notify:
+    #     - check configuration
+    #     - restart icinga2
 
     - name: create global-templates file for commands definitions
       template:
