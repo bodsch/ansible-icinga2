@@ -1,0 +1,11 @@
+---
+
+icinga2_mariadb_packages:
+  - MySQL-python
+
+icinga2_mariadb_python_packages:
+  - PyMySQL
+
+monitoring_plugins_directory: /usr/lib64/nagios/plugins
+
+...

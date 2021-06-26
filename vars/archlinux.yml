@@ -1,0 +1,11 @@
+---
+
+icinga2_mariadb_packages:
+  - mariadb-clients
+
+icinga2_mariadb_python_packages:
+  - mysqlclient
+
+monitoring_plugins_directory: /usr/lib/monitoring-plugins
+
+...

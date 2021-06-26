@@ -1,5 +1,21 @@
 ---
 
+- name: include OS specific configuration
+  include_vars: "{{ lookup('first_found', params) }}"
+  vars:
+    params:
+      paths:
+        - "vars"
+      files:
+        # eg. debian-10 / ubuntu-20.04 / centos-8 / oraclelinux-8
+        - "{{ ansible_distribution | lower }}-{{ ansible_distribution_major_version }}.yml"
+        # eg. debian / ubuntu / centos / oraclelinux
+        - "{{ ansible_distribution | lower }}.yml"
+        # eg. redhat / debian
+        - "{{ ansible_os_family | lower }}.yml"
+        - default.yml
+      skip: true
+
 - name: define primary icinga2 master
   set_fact:
     icinga2_primary_master: "{{ icinga2_masters | primary_master }}"
@@ -92,6 +108,10 @@
     group: root
     mode: 0755
 
+- name: update package cache
+  package:
+    update_cache: true
+
 # debian based
 #
 - block:
@@ -107,10 +127,9 @@
         dest: /etc/apt/sources.list.d/icinga2.list
         mode: 0644
 
-    - name: update apt cache
-      apt:
-        update_cache: true
-
+#    - name: update apt cache
+#      apt:
+#        update_cache: true
   when:
     - ansible_os_family | lower == 'debian'
     - icinga2_use_external_repo | bool
@@ -151,23 +170,26 @@
         gpgcheck: 1
         enabled: 1
 
-    - name: update rpm cache (yum) # noqa 'command-instead-of-module'
-      command: yum clean metadata
-      args:
-        warn: false
-      when:
-        - ansible_distribution_major_version | int == 7
-
-    - name: update rpm cache (dnf) # noqa 'command-instead-of-module'
-      command: dnf clean metadata
-      args:
-        warn: false
-      when:
-        - ansible_distribution_major_version | int >= 8
-
+#     - name: update rpm cache (yum) # noqa 'command-instead-of-module'
+#       command: yum clean metadata
+#       args:
+#         warn: false
+#       when:
+#         - ansible_distribution_major_version | int == 7
+#
+#     - name: update rpm cache (dnf) # noqa 'command-instead-of-module'
+#       command: dnf clean metadata
+#       args:
+#         warn: false
+#       when:
+#         - ansible_distribution_major_version | int >= 8
   when:
     - ansible_os_family | lower == 'redhat'
     - icinga2_use_external_repo | bool
+
+- name: update package cache
+  package:
+    update_cache: true
 
 # arch-linux based
 #
@@ -196,7 +218,6 @@
       user:
         name: aur_builder
         group: aur_builder
-
   when:
     - ansible_os_family | lower == 'archlinux'
     - icinga2_use_external_repo | bool

@@ -20,6 +20,8 @@
   package:
     name: icinga2-ido-mysql
     state: present
+  when:
+    - ansible_os_family | lower != 'archlinux'
 
 - block:
     - name: create database upgrade script

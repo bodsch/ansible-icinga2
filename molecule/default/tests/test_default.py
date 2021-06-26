@@ -36,6 +36,9 @@ def get_vars(host):
 
     return result
 
+def local_facts(host):
+    return host.ansible("setup").get("ansible_facts").get("ansible_local").get("icinga2")
+
 
 @pytest.mark.parametrize("dirs", [
     "/etc/ansible/facts.d",
@@ -55,9 +58,13 @@ def test_directories(host, dirs):
 
 
 def test_user(host):
-    assert host.group("nagios").exists
-    assert host.user("nagios").exists
-    assert "nagios" in host.user("nagios").groups
+
+    user = local_facts(host).get("icinga2_user")
+    group = local_facts(host).get("icinga2_group")
+
+    assert host.group(group).exists
+    assert host.user(user).exists
+    assert group in host.user(user).groups
 
 
 def test_service(host):
