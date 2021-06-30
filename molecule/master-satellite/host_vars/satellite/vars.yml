@@ -4,8 +4,6 @@ icinga2_mode: satellite
 
 icinga2_masters:
   instance:
-    # overwrite: icinga.boone-schulz.de
-
 
 icinga2_host_object:
   localhost:

@@ -63,7 +63,7 @@ class SimpleFlock:
 
 class Icinga2ReloadMaster(object):
     """
-    Main Class to implement the Icinga2 API Client
+      Main Class
     """
     module = None
 
@@ -80,7 +80,9 @@ class Icinga2ReloadMaster(object):
         self.lock_file = "/run/icinga2/reload.lock"
 
     def run(self):
-        ''' ... '''
+        """
+          runner
+        """
         result = dict(
             failed=True,
             ansible_module_results='failed'
@@ -91,36 +93,22 @@ class Icinga2ReloadMaster(object):
         with SimpleFlock(self.lock_file, 2):
             self.module.log(msg="Lock acquired.")
 
-            # pid = int(open(pid_file).read())
-
             pid = self._get_pid()
 
-            if(pid is None):
+            if pid is None:
 
                 return dict(
                     failed=True,
                     msg="pid file {pid} not found.".format(pid=self.pid_file)
                 )
 
-            self.module.log(msg="= '{}'".format(pid))
+            # self.module.log(msg="= '{}'".format(pid))
 
             self.module.log(msg="send SIGHUP")
-
             os.kill(pid, signal.SIGHUP)
-
             self.module.log(msg="done")
 
             time.sleep(2)
-
-            # rc, out, err = self._exec()
-            # self.module.log(msg = "  rc : '{}'".format(rc))
-            # self.module.log(msg = "  out: '{}'".format(out))
-            # self.module.log(msg = "  err: '{}'".format(err))
-            #
-            # result['ansible_module_results'] = "Command returns {}".format(out)
-
-            # if(rc == 0):
-            #    result['failed'] = False
 
         self.module.log(msg="Lock released.")
 
@@ -131,7 +119,9 @@ class Icinga2ReloadMaster(object):
         )
 
     def _exec(self):
-        '''   '''
+        """
+          execute safe-reload
+        """
         cmd = ['/usr/lib/icinga2/safe-reload', self._icinga2]
 
         self.module.log(msg="cmd: {}".format(cmd))
@@ -145,7 +135,6 @@ class Icinga2ReloadMaster(object):
           input:  ['--validate', '--log-level debug', '--config /etc/icinga2/icinga2.conf']
           output: ['--validate', '--log-level', 'debug', '--config', '/etc/icinga2/icinga2.conf']
         """
-
         try:
             with open(self.pid_file, "r") as inputFile:
                 return int(inputFile.read().strip())
@@ -171,6 +160,8 @@ def main():
 
     icinga = Icinga2ReloadMaster(module)
     result = icinga.run()
+
+    module.log(msg="= result: {}".format(result))
 
     module.exit_json(**result)
 

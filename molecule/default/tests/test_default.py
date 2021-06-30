@@ -50,16 +50,10 @@ def local_facts(host):
 ])
 def test_directories(host, dirs):
     d = host.file(dirs)
-    # major_version = host.ansible("setup").get("ansible_facts").get("ansible_local").get("sqlplus").get("version").get("major")
-    # content = host.file('/etc/profile.d/sqlplus.sh').content_string
-    # user_name = get_vars.get('sqlplus_oracle_user').get('name')
-    #
     assert d.is_directory
-    assert d.exists
 
 
 def test_user(host):
-
     user = local_facts(host).get("icinga2_user")
     group = local_facts(host).get("icinga2_group")
 
@@ -82,5 +76,5 @@ def test_open_port(host, ports):
     for i in host.socket.get_listening_sockets():
         print(i)
 
-    solr = host.socket("tcp://{}".format(ports))
-    assert solr.is_listening
+    service = host.socket("tcp://{}".format(ports))
+    assert service.is_listening

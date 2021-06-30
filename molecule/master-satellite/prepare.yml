@@ -5,35 +5,15 @@
 
   pre_tasks:
 
-    # - block:
-    #     - name: update package cache
-    #       apt:
-    #         update_cache: true
-    #
-    #     - name: Install Backports repository on Debian Stretch
-    #       apt_repository:
-    #         repo: deb http://deb.debian.org/debian {{ ansible_distribution_release }}-backports main
-    #         state: present
-    #         update_cache: true
-    #       when:
-    #         - ansible_distribution_release == 'stretch'
-    #
-    #     - name: Install apt-transport-https on older Debian/Ubuntu versions
-    #       apt:
-    #         name:
-    #           - apt-transport-https
-    #       when:
-    #         - ansible_distribution_release in ['jessie', 'stretch', 'xenial']
-    #   when:
-    #     - ansible_os_family | lower == 'debian'
-
     - name: update package cache
       package:
         update_cache: true
 
     - name: install netstat
       package:
-        name: [ net-tools, iproute2 ]
+        name:
+          - net-tools
+          - iproute2
         state: present
       when:
         - ansible_os_family | lower in [ 'archlinux', 'debian' ]

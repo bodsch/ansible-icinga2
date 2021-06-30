@@ -1,5 +1,9 @@
 ---
 
+icinga2_mariadb_build_packages: []
+icinga2_mariadb_python_packages: []
+
+
 # _icinga2_mariadb_packages:
 #   default:
 #     - python-mysqldb
