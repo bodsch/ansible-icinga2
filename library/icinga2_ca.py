@@ -74,7 +74,7 @@ class Icinga2CaHelper(object):
             args.append("pki")
             args.append("new-ca")
 
-            rc, out = self._exec(args)
+            rc, out, err = self._exec(args)
 
             result['ansible_module_results'] = "Command returns {}".format(out)
 
@@ -114,7 +114,7 @@ class Icinga2CaHelper(object):
             args.append("--csr")
             args.append(csr)
 
-            rc, out = self._exec(args)
+            rc, out, err = self._exec(args)
             # self.module.log(msg="  rc : '{}'".format(rc))
             # self.module.log(msg="  out: '{}'".format(out))
 
@@ -144,7 +144,7 @@ class Icinga2CaHelper(object):
             args.append("--cert")
             args.append(cert)
 
-            rc, out = self._exec(args)
+            rc, out, err = self._exec(args)
             # self.module.log(msg="  rc : '{}'".format(rc))
             # self.module.log(msg="  out: '{}'".format(out))
 
