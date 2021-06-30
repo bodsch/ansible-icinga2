@@ -37,6 +37,10 @@ def get_vars(host):
     return result
 
 
+def local_facts(host):
+    return host.ansible("setup").get("ansible_facts").get("ansible_local").get("icinga2")
+
+
 @pytest.mark.parametrize("dirs", [
     "/etc/ansible/facts.d",
     "/etc/icinga2",

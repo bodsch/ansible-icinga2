@@ -41,16 +41,59 @@ def local_facts(host):
     return host.ansible("setup").get("ansible_facts").get("ansible_local").get("icinga2")
 
 
-@pytest.mark.parametrize("dirs", [
+@pytest.mark.parametrize("directories", [
     "/etc/ansible/facts.d",
     "/etc/icinga2",
+    "/etc/icinga2/satellites.d",
+    "/etc/icinga2/zones.d",
+    "/etc/icinga2/features-enabled",
+    "/etc/icinga2/features-available",
+    "/etc/icinga2/scripts",
     "/usr/share/icinga2",
+    "/usr/share/icinga2/include",
+    "/usr/share/icinga2/include/plugins-contrib.d",
     "/var/log/icinga2",
-    "/var/lib/icinga2"
+    "/var/lib/icinga2",
+    "/var/lib/icinga2/ca",
+    "/var/lib/icinga2/certs",
+    "/var/lib/icinga2/api",
+    "/var/lib/icinga2/api/log",
+    "/var/lib/icinga2/api/packages",
+    "/var/lib/icinga2/api/packages/_api",
+    "/var/lib/icinga2/api/zones",
+    "/var/lib/icinga2/api/zones/global-templates",
+    "/var/lib/icinga2/api/zones/master",
 ])
-def test_directories(host, dirs):
-    d = host.file(dirs)
+def test_directories(host, directories):
+    d = host.file(directories)
     assert d.is_directory
+
+
+@pytest.mark.parametrize("files", [
+    "/etc/icinga2/icinga2.conf",
+    "/etc/icinga2/api-users.conf",
+    "/etc/icinga2/constants.conf",
+    "/etc/icinga2/zones.conf",
+    "/etc/icinga2/users.conf",
+    "/usr/share/icinga2/include/command-icinga.conf",
+    "/usr/share/icinga2/include/command-plugins.conf",
+    "/usr/share/icinga2/include/command-plugins-windows.conf",
+    "/usr/share/icinga2/include/plugins",
+    "/usr/share/icinga2/include/plugins-contrib",
+    "/var/log/icinga2/icinga2.log",
+    "/var/lib/icinga2/icinga2.state",
+    "/var/lib/icinga2/ca/ca.crt",
+    "/var/lib/icinga2/ca/ca.key",
+    "/var/lib/icinga2/certs/ca.crt",
+    "/var/lib/icinga2/api/log/current",
+    "/var/lib/icinga2/api/packages/_api/active.conf",
+    "/var/lib/icinga2/api/packages/_api/active-stage",
+    "/var/lib/icinga2/api/packages/_api/include.conf",
+    "/var/lib/icinga2/api/zones/global-templates/_etc/services.conf",
+])
+def test_files(host, files):
+    d = host.file(files)
+    assert d.is_file
 
 
 def test_user(host):
