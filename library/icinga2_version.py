@@ -12,7 +12,7 @@ from ansible.module_utils.basic import AnsibleModule
 
 class Icinga2Version(object):
     """
-    Main Class to implement the Icinga2 API Client
+      Main Class
     """
     module = None
 
@@ -25,7 +25,9 @@ class Icinga2Version(object):
         self._icinga2 = module.get_bin_path('icinga2', True)
 
     def run(self):
-        ''' ... '''
+        """
+          runner
+        """
         result = dict(
             rc=127,
             failed=True,
@@ -45,15 +47,15 @@ class Icinga2Version(object):
 
         version = re.search(pattern_1, out)
 
-        if(version):
+        if version:
             version = re.search(pattern_2, version.group('version'))
             version_string = version.group('version')
 
-        self.module.log(msg="version: {}".format(version_string))
+        # self.module.log(msg="version: {}".format(version_string))
 
         result['rc'] = rc
 
-        if(rc == 0):
+        if rc == 0:
             result['failed'] = False
             result['version'] = version_string
 
@@ -63,7 +65,7 @@ class Icinga2Version(object):
         '''   '''
         cmd = [self._icinga2] + args
 
-        self.module.log(msg="cmd: {}".format(cmd))
+        # self.module.log(msg="cmd: {}".format(cmd))
 
         rc, out, err = self.module.run_command(cmd, check_rc=True)
         # self.module.log(msg="  rc : '{}'".format(rc))
@@ -87,6 +89,8 @@ def main():
 
     icinga = Icinga2Version(module)
     result = icinga.run()
+
+    module.log(msg="= result: {}".format(result))
 
     module.exit_json(**result)
 

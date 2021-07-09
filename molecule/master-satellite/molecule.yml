@@ -37,6 +37,8 @@ platforms:
     pre_build_image: true
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    groups:
+      - icinga
     networks:
       - name: icinga2
         ipv4_address: "10.15.0.20"
@@ -49,6 +51,8 @@ platforms:
     pre_build_image: true
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    groups:
+      - icinga
     networks:
       - name: icinga2
         ipv4_address: "10.15.0.30"

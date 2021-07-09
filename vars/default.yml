@@ -1,0 +1,9 @@
+---
+
+icinga2_mariadb_packages: []
+
+icinga2_mariadb_python_packages: []
+
+monitoring_plugins_directory: ""
+
+...

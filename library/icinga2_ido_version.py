@@ -10,24 +10,25 @@ import os
 from ansible.module_utils._text import to_native
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.six.moves import configparser
+from ansible.module_utils.mysql import mysql_driver, mysql_driver_fail_msg
 
-try:
-    import pymysql as mysql_driver
-except ImportError:
-    try:
-        import MySQLdb as mysql_driver
-    except ImportError:
-        mysql_driver = None
-
-mysql_driver_fail_msg = 'The PyMySQL (Python 2.7 and Python 3.X) or MySQL-python (Python 2.X) module is required.'
+# try:
+#     import pymysql as mysql_driver
+# except ImportError:
+#     try:
+#         import MySQLdb as mysql_driver
+#     except ImportError:
+#         mysql_driver = None
+#
+# mysql_driver_fail_msg = 'The PyMySQL (Python 2.7 and Python 3.X) or MySQL-python (Python 2.X) module is required.'
 
 
 DOCUMENTATION = """
 ---
-module: mysql_schema.py
+module: icinga2_ido_version.py
 author:
     - 'Bodo Schulz'
-short_description: check it the named schema exists in a mysql.
+short_description: returns the ido version from database.
 description: ''
 """
 
@@ -61,18 +62,12 @@ class Icinga2IdoVersion(object):
         self.dba_database = module.params.get("dba_database")
         self.database_config_file = module.params.get("database_config_file")
 
-        self.query = "select version from {database}.icinga_dbversion".format(database=self.dba_database)
-
         self.db_connect_timeout = 30
 
     def run(self):
-        '''  ...  '''
-        self.module.log(msg="-------------------------------------------------------------")
-        self.module.log(msg="user         : {}".format(self.dba_user))
-        self.module.log(msg="password     : {}".format(self.dba_password))
-        self.module.log(msg="database     : {}".format(self.dba_database))
-        self.module.log(msg="------------------------------")
-
+        """
+          runner
+        """
         state, ido_version = self._ido_version()
 
         res = dict(
@@ -81,46 +76,52 @@ class Icinga2IdoVersion(object):
             ido_version=ido_version
         )
 
-        self.module.log(msg="result: {}".format(res))
-        self.module.log(msg="-------------------------------------------------------------")
-
         return res
 
     def _ido_version(self):
-        ''' ... '''
-        cursor, conn = self.__mysql_connect()
+        """
+          return IDO version from database
+        """
+        cursor, conn, error, message = self._mysql_connect()
 
-        self.module.log(msg="query : {}".format(self.query))
+        if error:
+            return (False, error, message)
+
+        query = "select version from {database}.icinga_dbversion"
+        query = query.format(database=self.dba_database)
+
+        # self.module.log(msg="query : {}".format(query))
 
         failed = True
         ido_version = None
 
         try:
-            cursor.execute(self.query)
+            cursor.execute(query)
             failed = False
         except mysql_driver.ProgrammingError as e:
             (errcode, message) = e.args
 
-            self.module.log(msg="error code   : {}".format(errcode))
-            self.module.log(msg="error message: {}".format(message))
-            if(errcode == 1146):
+            # self.module.log(msg="error code   : {}".format(errcode))
+            # self.module.log(msg="error message: {}".format(message))
+
+            if errcode == 1146:
                 pass
             else:
                 self.module.fail_json(msg="Cannot execute query: {error}".format(error=to_native(e)))
 
-        if(not failed):
+        if not failed:
             ido_version, = cursor.fetchone()
-            self.module.log(msg="ido_version: {}".format(ido_version))
+            # self.module.log(msg="ido_version: {}".format(ido_version))
 
         cursor.close()
         conn.close()
 
-        if(ido_version):
+        if ido_version:
             return True, ido_version
 
         return False, 0
 
-    def __mysql_connect(self):
+    def _mysql_connect(self):
         """
 
         """
@@ -144,22 +145,26 @@ class Icinga2IdoVersion(object):
         if self.dba_password is not None:
             config['passwd'] = self.dba_password
 
-        self.module.log(msg="config : {}".format(config))
+        # self.module.log(msg="config : {}".format(config))
+
+        if mysql_driver is None:
+            self.module.fail_json(msg=mysql_driver_fail_msg)
 
         try:
             db_connection = mysql_driver.connect(**config)
 
         except Exception as e:
-            self.module.log(
-                msg="unable to connect to database, check dba_user and "
-                "dba_password are correct or %s has the credentials. "
-                "Exception message: %s" % (config_file, to_native(e)))
+            message = "unable to connect to database. "
+            message += "check login_host, login_user and login_password are correct "
+            message += "or {0} has the credentials. "
+            message += "Exception message: {1}"
+            message = message.format(config_file, to_native(e))
 
-            self.module.fail_json(
-                msg=to_native(e)
-            )
+            self.module.log(msg=message)
 
-        return db_connection.cursor(), db_connection
+            return (None, None, True, message)
+
+        return (db_connection.cursor(), db_connection, False, "successful connected")
 
     def __parse_from_mysql_config_file(self, cnf):
         cp = configparser.ConfigParser()
@@ -185,8 +190,10 @@ def main():
         supports_check_mode=False,
     )
 
-    icingaweb = Icinga2IdoVersion(module)
-    result = icingaweb.run()
+    client = Icinga2IdoVersion(module)
+    result = client.run()
+
+    module.log(msg="= result: {}".format(result))
 
     module.exit_json(**result)
 

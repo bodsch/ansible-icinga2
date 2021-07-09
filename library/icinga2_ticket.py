@@ -26,17 +26,18 @@ class Icinga2TicketHelper(object):
         """
         self.module = module
 
-        self._icinga2 = module.get_bin_path('icinga2', True)
-
         self.common_name = module.params.get("common_name")
         self.salt = module.params.get("salt")
 
-        module.log(msg="icinga2     : {}".format(self._icinga2))
-        module.log(msg="common_name : {}".format(self.common_name))
-        module.log(msg="salt        : {}".format(self.salt))
+        self._icinga2 = module.get_bin_path('icinga2', True)
+        # module.log(msg="icinga2     : {}".format(self._icinga2))
+        # module.log(msg="common_name : {}".format(self.common_name))
+        # module.log(msg="salt        : {}".format(self.salt))
 
     def run(self):
-        ''' ... '''
+        """
+          runner
+        """
         result = dict(
             failed=False,
             changed=False,
@@ -46,36 +47,30 @@ class Icinga2TicketHelper(object):
         # Generates an Icinga 2 ticket
         self.module.log(msg="Generates an Icinga 2 ticket.")
 
-        rc, out = self._exec([
-            "ticket",
-            "--cn",
-            self.common_name,
-            "--salt",
-            self.salt
-        ])
-        self.module.log(msg="  rc : '{}'".format(rc))
-        self.module.log(msg="  out: '{}'".format(out))
+        args = [self._icinga2]
+        args.append("pki")
+        args.append("ticket")
+        args.append("--cn")
+        args.append(self.common_name)
+        args.append("--salt")
+        args.append(self.salt)
+
+        rc, out = self._exec(args)
 
         result['ticket'] = "{}".format(out.rstrip())
 
-        if(rc == 0):
+        if rc == 0:
             result['changed'] = True
         else:
             result['failed'] = True
 
         return result
 
-    """
-
-    """
-
-    def _exec(self, args):
-        '''   '''
-        cmd = [self._icinga2, 'pki'] + args
-
-        self.module.log(msg="cmd: {}".format(cmd))
-
-        rc, out, err = self.module.run_command(cmd, check_rc=True)
+    def _exec(self, commands):
+        """
+          execute shell program
+        """
+        rc, out, err = self.module.run_command(commands, check_rc=True)
         return rc, out
 
 
@@ -96,6 +91,8 @@ def main():
 
     icinga = Icinga2TicketHelper(module)
     result = icinga.run()
+
+    module.log(msg="= result: {}".format(result))
 
     module.exit_json(**result)
 

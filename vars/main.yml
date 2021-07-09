@@ -1,69 +1,74 @@
 ---
 
-_icinga2_mariadb_packages:
-  default:
-    - python-mysqldb
-    - python3-mysqldb
-    - libmariadb-dev
-  archlinux: []
-  redhat-7:
-    - MySQL-python
-  redhat-8:
-    - mariadb
-    - python3-PyMySQL
-  # centos:
-  #   - MariaDB-client
-  #   - python36-devel
-  # centos-7:
-  #   - mariadb
-  #   - python36-PyMySQL
-  #   - python2-PyMySQL
-  #   - MySQL-python
-  # centos-8:
-  #   - python36-devel
-  debian:
-    - python3-mysqldb
-    - python3-pip
-#  debian-9:
-#    - python-mysqldb
-#  ubuntu:
-#    - python3-mysqldb
-
-_icinga2_mariadb_python_packages:
-  default:
-    # - PyMySQL
-    - mysqlclient
-  debian:
-    # - PyMySQL
-    - mysqlclient
-  redhat:
-    - PyMySQL
+icinga2_mariadb_build_packages: []
+icinga2_mariadb_python_packages: []
 
 
-icinga2_mariadb_packages: "{{
-          _icinga2_mariadb_packages[ansible_os_family | lower ~ '-' ~ ansible_distribution_major_version ] |
-  default(_icinga2_mariadb_packages[ansible_os_family | lower] |
-  default(_icinga2_mariadb_packages[ansible_distribution | lower~ '-' ~ ansible_distribution_major_version] |
-  default(_icinga2_mariadb_packages[ansible_distribution | lower] |
-  default(_icinga2_mariadb_packages['default'])))) }}"
+# _icinga2_mariadb_packages:
+#   default:
+#     - python-mysqldb
+#     - python3-mysqldb
+#     - libmariadb-dev
+#   archlinux: []
+#   redhat-7:
+#     - MySQL-python
+#   redhat-8:
+#     - mariadb
+#     - python3-PyMySQL
+#   # centos:
+#   #   - MariaDB-client
+#   #   - python36-devel
+#   # centos-7:
+#   #   - mariadb
+#   #   - python36-PyMySQL
+#   #   - python2-PyMySQL
+#   #   - MySQL-python
+#   # centos-8:
+#   #   - python36-devel
+#   debian:
+#     - python3-mysqldb
+#     - python3-pip
+# #  debian-9:
+# #    - python-mysqldb
+# #  ubuntu:
+# #    - python3-mysqldb
+#
+# _icinga2_mariadb_python_packages:
+#   default:
+#     # - PyMySQL
+#     - mysqlclient
+#   debian:
+#     # - PyMySQL
+#     - mysqlclient
+#   redhat:
+#     - PyMySQL
 
-icinga2_mariadb_python_packages: "{{
-          _icinga2_mariadb_python_packages[ansible_distribution | lower ~ '-' ~ ansible_distribution_major_version] |
-  default(_icinga2_mariadb_python_packages[ansible_distribution | lower] |
-  default(_icinga2_mariadb_python_packages[ansible_os_family | lower] |
-  default(_icinga2_mariadb_python_packages['default']))) }}"
+
+# icinga2_mariadb_packages: "{{
+#           _icinga2_mariadb_packages[ansible_os_family | lower ~ '-' ~ ansible_distribution_major_version ] |
+#   default(_icinga2_mariadb_packages[ansible_os_family | lower] |
+#   default(_icinga2_mariadb_packages[ansible_distribution | lower~ '-' ~ ansible_distribution_major_version] |
+#   default(_icinga2_mariadb_packages[ansible_distribution | lower] |
+#   default(_icinga2_mariadb_packages['default'])))) }}"
+#
+# icinga2_mariadb_python_packages: "{{
+#           _icinga2_mariadb_python_packages[ansible_distribution | lower ~ '-' ~ ansible_distribution_major_version] |
+#   default(_icinga2_mariadb_python_packages[ansible_distribution | lower] |
+#   default(_icinga2_mariadb_python_packages[ansible_os_family | lower] |
+#   default(_icinga2_mariadb_python_packages['default']))) }}"
 
 icinga2_remove_old_cert: false
 icinga2_installed_version: ''
+icinga2_needs_update: true
 
-_monitoring_plugins_directory:
-  default: /usr/lib/nagios/plugins
-  debian: /usr/lib/nagios/plugins
-  redhat: /usr/lib64/nagios/plugins
-  archlinux: /usr/lib/monitoring-plugins
-
-monitoring_plugins_directory: "{{ _monitoring_plugins_directory[ansible_os_family | lower] |
-  default(_monitoring_plugins_directory['default']) }}"
+# _monitoring_plugins_directory:
+#   default: /usr/lib/nagios/plugins
+#   debian: /usr/lib/nagios/plugins
+#   redhat: /usr/lib64/nagios/plugins
+#   archlinux: /usr/lib/monitoring-plugins
+#
+# monitoring_plugins_directory: "{{ _monitoring_plugins_directory[ansible_os_family | lower] |
+#   default(_monitoring_plugins_directory['default']) }}"
 
 icinga2_downtime_system_name_internal: ''
 

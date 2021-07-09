@@ -1,0 +1,23 @@
+---
+
+# icinga2_mariadb_packages:
+#   - MySQL-python
+#
+# icinga2_mariadb_python_packages:
+#   - PyMySQL
+
+icinga2_mariadb_build_packages:
+  - mariadb-devel
+  - gcc
+  - gcc-c++
+  - autoconf
+  - automake
+  - python3-devel
+
+icinga2_mariadb_python_packages:
+  - name: mysqlclient
+    version: 2.0.3
+
+monitoring_plugins_directory: /usr/lib64/nagios/plugins
+
+...
