@@ -16,7 +16,7 @@ from ansible.module_utils.basic import AnsibleModule
 
 class Icinga2NodeSetupHelper(object):
     """
-    Main Class to implement the Icinga2 API Client
+      Main Class
     """
     module = None
 
@@ -41,18 +41,17 @@ class Icinga2NodeSetupHelper(object):
         self.endpoint = module.params.get("endpoint")
         self.force = module.params.get("force")
 
-        module.log(msg="icinga2     : {}".format(self._icinga2))
-
-        module.log(msg="hostname    : {}".format(self.hostname))
-        module.log(msg="common_name : {}".format(self.common_name))
-        module.log(msg="trustedcert : {}".format(self.trustedcert))
-        module.log(msg="ca_key      : {}".format(self.ca_key))
-        module.log(msg="ticket      : {}".format(self.ticket))
-        module.log(msg="parent_host : {}".format(self.parent_host))
-        module.log(msg="parent_port : {}".format(self.parent_port))
-        module.log(msg="zone        : {}".format(self.zone))
-        module.log(msg="endpoint    : {}".format(self.endpoint))
-        module.log(msg="force       : {} ({})".format(self.force, type(self.force)))
+        # module.log(msg="icinga2     : {}".format(self._icinga2))
+        # module.log(msg="hostname    : {}".format(self.hostname))
+        # module.log(msg="common_name : {}".format(self.common_name))
+        # module.log(msg="trustedcert : {}".format(self.trustedcert))
+        # module.log(msg="ca_key      : {}".format(self.ca_key))
+        # module.log(msg="ticket      : {}".format(self.ticket))
+        # module.log(msg="parent_host : {}".format(self.parent_host))
+        # module.log(msg="parent_port : {}".format(self.parent_port))
+        # module.log(msg="zone        : {}".format(self.zone))
+        # module.log(msg="endpoint    : {}".format(self.endpoint))
+        # module.log(msg="force       : {} ({})".format(self.force, type(self.force)))
 
     def run(self):
         ''' ... '''
@@ -284,6 +283,8 @@ def main():
 
     icinga = Icinga2NodeSetupHelper(module)
     result = icinga.run()
+
+    module.log(msg="= result: {}".format(result))
 
     module.exit_json(**result)
 

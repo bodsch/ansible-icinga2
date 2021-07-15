@@ -142,7 +142,7 @@ data:
 
 class Icinga2Api(object):
     """
-    Main Class to implement the Icinga2 API Client
+      Main Class
     """
     module = None
 
@@ -182,8 +182,8 @@ class Icinga2Api(object):
             ansible_module_results="none"
         )
 
-        print("hostname  : {} ({})".format(self.hostname, type(self.hostname)))
-        print("hostnames : {} ({})".format(self.hostnames, type(self.hostnames)))
+        # print("hostname  : {} ({})".format(self.hostname, type(self.hostname)))
+        # print("hostnames : {} ({})".format(self.hostnames, type(self.hostnames)))
 
         if self.hostname and self.hostnames:
             module.fail_json(
@@ -405,6 +405,8 @@ def main():
         )
 
     result = icinga.run()
+
+    module.log(msg="= result: {}".format(result))
 
     module.exit_json(**result)
 

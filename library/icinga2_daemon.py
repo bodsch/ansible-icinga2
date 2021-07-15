@@ -11,7 +11,7 @@ from ansible.module_utils.basic import AnsibleModule
 
 class Icinga2Daemon(object):
     """
-    Main Class to implement the Icinga2 API Client
+      Main Class
     """
     module = None
 
@@ -25,7 +25,9 @@ class Icinga2Daemon(object):
         self.parameters = module.params.get("parameters")
 
     def run(self):
-        ''' ... '''
+        """
+          runner
+        """
         result = dict(
             failed=True,
             ansible_module_results='failed'
@@ -33,39 +35,40 @@ class Icinga2Daemon(object):
 
         # # icinga2 daemon --validate --log-level debug --config /etc/icinga2/icinga2.conf
 
-        parameter_list = self.flatten_parameter()
-        # self.module.log(msg = "= '{}'".format(parameter_list))
+        parameter_list = [self._icinga2]
+        parameter_list.append("daemon")
+        parameter_list += self.flatten_parameter(self.parameters)
 
         rc, out, err = self._exec(parameter_list)
-        self.module.log(msg="  rc : '{}'".format(rc))
-        self.module.log(msg="  out: '{}'".format(out))
-        self.module.log(msg="  err: '{}'".format(err))
 
         result['ansible_module_results'] = "Command returns {}".format(out)
 
-        if(rc == 0):
+        if rc == 0:
             result['failed'] = False
 
         return result
 
-    def _exec(self, args):
-        '''   '''
-        cmd = [self._icinga2, 'daemon'] + args
+    def _exec(self, command):
+        """
+          execute commands
+        """
+        # self.module.log(msg="command: {}".format(command))
 
-        self.module.log(msg="cmd: {}".format(cmd))
-
-        rc, out, err = self.module.run_command(cmd, check_rc=True)
+        rc, out, err = self.module.run_command(command, check_rc=True)
+        # self.module.log(msg="  rc : '{}'".format(rc))
+        # self.module.log(msg="  out: '{}'".format(out))
+        # self.module.log(msg="  err: '{}'".format(err))
         return rc, out, err
 
-    def flatten_parameter(self):
+    def flatten_parameter(self, arr):
         """
-          split and flatten parameter list
+          split and flatten array
           input:  ['--validate', '--log-level debug', '--config /etc/icinga2/icinga2.conf']
           output: ['--validate', '--log-level', 'debug', '--config', '/etc/icinga2/icinga2.conf']
         """
         parameters = []
 
-        for _parameter in self.parameters:
+        for _parameter in arr:
             if(' ' in _parameter):
                 _list = _parameter.split(' ')
                 for _element in _list:
@@ -92,6 +95,8 @@ def main():
 
     icinga = Icinga2Daemon(module)
     result = icinga.run()
+
+    module.log(msg="= result: {}".format(result))
 
     module.exit_json(**result)
 

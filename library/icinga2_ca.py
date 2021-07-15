@@ -5,18 +5,14 @@
 # BSD 2-clause (see LICENSE or https://opensource.org/licenses/BSD-2-Clause)
 
 from __future__ import absolute_import, division, print_function
-# import json
 import os
 
 from ansible.module_utils.basic import AnsibleModule
 
-# import urllib3
-# from requests import Session
-
 
 class Icinga2CaHelper(object):
     """
-    Main Class to implement the Icinga2 API Client
+      Main Class
     """
     module = None
 
@@ -37,17 +33,18 @@ class Icinga2CaHelper(object):
         self.cert_file = module.params.get("cert_file")
         self.force = module.params.get("force")
 
-        module.log(msg="icinga2     : {} ({})".format(self._icinga2, type(self._icinga2)))
-
-        module.log(msg="hostname    : {} ({})".format(self.hostname, type(self.hostname)))
-        module.log(msg="common_name : {} ({})".format(self.common_name, type(self.common_name)))
-        module.log(msg="key_file    : {} ({})".format(self.key_file, type(self.key_file)))
-        module.log(msg="csr_file    : {} ({})".format(self.csr_file, type(self.csr_file)))
-        module.log(msg="cert_file   : {} ({})".format(self.cert_file, type(self.cert_file)))
-        module.log(msg="force       : {} ({})".format(self.force, type(self.force)))
+        # module.log(msg="icinga2     : {} ({})".format(self._icinga2, type(self._icinga2)))
+        # module.log(msg="hostname    : {} ({})".format(self.hostname, type(self.hostname)))
+        # module.log(msg="common_name : {} ({})".format(self.common_name, type(self.common_name)))
+        # module.log(msg="key_file    : {} ({})".format(self.key_file, type(self.key_file)))
+        # module.log(msg="csr_file    : {} ({})".format(self.csr_file, type(self.csr_file)))
+        # module.log(msg="cert_file   : {} ({})".format(self.cert_file, type(self.cert_file)))
+        # module.log(msg="force       : {} ({})".format(self.force, type(self.force)))
 
     def run(self):
-        ''' ... '''
+        """
+          runner
+        """
         result = dict(
             failed=False,
             changed=False,
@@ -68,17 +65,20 @@ class Icinga2CaHelper(object):
         key = os.path.join(os.path.join(self.lib_directory, 'ca', 'ca.key'))
         cert = os.path.join(os.path.join(self.lib_directory, 'ca', 'ca.cert'))
 
-        self.module.log(msg="  key  : '{}'".format(key))
-        self.module.log(msg="  cert : '{}'".format(cert))
+        # self.module.log(msg="  key  : '{}'".format(key))
+        # self.module.log(msg="  cert : '{}'".format(cert))
 
-        if(not os.path.isfile(key) and not os.path.isfile(key)):
-            rc, out = self._exec(["new-ca"])
-            self.module.log(msg="  rc : '{}'".format(rc))
-            self.module.log(msg="  out: '{}'".format(out))
+        if not os.path.isfile(key) and not os.path.isfile(key):
+
+            args = [self._icinga2]
+            args.append("pki")
+            args.append("new-ca")
+
+            rc, out, err = self._exec(args)
 
             result['ansible_module_results'] = "Command returns {}".format(out)
 
-            if(rc == 0):
+            if rc == 0:
                 result['changed'] = True
             else:
                 result['failed'] = True
@@ -99,26 +99,28 @@ class Icinga2CaHelper(object):
         csr = os.path.join(os.path.join(self.lib_directory, 'certs', '{}.csr'.format(self.hostname)))
         cert = os.path.join(os.path.join(self.lib_directory, 'certs', '{}.crt'.format(self.hostname)))
 
-        self.module.log(msg="  key  : '{}'".format(key))
-        self.module.log(msg="  csr  : '{}'".format(csr))
-        self.module.log(msg="  cert : '{}'".format(cert))
+        # self.module.log(msg="  key  : '{}'".format(key))
+        # self.module.log(msg="  csr  : '{}'".format(csr))
+        # self.module.log(msg="  cert : '{}'".format(cert))
 
-        if(not os.path.isfile(csr)):
-            rc, out = self._exec([
-                "new-cert",
-                "--cn",
-                self.common_name,
-                "--key",
-                key,
-                "--csr",
-                csr
-            ])
-            self.module.log(msg="  rc : '{}'".format(rc))
-            self.module.log(msg="  out: '{}'".format(out))
+        if not os.path.isfile(csr):
+            args = [self._icinga2]
+            args.append("pki")
+            args.append("new-cert")
+            args.append("--cn")
+            args.append(self.common_name)
+            args.append("--key")
+            args.append(key)
+            args.append("--csr")
+            args.append(csr)
+
+            rc, out, err = self._exec(args)
+            # self.module.log(msg="  rc : '{}'".format(rc))
+            # self.module.log(msg="  out: '{}'".format(out))
 
             result['ansible_module_results'] = "Command returns {}".format(out)
 
-            if(rc == 0):
+            if rc == 0:
                 result['changed'] = True
             else:
                 result['failed'] = True
@@ -134,19 +136,21 @@ class Icinga2CaHelper(object):
         self.module.log(msg="Reads a Certificate Signing Request from stdin and prints a signed certificate on stdout.")
 
         if(not os.path.isfile(cert)):
-            rc, out = self._exec([
-                "sign-csr",
-                "--csr",
-                csr,
-                "--cert",
-                cert
-            ])
-            self.module.log(msg="  rc : '{}'".format(rc))
-            self.module.log(msg="  out: '{}'".format(out))
+            args = [self._icinga2]
+            args.append("pki")
+            args.append("sign-csr")
+            args.append("--csr")
+            args.append(csr)
+            args.append("--cert")
+            args.append(cert)
+
+            rc, out, err = self._exec(args)
+            # self.module.log(msg="  rc : '{}'".format(rc))
+            # self.module.log(msg="  out: '{}'".format(out))
 
             result['ansible_module_results'] = "Command returns {}".format(out)
 
-            if(rc == 0):
+            if rc == 0:
                 result['changed'] = True
             else:
                 result['failed'] = True
@@ -157,18 +161,17 @@ class Icinga2CaHelper(object):
 
         return result
 
-    """
+    def _exec(self, command):
+        """
+          execute commands
+        """
+        # self.module.log(msg="command: {}".format(command))
 
-    """
-
-    def _exec(self, args):
-        '''   '''
-        cmd = [self._icinga2, 'pki'] + args
-
-        self.module.log(msg="cmd: {}".format(cmd))
-
-        rc, out, err = self.module.run_command(cmd, check_rc=True)
-        return rc, out
+        rc, out, err = self.module.run_command(command, check_rc=True)
+        # self.module.log(msg="  rc : '{}'".format(rc))
+        # self.module.log(msg="  out: '{}'".format(out))
+        # self.module.log(msg="  err: '{}'".format(err))
+        return rc, out, err
 
     def _remove_directory(self, directory):
         ''' .... '''
@@ -202,6 +205,8 @@ def main():
 
     icinga = Icinga2CaHelper(module)
     result = icinga.run()
+
+    module.log(msg="= result: {}".format(result))
 
     module.exit_json(**result)
 

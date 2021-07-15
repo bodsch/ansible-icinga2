@@ -26,23 +26,23 @@ class Icinga2PreparedVars(object):
         self.default_file = module.params.get("default_file")
         self.variable = module.params.get("variable")
 
-        module.log(msg="default_file: {}".format(self.default_file))
-        module.log(msg="variable    : {}".format(self.variable))
+        # module.log(msg="default_file: {}".format(self.default_file))
+        # module.log(msg="variable    : {}".format(self.variable))
 
     def run(self):
-        ''' ... '''
+        """
+          runner
+        """
         content = []
         pattern = re.compile(r'.*{}:="(?P<var>.*)".*'.format(self.variable), re.MULTILINE)
 
-        if(os.path.isfile(self.default_file)):
+        if os.path.isfile(self.default_file):
             with open(self.default_file, "r") as _data:
                 content = _data.readlines()
 
         _list = list(filter(pattern.match, content))[0]  # Read Note
         result = re.search(pattern, _list)
         result = result.group(1)
-
-        self.module.log(msg="return: {}".format(result))
 
         return dict(
             failed=False,
@@ -66,6 +66,8 @@ def main():
 
     icinga = Icinga2PreparedVars(module)
     result = icinga.run()
+
+    module.log(msg="= result: {}".format(result))
 
     module.exit_json(**result)
 

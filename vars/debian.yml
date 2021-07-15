@@ -1,0 +1,13 @@
+---
+
+icinga2_mariadb_packages:
+  - python3-mysqldb
+  - python3-pip
+
+icinga2_mariadb_python_packages:
+  - name: mysqlclient
+    version: 2.0.3
+
+monitoring_plugins_directory: /usr/lib64/nagios/plugins
+
+...
