@@ -3,6 +3,8 @@
 icinga2_mariadb_build_packages: []
 icinga2_mariadb_python_packages: []
 
+monitoring_plugins_directory: /usr/lib/monitoring-plugins
+
 
 # _icinga2_mariadb_packages:
 #   default:

@@ -1,6 +1,7 @@
 ---
 
 icinga2_mariadb_packages:
+  - iproute2
   - mariadb-clients
 
 #icinga2_mariadb_python_packages:
@@ -9,7 +10,5 @@ icinga2_mariadb_packages:
 icinga2_mariadb_python_packages:
   - name: mysqlclient
     version: 2.0.3
-
-monitoring_plugins_directory: /usr/lib/monitoring-plugins
 
 ...

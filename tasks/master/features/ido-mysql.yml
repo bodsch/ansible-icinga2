@@ -2,10 +2,8 @@
 
 - name: install packages for support databases
   package:
-    name: "{{ item }}"
+    name: "{{ icinga2_mariadb_packages }}"
     state: present
-  loop:
-    - "{{ icinga2_mariadb_packages }}"
 
 - name: python support
   block:

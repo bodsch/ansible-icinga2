@@ -93,6 +93,25 @@
     icinga2_timeperiod: "{{ icinga2_timeperiod_default |
       combine( icinga2_timeperiod, recursive=True ) }}"
 
+- block:
+    - name: find OS specific plugins directory
+      find:
+        paths: "/usr/lib/nagios,/usr/lib64/nagios"
+        file_type: directory
+        patterns:
+          - "plugins"
+        recurse: true
+      register: found_directory
+
+    - name: define monitoring_plugins_directory
+      set_fact:
+        monitoring_plugins_directory: "{{ found_directory.files | sort(attribute='path', reverse=True) | map(attribute='path') | list | first }}"
+      when:
+        - found_directory.files is defined
+        - found_directory.files | count > 0
+  when:
+    - ansible_os_family | lower != 'archlinux'
+
 # ----------------------------------------------------------------------------------
 
 - name: install requirements
