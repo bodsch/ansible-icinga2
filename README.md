@@ -1,4 +1,5 @@
 
+# Ansible Role:  `icinga2`
 
 Ansible role to setup Icinga2 master or satellite.
 
