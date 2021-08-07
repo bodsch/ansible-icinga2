@@ -73,7 +73,7 @@ A complete test setup can be found in the GitLab under [icinga2-infrastructure](
 
 #### single-master
 
-```
+```yaml
 ---
 - host: icinga-master
   vars:
@@ -120,7 +120,7 @@ A complete test setup can be found in the GitLab under [icinga2-infrastructure](
 
 #### multi-master
 
-```
+```yaml
 ---
 - host: icinga-master
   vars:
@@ -157,7 +157,7 @@ A complete test setup can be found in the GitLab under [icinga2-infrastructure](
 
 #### simple
 
-```
+```yaml
 ---
 - host: icinga-master
   vars:
@@ -194,7 +194,7 @@ A complete test setup can be found in the GitLab under [icinga2-infrastructure](
 
 #### multi satellite with zones
 
-```
+```yaml
 ---
 - host: icinga-master
   vars:
@@ -221,7 +221,7 @@ A complete test setup can be found in the GitLab under [icinga2-infrastructure](
 
 for testing
 
-```
+```bash
 tox -e py38-ansible29 -- molecule
 
 tox -e py38-ansible29 -- molecule -s icinga2-satellite
@@ -232,28 +232,29 @@ tox -e py38-ansible29 -- molecule -s icinga2-satellite
 
 ### API
 
-```
+```bash
 export CURL_OPTS="--silent --insecure"
 export ICINGA_CREDS="--user icinga2:S0mh1TuFJI"
 export ICINGA_API_URL="https://master-1.icinga.local:5665/v1"
 ```
-```
+
+```bash
 $ curl ${ICINGA_CREDS} ${CURL_OPTS} --header 'Accept: application/json' ${ICINGA_API_URL}/status/ApiListener | jq --raw-output ".results[].status.api.zones"
 ```
 
-```
+```bash
 $ curl ${ICINGA_CREDS} ${CURL_OPTS} --header 'Accept: application/json' ${ICINGA_API_URL}/status/CIB | jq --raw-output '.results[].status.uptime'
 ```
 
-```
+```bash
 $ curl ${ICINGA_CREDS} ${CURL_OPTS} --header 'Accept: application/json' ${ICINGA_API_URL}/status/ApiListener | jq --raw-output ".results[].status.api"
 ```
 
-```
+```bash
 $ curl ${ICINGA_CREDS} ${CURL_OPTS} ${ICINGA_API_URL}/objects/hosts | jq
 ```
 
-```
+```bash
 $ curl ${ICINGA_CREDS} ${CURL_OPTS} --header 'Accept: application/json' --header 'X-HTTP-Method-Override: GET' --request POST --data '{ "attrs": [ "name" ], "type": "Host", "filter": "host.name==\"master-1.icinga.local\"" }' ${ICINGA_API_URL}/objects/hosts
 ```
 

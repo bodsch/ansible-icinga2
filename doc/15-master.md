@@ -1,6 +1,6 @@
 # icnga2 master
 
-```
+```yaml
 icinga2_mode: master
 
 icinga2_server: '{{ inventory_hostname }}'
@@ -8,7 +8,7 @@ icinga2_server: '{{ inventory_hostname }}'
 
 ## Multi Master
 
-```
+```yaml
 icinga2_ha: true
 icinga2_masters:
   master-1.icinga.local:
@@ -22,7 +22,7 @@ behind a NAT you would overwrite the icinga2 host name?
 
 try this:
 
-```
+```yaml
 icinga2_masters:
   master-1.icinga.local:
     overwrite: master.test.com:
@@ -32,7 +32,7 @@ icinga2_masters:
 
 ### add host to icinga
 
-```
+```yaml
 icinga2_host_object:
 
   localhost:

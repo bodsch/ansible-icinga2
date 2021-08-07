@@ -2,7 +2,7 @@
 
 
 ## service downtimes
-```
+```yaml
 icinga2_service_downtimes:
   backup-downtime:
     author: "icingaadmin"
@@ -19,7 +19,7 @@ icinga2_service_downtimes:
 ```
 
 ## host downtimes
-```
+```yaml
 icinga2_host_downtimes:
   nas-downtime:
     author: "icingaadmin"
@@ -37,7 +37,7 @@ icinga2_host_downtimes:
 
 create a file like this:
 
-```
+```bash
 cat downtime.json
 
 {
@@ -53,7 +53,7 @@ cat downtime.json
 
 and call a ansible task:
 
-```
+```bash
 ansible-playbook --inventory inventories/icinga2  playbooks/master.yml --extra-vars @downtime.json --tags downtime_schedule
 ```
 
@@ -61,7 +61,7 @@ ansible-playbook --inventory inventories/icinga2  playbooks/master.yml --extra-v
 
 example:
 
-```
+```yaml
 - name: set downtime
   icinga2_downtime:
     url: "https://localhost:5665"

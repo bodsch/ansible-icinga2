@@ -4,7 +4,7 @@ to create an `object CheckCommand "service" { ... }` block, use the `icinga2_che
 
 for example:
 
-```
+```yaml
 icinga2_checkcommands:
   hostname:
     import: plugin-check-command

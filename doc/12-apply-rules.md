@@ -3,7 +3,7 @@
 To create a `apply Service ... { ... }` block, you can use the `icinga2_apply_service` dictionary.
 
 For example:
-```
+```yaml
 icinga2_apply_service:
   https_for_host:
     import: generic-service
@@ -22,7 +22,7 @@ icinga2_apply_service:
 ```
 (for more, see the `icinga2_apply_service_default` in `vars/main.yml`)
 
-```
+```yaml
 icinga2_apply_service_default:
   ssh:
     import: generic-service
@@ -38,7 +38,7 @@ With `event_command` an EventCommand can be defined.
 
 It is important that the `endpoint_name` and the corresponding host definition match! ([See here](16-satellite.md#endpoint_name))
 
-```
+```yaml
 icinga2_host_object:
 
   master-1:
@@ -67,7 +67,7 @@ icinga2_apply_service:
 
 for create an apply rule with `$keyword for (...)` you can enhance the cictionary with a `for` key:
 
-```
+```yaml
 icinga2_apply_service:
   http_for_host:
     name: "HTTP: "
@@ -83,7 +83,7 @@ for complex rules, you can use the `extra_parameters` key.
 
 for example:
 
-```
+```yaml
 icinga2_apply_service:
   file_age:
     name: 'file_'
