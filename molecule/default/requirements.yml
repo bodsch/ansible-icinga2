@@ -17,4 +17,4 @@
 - name: mariadb
   src: https://github.com/bodsch/ansible-mariadb.git
   scm: git
-  version: 2.2.2
+  # version: 2.2.2
