@@ -4,6 +4,8 @@ icinga2_mariadb_packages: []
 
 icinga2_mariadb_python_packages: []
 
+icinga2_os_requirements: []
+
 monitoring_plugins_directory: /usr/lib/monitoring-plugins
 
 ...

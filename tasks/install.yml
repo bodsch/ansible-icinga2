@@ -83,7 +83,7 @@
 
     - name: install icinga2 packages
       package:
-        name: "{{ icinga2_dependencies }}"
+        name: "{{ icinga2_packages }}"
         state: present
       register: icinga2_installer
 
@@ -98,6 +98,9 @@
     - not icinga2_installed
     - ansible_os_family | lower != 'archlinux'
 
+- name: re-read ansible facts
+  setup:
+
 - include_tasks: check_installed.yml
 
 - name: detect icinga2_user
@@ -110,13 +113,13 @@
     variable: ICINGA2_GROUP
   register: _icinga2_group
 
-- name: set icinga2_user to {{ _icinga2_user.value }}
+- name: define icinga2_user to '{{ _icinga2_user.value }}'
   set_fact:
     icinga2_user: "{{ _icinga2_user.value }}"
   when:
     - _icinga2_user.value is defined
 
-- name: set icinga2_group to {{ _icinga2_group.value }}
+- name: define icinga2_group to '{{ _icinga2_group.value }}'
   set_fact:
     icinga2_group: "{{ _icinga2_group.value }}"
   when:
@@ -132,3 +135,5 @@
 
 - name: do facts module to get latest information
   setup:
+
+...

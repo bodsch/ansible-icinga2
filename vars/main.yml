@@ -1,10 +1,17 @@
 ---
 
+monitoring_plugins_directory: /usr/lib/monitoring-plugins
+
 icinga2_mariadb_build_packages: []
 icinga2_mariadb_python_packages: []
 
-monitoring_plugins_directory: /usr/lib/monitoring-plugins
+icinga2_packages:
+  - icinga2
+  - icinga2-common
 
+icinga2_requirements:
+  - gnupg
+  - ca-certificates
 
 # _icinga2_mariadb_packages:
 #   default:
@@ -62,15 +69,6 @@ monitoring_plugins_directory: /usr/lib/monitoring-plugins
 icinga2_remove_old_cert: false
 icinga2_installed_version: ''
 icinga2_needs_update: true
-
-# _monitoring_plugins_directory:
-#   default: /usr/lib/nagios/plugins
-#   debian: /usr/lib/nagios/plugins
-#   redhat: /usr/lib64/nagios/plugins
-#   archlinux: /usr/lib/monitoring-plugins
-#
-# monitoring_plugins_directory: "{{ _monitoring_plugins_directory[ansible_os_family | lower] |
-#   default(_monitoring_plugins_directory['default']) }}"
 
 icinga2_downtime_system_name_internal: ''
 

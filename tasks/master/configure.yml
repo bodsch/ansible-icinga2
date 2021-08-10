@@ -40,6 +40,8 @@
       dest: /etc/icinga2/icinga2.conf
     - src: etc/icinga2/features/mainlog.conf.j2
       dest: /etc/icinga2/features-available/mainlog.conf
+  loop_control:
+    label: "{{ item.dest }}"
   notify:
     - check configuration
     - restart icinga2

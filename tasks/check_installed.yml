@@ -5,7 +5,7 @@
     path: /usr/sbin/icinga2
   register: icinga2_binary_file
 
-- name: set icinga2_installed
+- name: define icinga2_installed
   set_fact:
     icinga2_installed: "{{ icinga2_binary_file.stat.exists }}"
 
@@ -17,7 +17,7 @@
       icinga2_version:
       register: __installed_icinga2_version
 
-    - name: set icinga2 version
+    - name: define icinga2 version
       set_fact:
         icinga2_installed_version: "{{ __installed_icinga2_version.version }}"
         cacheable: true
@@ -35,3 +35,5 @@
 
   when:
     icinga2_installed
+
+...

@@ -20,7 +20,9 @@
         state: present
       register: pip_install
       ignore_errors: true
-      no_log: true
+      # no_log: true
+
+    # missing 'libmariadbclient-dev'?
 
     - block:
         - name: install build essentials

@@ -21,14 +21,23 @@
     icinga2_primary_master: "{{ icinga2_masters | primary_master }}"
 
 - name: define satellite zone
-  set_fact:
-    icinga2_satellite_zone: "{{ icinga2_satellites | satellite_zone(ansible_fqdn) }}"
-  when: icinga2_mode == 'satellite' and icinga2_satellites is defined and icinga2_satellites | count > 0
+  block:
 
-- name: define satellite zone
-  set_fact:
-    icinga2_satellite_zone: "{{ ansible_fqdn }}"
-  when: icinga2_mode == 'satellite' and icinga2_satellites is defined and icinga2_satellites | count == 0
+    - name: define satellite zone, when icinga2_satellites are configured
+      set_fact:
+        icinga2_satellite_zone: "{{ icinga2_satellites | satellite_zone(ansible_fqdn) }}"
+      when:
+        - icinga2_satellites is defined
+        - icinga2_satellites | count > 0
+
+    - name: define satellite zone, when icinga2_satellites are empty
+      set_fact:
+        icinga2_satellite_zone: "{{ ansible_fqdn }}"
+      when:
+        - icinga2_satellites is defined
+        - icinga2_satellites | count == 0
+  when:
+    - icinga2_mode == 'satellite'
 
 - name: assert missing primary master
   assert:
@@ -62,7 +71,7 @@
 
 # read a present salt from ansible facts
 #
-- name: set fact for salt
+- name: define icinga2_salt from local fact
   set_fact:
     icinga2_salt: "{{ ansible_local.icinga2.salt }}"
   when:
@@ -116,7 +125,7 @@
 
 - name: install requirements
   package:
-    name: "{{ icinga2_requirements }}"
+    name: "{{ icinga2_requirements | union(icinga2_os_requirements) }}"
     state: present
 
 - name: make sure ansible local facts directory exists
@@ -134,8 +143,7 @@
 # debian based
 #
 - block:
-    #
-    - name: add icinga2 repo GPG key
+    - name: add icinga2 GPG key
       apt_key:
         id: F51A91A5EE001AA5D77D53C4C6E319C334410682
         url: https://packages.icinga.com/icinga.key
@@ -145,10 +153,6 @@
         src: etc/apt/icinga2.list.j2
         dest: /etc/apt/sources.list.d/icinga2.list
         mode: 0644
-
-#    - name: update apt cache
-#      apt:
-#        update_cache: true
   when:
     - ansible_os_family | lower == 'debian'
     - icinga2_use_external_repo | bool
@@ -156,8 +160,7 @@
 # redhat based
 #
 - block:
-    #
-    - name: Import EPEL GPG key.
+    - name: import EPEL GPG key
       rpm_key:
         key: https://archive.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}
         state: present
@@ -174,12 +177,12 @@
         gpgcheck: 1
         enabled: 1
 
-    - name: Import Icinga2 GPG key.
+    - name: import icinga2 GPG key
       rpm_key:
         key: https://packages.icinga.com/icinga.key
         state: present
 
-    - name: install Icinga2 repository
+    - name: install icinga2 repository
       yum_repository:
         name: icinga-stable-release
         state: present
@@ -188,20 +191,6 @@
         gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-ICINGA
         gpgcheck: 1
         enabled: 1
-
-#     - name: update rpm cache (yum) # noqa 'command-instead-of-module'
-#       command: yum clean metadata
-#       args:
-#         warn: false
-#       when:
-#         - ansible_distribution_major_version | int == 7
-#
-#     - name: update rpm cache (dnf) # noqa 'command-instead-of-module'
-#       command: dnf clean metadata
-#       args:
-#         warn: false
-#       when:
-#         - ansible_distribution_major_version | int >= 8
   when:
     - ansible_os_family | lower == 'redhat'
     - icinga2_use_external_repo | bool
@@ -213,7 +202,6 @@
 # arch-linux based
 #
 - block:
-    #
     - name: install build tools
       package:
         name: "{{ item }}"
@@ -247,3 +235,5 @@
     dest: /etc/sudoers.d/icinga
     mode: 0440
     validate: 'visudo -cf %s'
+
+...

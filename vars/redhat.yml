@@ -1,7 +1,6 @@
 ---
 
 icinga2_mariadb_packages:
-  - iproute
   - mariadb
 
 icinga2_mariadb_build_packages:
@@ -14,6 +13,9 @@ icinga2_mariadb_build_packages:
 
 icinga2_mariadb_python_packages:
   - name: mysqlclient
-    version: 2.0.3
+    # version: 2.0.3
+
+icinga2_os_requirements:
+  - iproute
 
 ...
