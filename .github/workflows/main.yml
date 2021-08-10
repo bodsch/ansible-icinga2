@@ -30,6 +30,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_REGISTRY_TOKEN }}
           VALIDATE_ALL_CODEBASE: true
           VALIDATE_ANSIBLE: true
+          # VALIDATE_MARKDOWN: true
           VALIDATE_YAML: true
 
   arch_standard:
@@ -140,7 +141,9 @@ jobs:
       fail-fast: false
       matrix:
         image:
+          - centos:7
           - centos:8
+          - oraclelinux:7
           - oraclelinux:8
         python-version:
           - '3.8'
