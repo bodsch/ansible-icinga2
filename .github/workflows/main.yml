@@ -28,9 +28,8 @@ jobs:
         env:
           # DEFAULT_BRANCH: master
           GITHUB_TOKEN: ${{ secrets.GH_REGISTRY_TOKEN }}
-          VALIDATE_ALL_CODEBASE: false
+          VALIDATE_ALL_CODEBASE: true
           VALIDATE_ANSIBLE: true
-          VALIDATE_MARKDOWN: false
           VALIDATE_YAML: true
 
   arch_standard:
