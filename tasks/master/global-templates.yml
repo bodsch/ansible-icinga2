@@ -58,3 +58,5 @@
   when:
     - icinga2_primary_master is defined
     - icinga2_primary_master == ansible_fqdn
+
+...
