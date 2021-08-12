@@ -34,7 +34,7 @@ class Icinga2PreparedVars(object):
           runner
         """
         content = []
-        pattern = re.compile(r'.*{}:="(?P<var>[0-9A-Za-z]*)".*'.format(self.variable), re.MULTILINE)
+        pattern = re.compile(r'.*:="(?P<var>.*[0-9A-Za-z])".*'.format(self.variable), re.MULTILINE)
 
         if os.path.isfile(self.default_file):
             with open(self.default_file, "r") as _data:
