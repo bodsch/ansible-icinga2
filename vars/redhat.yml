@@ -9,7 +9,7 @@ icinga2_mariadb_build_packages:
   - gcc-c++
   - autoconf
   - automake
-  - python3-devel
+  - python{{ '3' if ansible_python.version.major | int == 3 else '' }}-devel
 
 icinga2_mariadb_python_packages:
   - name: mysqlclient

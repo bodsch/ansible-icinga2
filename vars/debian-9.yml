@@ -3,6 +3,8 @@
 icinga2_mariadb_packages:
   - python{{ '3' if ansible_python.version.major | int == 3 else '' }}-mysqldb
   - python{{ '3' if ansible_python.version.major | int == 3 else '' }}-pip
+  - python{{ '3' if ansible_python.version.major | int == 3 else '' }}-setuptools
+  - python{{ '3' if ansible_python.version.major | int == 3 else '' }}-pymysql
 
 icinga2_mariadb_python_packages:
   - name: mysqlclient
