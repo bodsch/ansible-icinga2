@@ -1,5 +1,7 @@
 ---
 
+mariadb_root_password: Y5FZfKXzCeOWGf4kBOiFSp6Il
+
 mariadb_root_password_update: true
 
 mariadb_databases:

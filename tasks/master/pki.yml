@@ -45,7 +45,7 @@
       when:
         _icinga2_ca_file.stat.exists
 
-    - name: symlink pki files from {{ inventory_hostname }} to {{ icinga2_certificate_cn }}
+    - name: create symlink from {{ inventory_hostname }} to {{ icinga2_certificate_cn }}
       file:
         src: "{{ icinga2_pki_dir }}/{{ inventory_hostname }}.{{ item }}"
         dest: "{{ icinga2_pki_dir }}/{{ icinga2_certificate_cn }}.{{ item }}"
@@ -62,3 +62,5 @@
   when:
     - icinga2_primary_master is defined
     - icinga2_primary_master == ansible_fqdn
+
+...

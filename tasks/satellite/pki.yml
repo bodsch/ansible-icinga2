@@ -7,7 +7,7 @@
     msg: icinga2 salt is missing
     quiet: true
 
-- name: set facts
+- name: define PKI facts
   set_fact:
     icinga2_pki_ca_key: "{{ icinga2_pki_dir }}/ca.key"
     icinga2_pki_ca_cert: "{{ icinga2_pki_dir }}/ca.crt"
@@ -43,7 +43,7 @@
         get_checksum: true
       register: satellite_ca_file
 
-    - name: set facts
+    - name: define fact for remove old certificates
       set_fact:
         icinga2_remove_old_cert: "{{ primary_master_ca_file.stat.checksum | string == satellite_ca_file.stat.checksum | string }}"
       when:
@@ -153,7 +153,7 @@
       register: ticket
       delegate_to: "{{ icinga2_primary_master }}"
 
-    - name: set facts
+    - name: define FQDN ticket
       set_fact:
         icinga2_fqdn_ticket: "{{ ticket.ticket }}"
 
@@ -236,6 +236,8 @@
     path: "/var/lib/icinga2/api/zones/{{ icinga2_satellite_zone }}/_etc/{{ icinga2_certificate_cn }}.conf"
   register: __satellite_api_connections
 
-- name: set facts
+- name: define icinga2_satellite_has_api_connection
   set_fact:
     icinga2_satellite_has_api_connection: "{{ __satellite_api_connections.stat.exists }}"
+
+...

@@ -1,10 +1,9 @@
 ---
 
-# icinga2_mariadb_packages:
-#   - MySQL-python
-#
-# icinga2_mariadb_python_packages:
-#   - PyMySQL
+icinga2_mariadb_packages:
+  - mariadb
+  - MySQL-python
+  - python-setuptools
 
 icinga2_mariadb_build_packages:
   - mariadb-devel
@@ -12,12 +11,13 @@ icinga2_mariadb_build_packages:
   - gcc-c++
   - autoconf
   - automake
-  - python3-devel
+  - python{{ '3' if ansible_python.version.major | int == 3 else '' }}-devel
 
 icinga2_mariadb_python_packages:
   - name: mysqlclient
-    version: 2.0.3
+    # version: 2.0.3
 
-monitoring_plugins_directory: /usr/lib64/nagios/plugins
+icinga2_os_requirements:
+  - iproute
 
 ...

@@ -1,11 +1,11 @@
 # icinga2 satellite
 
 
-```
+```yaml
 icinga2_mode: satellite
 ```
 
-```
+```yaml
 icinga2_host_object:
 
   mars.matrix.local:
@@ -29,7 +29,7 @@ When using an event handler, the `endpoint_name` must be set if necessary.
 
 You can then use `display_name` to restore the desired display name.
 
-```
+```yaml
 icinga2_host_object:
 
   mars.matrix.local:
@@ -42,7 +42,7 @@ icinga2_host_object:
 
 For organize multiple Satellites in one Zone, you can define this over `icinga2_satellites`.
 
-```
+```yaml
 icinga2_satellites:
   zone1:
     satellite-1.icinga.local:

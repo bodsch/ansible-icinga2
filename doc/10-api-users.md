@@ -2,7 +2,7 @@
 
 ## create API user
 
-```
+```yaml
 icinga2_api:
   enabled: true
   user:

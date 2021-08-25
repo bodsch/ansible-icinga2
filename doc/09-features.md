@@ -2,7 +2,7 @@
 
 
 ## enable master features
-```
+```yaml
 icinga2_master_features_enabled:
   - checker
   - api
@@ -12,7 +12,7 @@ icinga2_master_features_enabled:
 ```
 
 ## disable master features
-```
+```yaml
 icinga2_master_features_disabled:
   - perfdata
   - livestatus
@@ -33,7 +33,7 @@ if add 'graphite' to `icinga2_master_features_enabled` above, you can her config
 | `enable_ha`              | Enable the high availability functionality. Only valid in a cluster setup. Defaults to false. |
 
 
-```
+```yaml
 icinga2_master_features_enabled:
   - graphite
 
@@ -45,7 +45,7 @@ icinga2_features:
 ## influxdb
 
 
-```
+```yaml
 icinga2_master_features_enabled:
   - influxdb
 
@@ -70,7 +70,7 @@ icinga2_features:
 
 ## gelf
 
-```
+```yaml
 icinga2_master_features_enabled:
   - gelf
 
@@ -85,7 +85,7 @@ icinga2_features:
 
 ## FileLogger
 
-```
+```yaml
 icinga2_filelogger:
   directory: /var/log/icinga2
   mainlog:
@@ -148,7 +148,7 @@ icinga2_filelogger:
 
 ### Example
 
-```
+```yaml
 icinga2_ido:
   type: mysql
   enabled: true
@@ -169,7 +169,7 @@ icinga2_ido:
 
 ## notification
 
-```
+```yaml
 icinga2_notification:
   host:
     name: mail-icingaadmin
@@ -189,7 +189,7 @@ icinga2_notification:
     assign_where: host.vars.notification.mail
 ```
 
-```
+```yaml
 icinga2_notification_user:
   icingaadmin:
     import: generic-user
@@ -204,13 +204,13 @@ icinga2_notification_user:
     email: ...
 ```
 
-```
+```yaml
 icinga2_notification_usergroups:
   icingaadmins:
     display_name: "Icinga2 Admin Group"
 ```
 
-```
+```yaml
 icinga2_notification_apply:
   host_notification:
     import: slack-host-notification

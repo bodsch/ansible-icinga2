@@ -2,7 +2,7 @@
 
 # secondary master
 #
-- name: set facts
+- name: define PKI facts
   set_fact:
     icinga2_pki_ca_key: "{{ icinga2_pki_dir }}/ca.key"
     icinga2_pki_ca_cert: "{{ icinga2_pki_dir }}/ca.crt"
@@ -36,7 +36,7 @@
         salt: "{{ icinga2_salt }}"
       register: ticket
 
-    - name: set facts
+    - name: define FQDN ticket
       set_fact:
         icinga2_fqdn_ticket: "{{ ticket.ticket }}"
 
@@ -116,3 +116,5 @@
     - check configuration
 
 - include_tasks: features.yml
+
+...

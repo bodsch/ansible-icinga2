@@ -141,3 +141,5 @@
   when:
     - icinga2_primary_master is defined
     - not icinga2_primary_master == ansible_fqdn
+
+...
