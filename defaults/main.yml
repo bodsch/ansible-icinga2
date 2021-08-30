@@ -10,14 +10,6 @@ icinga2_validate_primary_master: true
 
 icinga2_certificate_cn: '{{ ansible_fqdn }}'
 
-# icinga2_requirements:
-#   - gnupg
-#   - ca-certificates
-#
-# icinga2_dependencies:
-#   - icinga2
-#   - icinga2-common
-
 # you MUST create an ticket salt!
 # e.g. 'cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 64 | head -n 1'
 icinga2_salt: ''

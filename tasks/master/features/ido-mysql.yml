@@ -13,6 +13,14 @@
         dest: /tmp/icinga2-requirements.txt
         mode: 0660
 
+    - name: do facts module to get latest information
+      setup:
+
+    - debug:
+        msg:
+          - "{{ ansible_python }}"
+          - "{{ ansible_python_interpreter | default('') }}"
+
     - name: ensure python bindings for mariadb packages 1st
       pip:
         # executable: pip3
