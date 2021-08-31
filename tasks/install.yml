@@ -93,14 +93,7 @@
       package:
         name: "{{ icinga2_packages }}"
         state: present
-        # use: "{{ 'dnf' if ansible_os_family | lower == 'redhat' else 'auto' }}"
       register: icinga2_installer
-
-    # - name: install icinga2 packages
-    #   package:
-    #     name: "{{ icinga2_packages }}"
-    #     state: present
-    #   register: icinga2_installer
 
     - name: do facts module to get latest information
       setup:

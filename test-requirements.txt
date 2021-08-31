@@ -1,7 +1,7 @@
 molecule
 molecule-docker<1.0.0
 docker
-ansible-lint
+# ansible-lint
 yamllint
 flake8
 jmespath
