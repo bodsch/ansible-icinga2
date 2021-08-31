@@ -12,18 +12,18 @@
           - "ansible version      : {{ ansible_version.full }}"
           - "python version       : {{ ansible_python.version.major }}.{{ ansible_python.version.minor }}"
 
-# - name: prepare container
-#   hosts: all
-#   gather_facts: true
-#
-#   roles:
-#     - role: apparmor
-#     - role: snapd
-#     - role: monitoring-tools
-#
-# - name: prepare container
-#   hosts: database
-#   gather_facts: true
-#
-#   roles:
-#     - role: mariadb
+- name: prepare container
+  hosts: all
+  gather_facts: true
+
+  roles:
+    - role: apparmor
+    - role: snapd
+    - role: monitoring-tools
+
+- name: prepare container
+  hosts: database
+  gather_facts: true
+
+  roles:
+    - role: mariadb

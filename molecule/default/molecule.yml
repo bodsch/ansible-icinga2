@@ -12,22 +12,22 @@ lint: |
   flake8 .
 
 platforms:
-  # - name: database
-  #   image: "diodonfrost/ansible-${DISTRIBUTION:-debian:10}"
-  #   command: ${MOLECULE_DOCKER_COMMAND:-""}
-  #   docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
-  #   privileged: true
-  #   pre_build_image: true
-  #   volumes:
-  #     - /sys/fs/cgroup:/sys/fs/cgroup:ro
-  #   docker_networks:
-  #     - name: icinga_default
-  #       ipam_config:
-  #         - subnet: "10.11.0.0/16"
-  #           gateway: "10.11.0.254"
-  #   networks:
-  #     - name: icinga_default
-  #       ipv4_address: "10.11.0.10"
+  - name: database
+    image: "diodonfrost/ansible-${DISTRIBUTION:-debian:10}"
+    command: ${MOLECULE_DOCKER_COMMAND:-""}
+    docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
+    privileged: true
+    pre_build_image: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    docker_networks:
+      - name: icinga_default
+        ipam_config:
+          - subnet: "10.11.0.0/16"
+            gateway: "10.11.0.254"
+    networks:
+      - name: icinga_default
+        ipv4_address: "10.11.0.10"
 
   - name: instance
     image: "diodonfrost/ansible-${DISTRIBUTION:-debian:10}"
@@ -37,9 +37,9 @@ platforms:
     pre_build_image: true
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
-    # networks:
-    #   - name: icinga_default
-    #     ipv4_address: "10.11.0.20"
+    networks:
+      - name: icinga_default
+        ipv4_address: "10.11.0.20"
 
 provisioner:
   name: ansible
