@@ -13,7 +13,6 @@ icinga2_mariadb_build_packages:
   - automake
   - python-devel
   - python3-devel
-#   - python-devel
 
 icinga2_mariadb_python_packages:
   - name: mysqlclient
