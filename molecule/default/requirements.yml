@@ -18,3 +18,5 @@
   src: https://github.com/bodsch/ansible-mariadb.git
   scm: git
   version: 2.2.4
+
+...

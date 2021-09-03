@@ -105,7 +105,7 @@
 - block:
     - name: find OS specific plugins directory
       find:
-        paths: "/usr/lib/nagios,/usr/lib64/nagios"
+        paths: "/usr/lib/monitoring-plugins,/usr/lib/nagios,/usr/lib64/nagios"
         file_type: directory
         patterns:
           - "plugins"
@@ -122,23 +122,6 @@
     - ansible_os_family | lower != 'archlinux'
 
 # ----------------------------------------------------------------------------------
-
-- name: install requirements
-  package:
-    name: "{{ icinga2_requirements | union(icinga2_os_requirements) }}"
-    state: present
-
-- name: make sure ansible local facts directory exists
-  file:
-    dest: /etc/ansible/facts.d
-    state: directory
-    owner: root
-    group: root
-    mode: 0755
-
-- name: update package cache
-  package:
-    update_cache: true
 
 # debian based
 #
@@ -195,10 +178,6 @@
     - ansible_os_family | lower == 'redhat'
     - icinga2_use_external_repo | bool
 
-- name: update package cache
-  package:
-    update_cache: true
-
 # arch-linux based
 #
 - block:
@@ -229,11 +208,31 @@
     - ansible_os_family | lower == 'archlinux'
     - icinga2_use_external_repo | bool
 
+- name: update package cache
+  package:
+    update_cache: true
+
+- name: install requirements
+  package:
+    name: "{{ icinga2_requirements | union(icinga2_os_requirements) }}"
+    state: present
+
+- name: get latest system information
+  setup:
+
 - name: create sudo rules for icinga
   template:
     src: etc/sudo.j2
     dest: /etc/sudoers.d/icinga
     mode: 0440
     validate: 'visudo -cf %s'
+
+- name: make sure ansible local facts directory exists
+  file:
+    dest: /etc/ansible/facts.d
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
 
 ...

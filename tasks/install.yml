@@ -1,6 +1,14 @@
 ---
 
+#- debug:
+#    msg:
+#      - "{{ ansible_python_interpreter }}"
+
 - include_tasks: check_installed.yml
+
+- name: update package cache
+  package:
+    update_cache: true
 
 - block:
     - name: install icinga2 package via aur
@@ -81,7 +89,7 @@
           exit 101
         mode: 0755
 
-    - name: install icinga2 packages
+    - name: install icinga2 packages (redhat based)
       package:
         name: "{{ icinga2_packages }}"
         state: present
