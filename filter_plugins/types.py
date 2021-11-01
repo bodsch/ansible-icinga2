@@ -42,13 +42,13 @@ class FilterModule(object):
         if isinstance(var, int) and int(var) > 0:
             result = True
         if (isinstance(var, str) or type(var).__name__ == "AnsibleUnsafeText"):
-          try:
-            ip = ipaddress.ip_address(var)
-            result_value = '{}'.format(str(var))
-          except:
-            result_value = '"{}"'.format(str(var))
-          if len(var) > 0:
-              result = True
+            try:
+                ip = ipaddress.ip_address(var)
+                result_value = '{}'.format(str(var))
+            except Exception:
+                result_value = '"{}"'.format(str(var))
+            if len(var) > 0:
+                result = True
         if isinstance(var, list) and len(var) > 0:
             result_value = "{}".format((', ').join(var))
             result = True
