@@ -1,0 +1,25 @@
+---
+
+- name: define influxdb2 feature state
+  set_fact:
+    feature_influxdb2_state: "{{ 'present' if icinga2_master_features_enabled | join('|') |
+      regex_search('influxdb2') else 'absent' }}"
+
+- name: enable influxdb2 feature
+  icinga2_feature:
+    name: influxdb2
+    state: "{{ feature_influxdb2_state }}"
+  notify:
+    - check configuration
+    - restart icinga2
+  tags:
+    - icinga2
+    - features
+
+- name: configure influxdb2 feature
+  template:
+    src: etc/icinga2/features/influxdb2.conf.j2
+    dest: /etc/icinga2/features-available/influxdb2.conf
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
+    mode: 0660

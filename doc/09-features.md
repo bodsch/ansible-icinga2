@@ -44,7 +44,6 @@ icinga2_features:
 
 ## influxdb
 
-
 ```yaml
 icinga2_master_features_enabled:
   - influxdb
@@ -55,6 +54,32 @@ icinga2_features:
     port: 8086
     enable_ha: true
     database: icinga2
+    flush_threshold: 1024
+    flush_interval: 10s
+    host_template:
+      measurement: "$host.check_command$"
+      tags:
+        hostname: "$host.name$"
+    service_template:
+      measurement: "$service.check_command$"
+      tags:
+        hostname: "$host.name$"
+        service: "$service.name$"
+```
+
+## influxdb2
+
+```yaml
+icinga2_master_features_enabled:
+  - influxdb2
+
+icinga2_features:
+  influxdb2:
+    host: localhost
+    port: 8086
+    organization: "monitoring"
+    bucket: "icinga2"
+    auth_token: "rrDAHWjVEKScc5DzaFVN4vzg9HtZkcWvt433Yfdqju"
     flush_threshold: 1024
     flush_interval: 10s
     host_template:
