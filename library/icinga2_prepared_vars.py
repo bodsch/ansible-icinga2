@@ -39,6 +39,11 @@ class Icinga2PreparedVars(object):
         if os.path.isfile(self.default_file):
             with open(self.default_file, "r") as _data:
                 content = _data.readlines()
+        else:
+            return dict(
+                failed=True,
+                msg="icinga2 is not correct installed. missing file {0}.".format(self.default_file)
+            )
 
         _list = list(filter(pattern.match, content))[0]  # Read Note
         result = re.search(pattern, _list)

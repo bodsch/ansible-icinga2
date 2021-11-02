@@ -145,7 +145,7 @@ class Aur():
             args.append("--needed")
             args.append("--clean")
 
-            rc, out, err = self._exec(args, check=False)
+            rc, out, err = self._exec(args, check=True)
 
         return (rc, out, err)
 
@@ -301,9 +301,10 @@ class Aur():
 
         rc, out, err = self.module.run_command(cmd, check_rc=check)
 
-        # self.module.log(msg="  rc : '{}'".format(rc))
-        # self.module.log(msg="  out: '{}'".format(out))
-        # self.module.log(msg="  err: '{}'".format(err))
+        if rc != 0:
+            self.module.log(msg="  rc : '{}'".format(rc))
+            self.module.log(msg="  out: '{}'".format(out))
+            self.module.log(msg="  err: '{}'".format(err))
 
         return (rc, out, err)
 
