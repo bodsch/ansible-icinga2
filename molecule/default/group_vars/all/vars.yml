@@ -29,6 +29,27 @@ icinga2_master_features_enabled:
   - api
   - ido-mysql
   - mainlog
+  - influxdb2
+
+icinga2_features:
+  influxdb2:
+    active: true
+    host: localhost
+    port: 8086
+    organization: monitoring
+    bucket: icinga2
+    auth_token: rrDAHWjVEKScc5DzaFVN4vzg9HtZkcWvt433Yfdqju
+    flush_threshold: 1024
+    flush_interval: 10s
+    host_template:
+      measurement: "$host.check_command$"
+      tags:
+        hostname: "$host.name$"
+    service_template:
+      measurement: "$service.check_command$"
+      tags:
+        hostname: "$host.name$"
+        service: "$service.name$"
 
 icinga2_host_object:
   localhost:
