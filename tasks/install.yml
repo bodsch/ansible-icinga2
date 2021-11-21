@@ -18,7 +18,7 @@
     - name: install openrc init script
       template:
         src: etc/init/openrc/icinga2.j2
-        dest: etc/init.d/icinga2
+        dest: /etc/init.d/icinga2
         mode: 0755
       when:
         - ansible_service_mgr | lower == "openrc"
