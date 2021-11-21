@@ -1,9 +1,5 @@
 ---
 
-#- debug:
-#    msg:
-#      - "{{ ansible_python_interpreter }}"
-
 - include_tasks: check_installed.yml
 
 - name: update package cache
@@ -19,63 +15,13 @@
         name: icinga2
         repository: "{{ icinga2_repo_archlinux }}"
 
-    # - name: install icinga2 package via aur
-    #   become: true
-    #   become_user: aur_builder
-    #   aur:
-    #     state: present
-    #     name: icinga2
-    #
-    # - name: download icinga2 package
-    #   become: true
-    #   become_user: aur_builder
-    #   shell: |
-    #     cd ~
-    #     git clone {{ icinga2_repo_archlinux }} icinga2
-    #     cd icinga2/
-    #     git pull
-    #
-    # - name: get package version
-    #   become: true
-    #   become_user: aur_builder
-    #   shell: |
-    #     cd ~/icinga2/
-    #     grep pkgver= PKGBUILD | awk -F '=' '{printf $2}'
-    #   register: __packaged_icinga2_version
-    #
-    # - name: set package icinga2 version
-    #   set_fact:
-    #     packaged_icinga2_version: "{{ __packaged_icinga2_version.stdout }}"
-    #     cacheable: true
-    #   when:
-    #     - __packaged_icinga2_version is defined
-    #     - __packaged_icinga2_version.rc is defined
-    #     - __packaged_icinga2_version.rc == 0
-    #
-    # - name: define update state
-    #   set_fact:
-    #     icinga2_needs_update: "{{ packaged_icinga2_version is version(icinga2_installed_version ,'>') }}"
-    #   when:
-    #     - icinga2_installed_version is defined
-    #     - icinga2_installed_version | length > 0
-    #
-    # - name: compare versions
-    #   debug:
-    #     msg: current installed version {{ icinga2_installed_version }} - we need an update to version {{ packaged_icinga2_version }}
-    #   when:
-    #     - icinga2_installed_version is defined
-    #     - icinga2_installed_version | length > 0
-    #     - packaged_icinga2_version is defined
-    #
-    # - name: build icinga2 package
-    #   become: true
-    #   become_user: aur_builder
-    #   shell: |
-    #     cd ~/icinga2/
-    #     makepkg --syncdeps --install --noprogressbar --noconfirm
-    #   when:
-    #     - icinga2_needs_update
-    #     # - packaged_icinga2_version is version(icinga2_installed_version ,'>')
+    - name: install openrc init script
+      template:
+        src: etc/init/openrc/icinga2.j2
+        dest: etc/init.d/icinga2
+        mode: 0755
+      when:
+        - ansible_service_mgr | lower == "openrc"
   when:
     - icinga2_use_external_repo | bool
     - ansible_os_family | lower == 'archlinux'

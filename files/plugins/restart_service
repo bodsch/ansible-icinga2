@@ -4,20 +4,30 @@ LOGFILE="/var/log/icinga2/restart_service.log"
 
 show_help() {
   echo
-  echo "$0 --state STATE --state-type TYPE --attempt ATTEMPT --service SERVICE [--host-name HOSTNAME --host-state HSTATE --host-state-type HTYPE ]"
+  echo "$0 --state STATE --state-type TYPE --attempt ATTEMPT --restart-service SERVICE [--host-name HOSTNAME --host-state HSTATE --host-state-type HTYPE ]"
   echo
   echo "restart a service trought icinga2"
   echo
-  echo "  --state STATE           CRITICAL or WARNING"
-  echo "  --state-type TYPE       SOFT or HARD"
-  echo "  --attempt ATTEMPT       counter for failed checks"
-  echo "  --service SERVICE       name of the service to be restarted"
+  echo "  --state STATE              CRITICAL or WARNING"
+  echo "  --state-type TYPE          SOFT or HARD"
+  echo "  --attempt ATTEMPT          counter for failed checks"
+  echo "  --restart-service SERVICE  name of the service to be restarted"
   echo ""
-  echo "Example: --state CRITICAL --state-type HARD --attempt 4 --service nginx"
+  echo "Example: --state CRITICAL --state-type HARD --attempt 4 --restart-service nginx"
   echo
-  echo "Example: --state WARNING --state-type SOFT --attempt 4 --service nginx"
+  echo "Example: --state WARNING --state-type SOFT --attempt 4 --restart-service nginx"
   echo
 }
+
+finish() {
+  rv=$?
+  echo -e "\033[38;5;202m\033[1mexit with signal '${rv}'\033[0m"
+  sleep 4s
+  cleanRedirectIO
+  exit $rv
+}
+
+trap finish SIGINT SIGTERM INT TERM EXIT
 
 redirectIO() {
   # IO redirection for logging task management tool.
@@ -31,6 +41,35 @@ cleanRedirectIO() {
   # Clean up IO redirection
   exec 1>&6 6>&-      # Restore stdout and close file descriptor #6.
 }
+
+restart_service() {
+
+  SYSTEMD=$(test -e /run/systemd/system)
+  SERVICE=$(command -v service)
+  OPENRC=$(command -v openrc)
+
+
+  if [ -n "${SERVICE}" ]
+  then
+    sudo $(command -v service) ${restart_service} restart
+    [[ $? -ne 0 ]] && logger -t restart_service "fail to restart service ${restart_service} (handler: service)"
+
+  elif [ -n "${OPENRC}" ]
+  then
+    if [ -e /etc/init.d/${restart_service} ]
+    then
+      sudo /etc/init.d/${restart_service} restart
+      [[ $? -ne 0 ]] && logger -t restart_service "fail to restart service ${restart_service} (handler: openrc)"
+    fi
+  elif [ -n "${SYSTEMD}" ]
+  then
+    sudo $(command -v systemctl) restart ${restart_service}
+    [[ $? -ne 0 ]] && logger -t restart_service "fail to restart service ${restart_service} (handler: systemctl)"
+  else
+    logger -t restart_service "unkown system handler (no systemd or /etc/init.d/${restart_service})"
+  fi
+}
+
 
 # process args
 while [ ! -z "$1" ]; do
@@ -70,13 +109,15 @@ else
 
   if ( [ "${service_state}" = "CRITICAL" ] && [ "${service_state_type}" = "HARD" ] )
   then
-    sudo $(command -v service) ${restart_service} restart
-    [[ $? -ne 0 ]] && logger -t restart_service "fail to restart service ${restart_service}"
+    restart_service
+    # sudo $(command -v service) ${restart_service} restart
+    # [[ $? -ne 0 ]] && logger -t restart_service "fail to restart service ${restart_service}"
   # only restart on the third attempt of a critical event
   elif ( [ "${service_state}" = "CRITICAL" ] && [ "${service_state_type}" = "SOFT" ] && [ ${service_attempt} -eq 2 ] )
   then
-    sudo $(command -v service) ${restart_service} restart
-    [[ $? -ne 0 ]] && logger -t restart_service "fail to restart service ${restart_service}"
+    restart_service
+    # sudo $(command -v service) ${restart_service} restart
+    # [[ $? -ne 0 ]] && logger -t restart_service "fail to restart service ${restart_service}"
   fi
 
   cleanRedirectIO
