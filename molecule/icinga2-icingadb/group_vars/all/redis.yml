@@ -1,0 +1,5 @@
+---
+
+redis_network_port: 6379
+
+...

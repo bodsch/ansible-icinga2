@@ -20,5 +20,6 @@
 - include_tasks: features/influxdb2.yml
 - include_tasks: features/gelf.yml
 - include_tasks: features/ido.yml
+- include_tasks: features/icingadb.yml
 
 ...

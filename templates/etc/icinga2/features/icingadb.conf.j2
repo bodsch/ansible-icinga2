@@ -1,0 +1,15 @@
+// {{ ansible_managed }}
+{# https://icinga.com/docs/icinga-2/latest/doc/09-object-types/#icingadb #}
+
+{% set _attr = ['host','port','path','password','enable_tls',
+  'cert_path','key_path','ca_path','crl_path',
+  'cipher_list', 'tls_protocolmin',
+  'insecure_noverify', 'connect_timeout' ] %}
+
+{% if icinga2_features.icingadb is defined and icinga2_features.icingadb.host is defined %}
+object IcingaDB "icingadb" {
+  host = "{{ icinga2_features.icingadb.host }}"
+  port = {{ icinga2_features.icingadb.port }}
+  password = "{{ icinga2_features.icingadb.password }}"
+}
+{% endif %}
