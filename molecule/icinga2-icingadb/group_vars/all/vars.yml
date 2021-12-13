@@ -1,0 +1,55 @@
+---
+
+icinga2_mode: master
+
+icinga2_masters:
+  instance:
+
+icinga2_sudo_cmd:
+  - /sbin/service foo restart
+
+icinga2_api:
+  user:
+    root:
+      password: foo
+      permissions: '*'
+
+icinga2_ido:
+  username: icinga2_ido
+  password: icinga2
+  host: database
+  # socket: /var/lib/mysql/mysql.sock
+  cleanup:
+    acknowledgements_age: 48h
+    hostchecks_age: 48h
+    servicechecks_age: 48h
+
+icinga2_master_features_enabled:
+  - checker
+  - api
+  - ido-mysql
+  - mainlog
+  - icingadb
+
+icinga2_features:
+  icingadb:
+    active: true
+    host: icingadb
+    port: 6379
+
+icinga2_host_object:
+  localhost:
+    import: generic-host
+    address: '{{ ansible_default_ipv4.address }}'
+    display_name: "{{ ansible_fqdn }}"
+    vars: |
+      os = "Linux"
+      dist = "{{ ansible_distribution }}"
+      dist_ver = "{{ ansible_distribution_version }}"
+      disks = {
+        "disk /" = {
+          disk_partitions = "/"
+        }
+      }
+
+icinga2_salt: tmpams80tqx

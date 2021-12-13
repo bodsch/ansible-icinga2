@@ -1,0 +1,27 @@
+---
+
+icingadb_database:
+  host: database
+  port: 3306
+  database: icingadb
+  user: icingadb
+  password: icingadb
+
+icingadb_redis:
+  address: 127.0.0.1:6379
+
+icingadb_logging:
+  level: debug
+  interval: "20s"
+  options:
+    database: debug
+    redis: debug
+    heartbeat: fatal
+    high-availability: fatal
+    config-sync: fatal
+    history-sync: fatal
+    runtime-updates: fatal
+    overdue-sync: fatal
+    dump-signals: fatal
+
+...
