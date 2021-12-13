@@ -6,6 +6,7 @@ mariadb_root_password_update: true
 
 mariadb_databases:
   - name: icinga2_ido
+  - name: icingadb
 
 mariadb_users:
   - name: icinga2_ido
@@ -13,6 +14,12 @@ mariadb_users:
     password: icinga2
     priv: "icinga2_ido.*:ALL"
     encrypted: false
+  - name: icingadb
+    host: "%"
+    password: icingadb
+    priv: "icingadb.*:ALL"
+    encrypted: false
+
 
 mariadb_config_mysqld:
   bind-address: 0.0.0.0

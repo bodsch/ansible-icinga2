@@ -21,12 +21,12 @@ platforms:
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
     docker_networks:
-      - name: icinga_default
+      - name: icinga_icingadb
         ipam_config:
           - subnet: "10.11.0.0/24"
-            gateway: "10.11.0.254"
+            gateway: "10.11.0.1"
     networks:
-      - name: icinga_default
+      - name: icinga_icingadb
         ipv4_address: "10.11.0.10"
 
   - name: icingadb
@@ -37,13 +37,8 @@ platforms:
     pre_build_image: true
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
-    docker_networks:
-      - name: icinga_default
-        ipam_config:
-          - subnet: "10.11.0.0/24"
-            gateway: "10.11.0.254"
     networks:
-      - name: icinga_default
+      - name: icinga_icingadb
         ipv4_address: "10.11.0.11"
 
   - name: instance
@@ -55,7 +50,7 @@ platforms:
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
     networks:
-      - name: icinga_default
+      - name: icinga_icingadb
         ipv4_address: "10.11.0.20"
 
 provisioner:

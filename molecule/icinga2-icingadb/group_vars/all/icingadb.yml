@@ -7,7 +7,7 @@ icingadb_database:
   user: icingadb
   password: icingadb
 
-icingadb_defaults_redis:
+icingadb_redis:
   address: 127.0.0.1:6379
 
 icingadb_logging:

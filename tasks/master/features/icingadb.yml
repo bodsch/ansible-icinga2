@@ -1,7 +1,7 @@
 ---
 
 - block:
-    - name: enable api feature
+    - name: enable icingadb feature
       icinga2_feature:
         name: icingadb
         state: present
@@ -12,13 +12,16 @@
         - icinga2
         - features
 
-    # - name: configure api feature
-    #   template:
-    #     src: etc/icinga2/features/icingadb.conf.j2
-    #     dest: /etc/icinga2/features-available/icingadb.conf
-    #     owner: "{{ icinga2_user }}"
-    #     group: "{{ icinga2_group }}"
-    #     mode: 0660
+    - name: configure icingadb feature
+      template:
+        src: etc/icinga2/features/icingadb.conf.j2
+        dest: /etc/icinga2/features-available/icingadb.conf
+        owner: "{{ icinga2_user }}"
+        group: "{{ icinga2_group }}"
+        mode: 0660
+      notify:
+        - check configuration
+        - restart icinga2
   when:
     - icinga2_master_features_enabled | join('|') | regex_search('icingadb')
 

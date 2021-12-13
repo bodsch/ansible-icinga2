@@ -15,11 +15,11 @@
 
 - include_tasks: features/api.yml
 - include_tasks: features/notification.yml
+- include_tasks: features/ido.yml
+- include_tasks: features/icingadb.yml
 - include_tasks: features/graphite.yml
 - include_tasks: features/influxdb.yml
 - include_tasks: features/influxdb2.yml
 - include_tasks: features/gelf.yml
-- include_tasks: features/ido.yml
-- include_tasks: features/icingadb.yml
 
 ...

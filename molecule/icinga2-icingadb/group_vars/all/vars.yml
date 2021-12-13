@@ -34,9 +34,8 @@ icinga2_master_features_enabled:
 icinga2_features:
   icingadb:
     active: true
-    host: localhost
-    port: 8086
-
+    host: icingadb
+    port: 6379
 
 icinga2_host_object:
   localhost:

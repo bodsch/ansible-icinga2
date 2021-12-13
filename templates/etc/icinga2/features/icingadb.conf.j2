@@ -10,6 +10,8 @@
 object IcingaDB "icingadb" {
   host = "{{ icinga2_features.icingadb.host }}"
   port = {{ icinga2_features.icingadb.port }}
+{% if icinga2_features.icingadb.password is defined %}
   password = "{{ icinga2_features.icingadb.password }}"
+{% endif %}
 }
 {% endif %}
