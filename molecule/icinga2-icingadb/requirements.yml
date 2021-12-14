@@ -22,6 +22,7 @@
 - name: icingadb
   src: https://github.com/bodsch/ansible-icingadb.git
   scm: git
+  version: 0.10.0
 
 - name: redis
   src: https://github.com/bodsch/ansible-redis.git
