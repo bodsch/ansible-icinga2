@@ -101,6 +101,7 @@
         login_password: "{{ icinga2_ido.password }}"
         state: import
         target: "{{ icinga2_ido.mysql.schema_file }}"
+        config_file: ""
       register: mysql_create_ido_schema
       changed_when: false
       check_mode: false

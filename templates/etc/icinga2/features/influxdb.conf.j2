@@ -2,8 +2,12 @@
 {# https://icinga.com/docs/icinga2/latest/doc/13-addons/#influxdb #}
 {# https://icinga.com/docs/icinga2/latest/doc/14-features/#influxdb-writer #}
 
-{% set _attr = ['host','port','database','flush_threshold','flush_interval',
-  'host_template','service_template','enable_send_thresholds','enable_send_metadata'] %}
+{% set _attr = ['host','port','database', 'username', 'password', 'basic_auth',
+  'flush_threshold','flush_interval',
+  'host_template','service_template',
+  'enable_send_thresholds','enable_send_metadata',
+  'enable_ha',
+  'ssl_enable', 'ssl_insecure_noverify', 'ssl_ca_cert', 'ssl_cert', 'ssl_key' ] %}
 
 {% if icinga2_features.influxdb is defined and icinga2_features.influxdb.host is defined %}
 object InfluxdbWriter "influxdb" {

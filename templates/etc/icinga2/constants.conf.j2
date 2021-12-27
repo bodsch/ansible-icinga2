@@ -5,6 +5,9 @@ const PluginDir          = "{{ monitoring_plugins_directory }}"
 const ManubulonPluginDir = "{{ monitoring_plugins_directory }}"
 const PluginContribDir   = "{{ monitoring_plugins_directory }}"
 const LogDir             = "{{ icinga2_filelogger.directory | default('/var/log/icinga2') }}"
+{% if icinga2_overwrite_nodename is defined and icinga2_overwrite_nodename %}
+const NodeName           = "{{ icinga2_certificate_cn }}"
+{% endif %}
 {% if icinga2_installed_version is version( "2.11.2", "<" ) %}
 // const NodeName           = "{{ icinga2_certificate_cn }}"
 {% endif %}
