@@ -14,11 +14,11 @@ object InfluxdbWriter "influxdb" {
 {% if icinga2_features.influxdb is defined and icinga2_features.influxdb | count != 0 %}
 {% for k, v in icinga2_features.influxdb.items() %}
 {% if k in _attr %}
-{% if k == "host" or k == "database" %}
+{% if k in [ "host", "database", "username", "password"] %}
   {{ k }} = "{{ v }}"
 {% elif v is sameas true or v is sameas false %}
   {{ k }} = {{ v | bool | ternary('true', 'false') }}
-{% elif k == "host_template" or k == "service_template" %}
+{% elif k in [ "host_template", "service_template"] %}
   {{ k }} = {
 {% for k2, v2 in v.items() | sort %}
 {% if k2 == "tags" %}
