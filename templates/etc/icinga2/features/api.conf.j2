@@ -12,7 +12,9 @@ object ApiListener "api" {
 {% if k == 'ticket_salt' and icinga2_mode == 'master' and icinga2_primary_master == ansible_fqdn %}
   ticket_salt     = {{ icinga2_api.ticket_salt }}
 {% else %}
-{% if v is string %}
+{% if k in [ "bind_host", "bind_port"] %}
+  {{ k }} = "{{ v }}"
+{% elif v is string %}
   {{ k }} = {{ v }}
 {% elif v is boolean %}
   {{ k }} = {{ v | bool | ternary('true', 'false') }}
