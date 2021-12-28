@@ -1,0 +1,39 @@
+---
+
+- name: information
+  hosts: all
+  gather_facts: true
+
+  pre_tasks:
+    - debug:
+        msg:
+          - "os family            : {{ ansible_distribution }} ({{ ansible_os_family }})"
+          - "distribution version : {{ ansible_distribution_major_version }}"
+          - "ansible version      : {{ ansible_version.full }}"
+          - "python version       : {{ ansible_python.version.major }}.{{ ansible_python.version.minor }}"
+
+- name: converge
+  hosts: instance
+  any_errors_fatal: false
+
+  environment:
+    NETRC: ''
+
+  roles:
+    - role: ansible-icinga2
+
+  # tasks:
+  #   # - include: ../../tasks/master/features.yml
+  #   #   tags:
+  #   #     - features
+  #   - include: ../../tasks/downtime.yml
+  #     vars:
+  #       icinga2_master: '{{ ansible_default_ipv4.address }}'
+  #       icinga2_api.user: root
+  #       icinga2_api.password: foo
+  #       icinga2_downtime_comment: Downtime for deployment
+  #       icinga2_downtime_system_name: localhost
+  #       icinga2_downtime_duration: 120
+  #
+  #     tags:
+  #       - downtime_schedule

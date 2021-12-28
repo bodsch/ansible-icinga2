@@ -1,0 +1,75 @@
+---
+
+icinga2_mode: master
+
+icinga2_masters:
+  instance:
+
+icinga2_sudo_cmd:
+  - /sbin/service foo restart
+
+icinga2_api:
+  user:
+    root:
+      password: foo
+      permissions: '*'
+
+icinga2_ido:
+  username: icinga2_ido
+  password: icinga2
+  host: database
+  # socket: /var/lib/mysql/mysql.sock
+  cleanup:
+    acknowledgements_age: 48h
+    hostchecks_age: 48h
+    servicechecks_age: 48h
+
+icinga2_master_features_enabled:
+  - checker
+  - api
+  - ido-mysql
+  - mainlog
+  - influxdb
+
+icinga2_features:
+  influxdb:
+    host: influxdb
+    port: 8086
+    database: icinga2
+    username: "icinga2"
+    password: "icinga2"
+    flush_threshold: 1024
+    flush_interval: 10s
+    ssl_enable: false
+
+    basic_auth:
+      username: "icinga"
+      password: "icinga"
+
+    host_template:
+      measurement: "$host.check_command$"
+      tags:
+        hostname: "$host.name$"
+
+    service_template:
+      measurement: "$service.check_command$"
+      tags:
+        hostname: "$host.name$"
+        service: "$service.name$"
+
+icinga2_host_object:
+  localhost:
+    import: generic-host
+    address: '{{ ansible_default_ipv4.address }}'
+    display_name: "{{ ansible_fqdn }}"
+    vars: |
+      os = "Linux"
+      dist = "{{ ansible_distribution }}"
+      dist_ver = "{{ ansible_distribution_version }}"
+      disks = {
+        "disk /" = {
+          disk_partitions = "/"
+        }
+      }
+
+icinga2_salt: tmpams80tqx

@@ -1,0 +1,22 @@
+---
+
+influxdb_admin_username: admin
+influxdb_admin_password: admin
+
+influxdb_config_retention:
+  enabled: true
+  check-interval: "30m0s"
+
+influxdb_databases:
+  - name: icinga2
+    state: present
+
+influxdb_users:
+  - name: icinga2
+    admin: no
+    password: icinga2
+    grants:
+      - database: 'icinga2'
+        privilege: 'WRITE'
+
+...
