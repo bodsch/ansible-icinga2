@@ -133,3 +133,10 @@ icinga2_filelogger_default:
   mainlog:
     severity: warning
     logfile: icinga2.log
+
+icinga2_defaults_api:
+  user:
+    validate:
+      password: validate
+      permissions:
+        - "status/query"

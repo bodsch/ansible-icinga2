@@ -127,14 +127,21 @@
       register: _restart_icinga2_master
 
     - block:
+        # WIP
+        # url_username are hardcoded  ..
         - name: get state of primary master '{{ icinga2_primary_master }}'
           uri:
             url: "https://{{ icinga2_primary_master }}:{{ icinga2_master_port | default(5665) }}/v1/status/IcingaApplication"
             url_username: root
-            url_password: icinga2_api.user.root.password
+            url_password: "{{ icinga2_api.user['root'].password }}"
             validate_certs: false
             method: GET
             return_content: true
+            status_code:
+              - 200 # OK
+              - 301
+              - 302
+              - 401 # Unauthorized
           register: icinga2_api_test
           until: icinga2_api_test is succeeded
           retries: 5
