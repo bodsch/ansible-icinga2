@@ -2,38 +2,41 @@
 {# https://icinga.com/docs/icinga2/latest/doc/13-addons/#influxdb #}
 {# https://icinga.com/docs/icinga2/latest/doc/14-features/#influxdb-writer #}
 
-{% set _attr = ['host','port','database', 'username', 'password', 'basic_auth',
-  'flush_threshold','flush_interval',
-  'host_template','service_template',
-  'enable_send_thresholds','enable_send_metadata',
-  'enable_ha',
-  'ssl_enable', 'ssl_insecure_noverify', 'ssl_ca_cert', 'ssl_cert', 'ssl_key' ] %}
+{%- set _attr = [
+    'host','port','database', 'username', 'password', 'basic_auth',
+    'flush_threshold','flush_interval',
+    'host_template','service_template',
+    'enable_send_thresholds','enable_send_metadata',
+    'enable_ha',
+    'ssl_enable', 'ssl_insecure_noverify', 'ssl_ca_cert', 'ssl_cert', 'ssl_key'
+  ]
+-%}
 
 {% if icinga2_features.influxdb is defined and icinga2_features.influxdb.host is defined %}
 object InfluxdbWriter "influxdb" {
 {% if icinga2_features.influxdb is defined and icinga2_features.influxdb | count != 0 %}
-{% for k, v in icinga2_features.influxdb.items() %}
-{% if k in _attr %}
-{% if k in [ "host", "database", "username", "password"] %}
-  {{ k }} = "{{ v }}"
-{% elif v is sameas true or v is sameas false %}
-  {{ k }} = {{ v | bool | ternary('true', 'false') }}
-{% elif k in [ "host_template", "service_template"] %}
-  {{ k }} = {
-{% for k2, v2 in v.items() | sort %}
-{% if k2 == "tags" %}
+{% for key, value in icinga2_features.influxdb.items() %}
+{% if key in _attr %}
+{% if key in [ "host", "database", "username", "password"] %}
+  {{ "%-10s" | format(key,) }} = "{{ value }}"
+{% elif value | type == "bool" %}
+  {{ key }} = {{ value | bool | ternary('true', 'false') }}
+{% elif key in [ "host_template", "service_template", "basic_auth"] and value | type == "dict" %}
+  {{ key }} = {
+{% for dict_key, dict_value in value.items() | sort %}
+{% if dict_key == "tags" %}
     tags = {
-{% for k3, v3 in v2.items() | sort %}
-      {{ k3  }} = "{{ v3 }}"
+{% for tag_key, tag_value in dict_value.items() | sort %}
+      {{ tag_key  }} = "{{ tag_value }}"
 {% endfor %}
     }
 {% else %}
-    {{ k2  }} = "{{ v2 }}"
+    {{ dict_key  }} = "{{ dict_value }}"
 {% endif %}
 {% endfor %}
   }
 {% else %}
-  {{ k }} = {{ v }}
+  {{ "%-10s" | format(key,) }} = {{ value }}
 {% endif %}
 {% endif %}
 {% endfor %}

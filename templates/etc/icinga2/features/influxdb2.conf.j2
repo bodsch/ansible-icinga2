@@ -4,36 +4,40 @@
 {# https://github.com/Icinga/icinga2/blob/master/etc/icinga2/features-available/influxdb2.conf #}
 
 {%- set _attr = [
-    'host','port','organization', 'bucket', 'auth_token', 'flush_threshold','flush_interval',
-    'host_template','service_template','enable_send_thresholds','enable_send_metadata'
+    'host','port','organization', 'bucket', 'auth_token',
+    'flush_threshold','flush_interval',
+    'host_template','service_template',
+    'enable_ha','enable_send_thresholds','enable_send_metadata',
+    'ssl_enable', 'ssl_insecure_noverify', 'ssl_ca_cert', 'ssl_cert', 'ssl_key'
   ]
 -%}
 
 {% if icinga2_features.influxdb2 is defined and icinga2_features.influxdb2.host is defined %}
 object Influxdb2Writer "influxdb2" {
 {% if icinga2_features.influxdb2 is defined and icinga2_features.influxdb2 | count != 0 %}
-{% for k, v in icinga2_features.influxdb2.items() %}
-{% if k in _attr %}
-{% if k in ["host", "organization", "bucket", "auth_token"] %}
-  {{ k }} = "{{ v }}"
-{% elif v is sameas true or v is sameas false %}
-  {{ k }} = {{ v | bool | ternary('true', 'false') }}
-{% elif k == "host_template" or k == "service_template" %}
-  {{ k }} = {
-{% for k2, v2 in v.items() | sort %}
-{% if k2 == "tags" %}
+{% for key, value in icinga2_features.influxdb2.items() %}
+{# {{ key }} = {{ key | type }} / {{ value }} = {{ value | type }} #}
+{% if key in _attr %}
+{% if key in ["host", "organization", "bucket", "auth_token"] %}
+  {{ key }} = "{{ value }}"
+{% elif value | type == "bool" %}
+  {{ key }} = {{ value | bool | ternary('true', 'false') }}
+{% elif key in ["host_template", "service_template"] and value | type == "dict" %}
+  {{ key }} = {
+{% for dict_key, dict_value in value.items() | sort %}
+{% if dict_key == "tags" %}
     tags = {
-{% for k3, v3 in v2.items() | sort %}
-      {{ k3  }} = "{{ v3 }}"
+{% for tag_key, tag_value in dict_value.items() | sort %}
+      {{ tag_key  }} = "{{ tag_value }}"
 {% endfor %}
     }
 {% else %}
-    {{ k2  }} = "{{ v2 }}"
+    {{ dict_key  }} = "{{ dict_value }}"
 {% endif %}
 {% endfor %}
   }
 {% else %}
-  {{ k }} = {{ v }}
+  {{ key }} = {{ value }}
 {% endif %}
 {% endif %}
 {% endfor %}

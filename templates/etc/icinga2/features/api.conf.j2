@@ -1,27 +1,35 @@
 // {{ ansible_managed }}
+{# full documentation: https://icinga.com/docs/icinga2/latest/doc/09-object-types/#apilistener #}
 
-// full documentation: https://icinga.com/docs/icinga2/latest/doc/09-object-types/#apilistener
-{% set _api_attr = ['ticket_salt','crl_path','bind_host','bind_port','accept_config','accept_commands',
-  'max_anonymous_clients','cipher_list','tls_protocolmin','tls_handshake_timeout',
-  'access_control_allow_origin','environment'] %}
+{%- set _attr = [
+  'ticket_salt',
+  'crl_path',
+  'bind_host','bind_port',
+  'accept_config','accept_commands',
+  'max_anonymous_clients','cipher_list','tls_protocolmin',
+  'connect_timeout',
+  'access_control_allow_origin',
+  'environment'
+  ]
+-%}
 
 object ApiListener "api" {
 
-{% for k, v in icinga2_api.items() | sort %}
-{% if k in _api_attr %}
-{% if k == 'ticket_salt' and icinga2_mode == 'master' and icinga2_primary_master == ansible_fqdn %}
+{% for key, value in icinga2_api.items() | sort %}
+{% if key in _attr %}
+{% if key == 'ticket_salt' and icinga2_mode == 'master' and icinga2_primary_master == ansible_fqdn %}
   ticket_salt     = {{ icinga2_api.ticket_salt }}
 {% else %}
-{% if k in [ "bind_host", "bind_port"] %}
-  {{ k }} = "{{ v }}"
-{% elif v is string %}
-  {{ k }} = {{ v }}
-{% elif v is boolean %}
-  {{ k }} = {{ v | bool | ternary('true', 'false') }}
-{% elif v is iterable %}
-  {{ k }} = {{ v | join(':') }}
+{% if key in [ "bind_host", "bind_port"] %}
+  {{ "%-18s" | format(key,) }} = "{{ value }}"
+{% elif value is string %}
+  {{ "%-18s" | format(key,) }} = {{ value }}
+{% elif value | type == "bool" %}
+  {{ "%-18s" | format(key,) }} = {{ value | bool | ternary('true', 'false') }}
+{% elif value is iterable %}
+  {{ "%-18s" | format(key,) }} = {{ value | join(':') }}
 {% else %}
-  {{ k }} = {{ v }}
+  {{ "%-18s" | format(key,) }} = {{ value }}
 {% endif %}
 {% endif %}
 {% endif %}
