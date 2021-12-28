@@ -126,13 +126,30 @@
         state: restarted
       register: _restart_icinga2_master
 
-    - name: wait for primary master to startup
-      wait_for:
-        host: "{{ icinga2_primary_master }}"
-        port: "{{ icinga2_master_port | default(5665) }}"
-        delay: 5
-        connect_timeout: 3
+    - block:
+        - name: get state of primary master '{{ icinga2_primary_master }}'
+          uri:
+            url: "https://{{ icinga2_primary_master }}:{{ icinga2_master_port | default(5665) }}/v1/status/IcingaApplication"
+            url_username: root
+            url_password: icinga2_api.user.root.password
+            validate_certs: false
+            method: GET
+            return_content: true
+          register: icinga2_api_test
+          until: icinga2_api_test is succeeded
+          retries: 5
+          delay: 2
 
+        # TODO wenn icinga2_primary_master nicht per DNS auflösbar ist, gibt es hier einen timeout
+        - name: wait for primary master ({{ icinga2_primary_master }}:{{ icinga2_master_port | default(5665) }}) to startup
+          wait_for:
+            host: "{{ icinga2_primary_master }}"
+            port: "{{ icinga2_master_port | default(5665) }}"
+            delay: 5
+            connect_timeout: 3
+      when:
+        - icinga2_validate_restart is defined
+        - icinga2_validate_restart
   when:
     - icinga2_primary_master is defined
     - icinga2_primary_master == ansible_fqdn
