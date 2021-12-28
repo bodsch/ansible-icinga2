@@ -75,7 +75,7 @@ def test_directories(host, directories):
     "/etc/icinga2/constants.conf",
     "/etc/icinga2/zones.conf",
     "/etc/icinga2/users.conf",
-    "/etc/icinga2/features-enabled/icingadb.conf",
+    "/etc/icinga2/features-enabled/influxdb.conf",
     "/usr/share/icinga2/include/command-icinga.conf",
     "/usr/share/icinga2/include/command-plugins.conf",
     "/usr/share/icinga2/include/command-plugins-windows.conf",

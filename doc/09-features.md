@@ -44,18 +44,47 @@ icinga2_features:
 
 ## influxdb
 
+[upstream documentation](https://icinga.com/docs/icinga-2/latest/doc/09-object-types/#influxdbwriter)
+
+| Variable                | Type        |          | Description  |
+| :---------              | :---        |          | :----------- |
+| `host`                  | String      | Required | InfluxDB host address. Defaults to 127.0.0.1.                                                |
+| `port`                  | Number      | Required | InfluxDB HTTP port. Defaults to 8086.                                                        |
+| `database`              | String      | Required | InfluxDB database name. Defaults to icinga2.                                                 |
+| `username`              | String      | Optional | InfluxDB user name. Defaults to none.                                                        |
+| `password`              | String      | Optional | InfluxDB user password. Defaults to none.                                                    |
+| `basic_auth`            | Dictionary  | Optional | Username and password for HTTP basic authentication.                                         |
+| `ssl_enable`            | Boolean     | Optional | Whether to use a TLS stream. Defaults to false.                                              |
+| `ssl_insecure_noverify` | Boolean     | Optional | Disable TLS peer verification.                                                               |
+| `ssl_ca_cert`           | String      | Optional | Path to CA certificate to validate the remote host.                                          |
+| `ssl_cert`              | String      | Optional | Path to host certificate to present to the remote host for mutual verification.              |
+| `ssl_key`               | String      | Optional | Path to host key to accompany the ssl_cert.                                                  |
+| `host_template`         | Dictionary  | Required | Host template to define the InfluxDB line protocol.                                          |
+| `service_template`      | Dictionary  | Required | Service template to define the influxDB line protocol.                                       |
+| `enable_send_thresholds`| Boolean     | Optional | Whether to send warn, crit, min & max tagged data.                                           |
+| `enable_send_metadata`  | Boolean     | Optional | Whether to send check metadata e.g. states, execution time, latency etc.                     |
+| `flush_interval` 	      | Duration    | Optional | How long to buffer data points before transferring to InfluxDB. Defaults to 10s.             |
+| `flush_threshold`       | Number      | Optional | How many data points to buffer before forcing a transfer to InfluxDB. Defaults to 1024.      |
+| `enable_ha`             | Boolean     | Optional | Enable the high availability functionality. Only valid in a cluster setup. Defaults to false.|
+
+
 ```yaml
 icinga2_master_features_enabled:
   - influxdb
 
 icinga2_features:
   influxdb:
-    host: localhost
+    host: influxdb
     port: 8086
-    enable_ha: true
     database: icinga2
+    username: "icinga2"
+    password: "icinga2"
     flush_threshold: 1024
     flush_interval: 10s
+    ssl_enable: false
+    basic_auth:
+      username: "icinga"
+      password: "icinga"
     host_template:
       measurement: "$host.check_command$"
       tags:
