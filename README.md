@@ -21,11 +21,15 @@ Ansible role to setup Icinga2 master or satellite.
 
 Tested on
 
-* Debian 9 / 10
-* Ubuntu 18.04 / 18.10 / 19.10
-* CentOS 7 / 8
-* Oracle Linux 8
-* Arch Linux
+* ArchLinux
+* Debian based
+    - Debian 9 / 10 / 11
+    - Ubuntu 18.04 / 20.04
+* RedHat based
+    - CentOS 8 (**not longer supported**)
+    - Alma Linux 8
+    - Rocky Linux 8
+    - OracleLinux 8
 
 ## Contribution
 

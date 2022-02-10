@@ -17,7 +17,7 @@
 - name: mariadb
   src: https://github.com/bodsch/ansible-mariadb.git
   scm: git
-  version: 2.2.8
+  version: 2.2.9
 
 - name: influxdb
   src: https://github.com/mkayontour/ansible-influxdb.git

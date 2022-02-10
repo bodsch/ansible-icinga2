@@ -33,7 +33,7 @@ jobs:
           # VALIDATE_MARKDOWN: true
           VALIDATE_YAML: true
 
-  arch_standard:
+  arch:
     name: "${{ matrix.image }} / python: ${{ matrix.python-version }}, ansible: ${{ matrix.ansible-version }}"
     needs:
       - lint
@@ -46,7 +46,8 @@ jobs:
         python-version:
           - '3.9'
         ansible-version:
-          - '2.10'
+          - '4.1.0'
+          - '5.1.0'
 
     steps:
       - name: check out the codebase.
@@ -80,7 +81,7 @@ jobs:
           ANSIBLE_FORCE_COLOR: '1'
           DISTRIBUTION: ${{ matrix.image }}
 
-  deb_standard:
+  deb:
     name: "${{ matrix.image }} / python: ${{ matrix.python-version }}, ansible: ${{ matrix.ansible-version }}"
     needs:
       - lint
@@ -91,12 +92,14 @@ jobs:
         image:
           - debian:9
           - debian:10
+          - debian:11
           - ubuntu:18.04
           - ubuntu:20.04
         python-version:
           - '3.9'
         ansible-version:
-          - '2.10'
+          - '4.1.0'
+          - '5.1.0'
 
     steps:
       - name: check out the codebase.
@@ -130,7 +133,7 @@ jobs:
           ANSIBLE_FORCE_COLOR: '1'
           DISTRIBUTION: ${{ matrix.image }}
 
-  rpm_standard:
+  rpm:
     name: "${{ matrix.image }} / python: ${{ matrix.python-version }}, ansible: ${{ matrix.ansible-version }}"
     needs:
       - lint
@@ -139,14 +142,14 @@ jobs:
       fail-fast: false
       matrix:
         image:
-          - centos:7
-          - centos:8
-          - oraclelinux:7
           - oraclelinux:8
+          - rockylinux:8
+          - almalinux:8
         python-version:
           - '3.9'
         ansible-version:
-          - '2.10'
+          - '4.1.0'
+          - '5.1.0'
 
     steps:
       - name: check out the codebase.
@@ -183,9 +186,9 @@ jobs:
   publish:
     if: github.ref == 'refs/heads/master'
     needs:
-      - arch_standard
-      - deb_standard
-      - rpm_standard
+      - arch
+      - deb
+      - rpm
     runs-on: ubuntu-18.04
     steps:
       - name: galaxy
