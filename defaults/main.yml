@@ -69,9 +69,11 @@ icinga2_notification_user: {}
 
 icinga2_notification_usergroups: {}
 
-icinga2_notification_apply_rules: {}
-
 icinga2_notification_templates: {}
+
+icinga2_notification_objects: {}
+
+icinga2_notification_apply_rules: {}
 
 icinga2_checkcommands: {}
 

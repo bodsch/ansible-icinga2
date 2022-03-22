@@ -1,0 +1,65 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+// {{ ansible_managed }}
+
+{% if icinga2_notification_objects  is defined and
+      icinga2_notification_objects | count > 0 %}
+  {% for n, data in icinga2_notification_objects.items() %}
+    {% if data['description'] is defined %}
+// {{ data['description'] }}
+      {% set _v = data.pop('description') %}
+    {% endif %}
+object NotificationCommand "{{ n }}" {
+    {% for key, value in data.items() %}
+      {% if key in ["import"] %}
+  {{ key }} = "{{ value  }}"
+      {% elif key in ["command"] %}
+  {{ key }} = [  {{ value | join(' + ') }} ]
+      {% elif key == 'extra_parameters' %}
+  {{ value | indent(2) }}
+      {% else %}
+  {{ key }} = {{ value }}
+      {% endif %}
+    {% endfor %}
+}
+
+  {% endfor %}
+{% endif %}
+
+// -----------------------------------------------------------------------------------------------
+
+object NotificationCommand "slack-host-notification" {
+  import "plugin-notification-command"
+
+  command = [ "/etc/icinga2/notifications/slack/slack-host-notification.py" ]
+
+  timeout = 1m
+
+  arguments += {
+      "--address" = "$address$"
+      "--hostdisplayname" = "$host.display_name$"
+      "--hostname" = "$host.name$"
+      "--hostoutput" = "$host.output$"
+      "--hoststate" = "$host.state$"
+      "--notification-author" = "$notification.author$"
+      "--notification-comment" = "$notification.comment$"
+      "--notification-type" = "$notification.type$"
+  }
+
+/*
+  env = {
+    "NOTIFICATIONTYPE" = "$notification.type$"
+    "HOSTALIAS" = "$host.display_name$",
+    "HOSTADDRESS" = "$address$",
+    "HOSTNAME" = "$host.name$",
+    "HOSTSTATE" = "$host.state$",
+    "LONGDATETIME" = "$icinga.long_date_time$",
+    "HOSTOUTPUT" = "$host.output$",
+    "NOTIFICATIONAUTHORNAME" = "$notification.author$",
+    "NOTIFICATIONCOMMENT" = "$notification.comment$",
+    "HOSTDISPLAYNAME" = "$host.display_name$",
+    "USEREMAIL" = "$user.email$",
+  }
+*/
+}
+
+// -----------------------------------------------------------------------------------------------

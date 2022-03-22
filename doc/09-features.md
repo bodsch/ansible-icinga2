@@ -223,25 +223,129 @@ icinga2_ido:
 
 ## notification
 
+All relevant files for notifications are stored under `/etc/icinga2/notifications`.  
+3 definitions are needed:
+- template: `notification-templates.conf`
+- object: `notification-objects.conf`
+- apply rules: `notification-apply-rules.conf`
+
+The [vars/main.yml](`vars/main.yml`) already contains default definitions for notifications via email.
+
+**At the moment the corresponding notification scripts have to be rolled out separately!**
+
 ```yaml
-icinga2_notification:
-  host:
-    name: mail-icingaadmin
-    import: mail-host-notification
-    user_groups: host.vars.notification.mail.groups
-    users: host.vars.notification.mail.users
-    interval: 2h
-    vars.notification_logtosyslog: true
-    assign_where: host.vars.notification.mail
-  service:
-    name: mail-icingaadmin
-    import: mail-service-notification
-    user_groups: host.vars.notification.mail.groups
-    users: host.vars.notification.mail.users
-    interval: 2h
-    vars.notification_logtosyslog: true
-    assign_where: host.vars.notification.mail
+icinga2_notification_templates:
+  generic-service-notification:
+    description: |
+      generic service notification to mail for 24/7 alarms
+    command: "mail-service-notification"
+    interval: 15m
+    period: "24x7"
+    extra_parameters: |
+      vars += {
+        // notification_icingaweb2url = "https://www.example.com/icingaweb2"
+        // notification_from = "Icinga 2 Host Monitoring <icinga@example.com>"
+        notification_logtosyslog = false
+      }
+    states:
+      - Warning
+      - Critical
+      - Unknown
+    types:
+      - Problem
+      - Acknowledgement
+      - Recovery
+      - Custom
+      - FlappingStart
+      - FlappingEnd
+      - DowntimeStart
+      - DowntimeEnd
+      - DowntimeRemoved
 ```
+
+```yaml
+icinga2_notification_objects:
+  mail-host-notification:
+    description: |
+      default mail notification
+    command:
+      - ConfigDir
+      - '"/scripts/mail-host-notification.sh"'
+    extra_parameters: |
+      arguments += {
+        "-4" = "$notification_address$"
+        "-6" = "$notification_address6$"
+        "-b" = "$notification_author$"
+        "-c" = "$notification_comment$"
+        "-d" = {
+          required = true
+          value = "$notification_date$"
+        }
+
+      }
+
+      vars += {
+        notification_address = "$address$"
+        notification_address6 = "$address6$"
+        notification_author = "$notification.author$"
+        notification_comment = "$notification.comment$"
+        notification_type = "$notification.type$"
+        notification_date = "$icinga.long_date_time$"
+        notification_hostname = "$host.name$"
+        notification_hostdisplayname = "$host.display_name$"
+        notification_hostoutput = "$host.output$"
+        notification_hoststate = "$host.state$"
+        notification_useremail = "$user.email$"
+      }
+
+```
+
+```yaml
+icinga2_notification_apply_rules:
+  #
+  host-mail:
+    type: host
+    import: generic-host-notification
+    users: ""
+    user_groups: ""
+    interval: '2h'
+    extra_parameters: |
+      vars.notification_logtosyslog = true
+    assign_where: "host.vars.notification.mail"
+  #
+  service-mail:
+    type: service
+    import: generic-service-notification
+    users: ""
+    user_groups: ""
+    interval: '2h'
+    extra_parameters: |
+      vars.notification_logtosyslog = true
+
+    assign_where: "host.vars.notification.mail"
+  #  
+  host-slack:
+    type: host
+    import: slack-host-notification
+    # interval: 2h
+    users:
+      - icinga_admin
+    extra_parameters: |
+      vars.notification_logtosyslog = true
+    assign_where: host.vars.notification.slack
+  service-slack:
+    type: service
+    import: slack-service-notification
+    # interval: 2h
+    users:
+      - icinga_admin
+    extra_parameters: |
+      vars.notification_logtosyslog = true
+    assign_where: host.vars.notification.slack
+```
+
+In addition to these definitions, the corresponding recipients must also be defined.
+These can be groups, individual users or both.
 
 ```yaml
 icinga2_notification_user:
@@ -264,20 +368,5 @@ icinga2_notification_usergroups:
     display_name: "Icinga2 Admin Group"
 ```
 
-```yaml
-icinga2_notification_apply:
-  host_notification:
-    import: slack-host-notification
-    # interval: 2h
-    users:
-      - icinga_admin
-    vars.notification_logtosyslog: true
-    assign_where: host.vars.notification.slack
-  service_notification:
-    import: slack-service-notification
-    # interval: 2h
-    users:
-      - icinga_admin
-    vars.notification_logtosyslog: true
-    assign_where: host.vars.notification.slack
-```
+**To trigger a notification, the corresponding host or service variable must be set!**
+
