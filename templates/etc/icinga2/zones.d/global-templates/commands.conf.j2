@@ -1,34 +1,32 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
 // {{ ansible_managed }}
 
 {% if icinga2_checkcommands %}
-{%- for c,v in icinga2_checkcommands.items() -%}
-{%- if v['name'] is defined -%}
-{%- set _name = v['name'] -%}
-{%- set _v = v.pop('name') -%}
-{%- else -%}
-{%- set _name = c -%}
-{%- endif -%}
-
+  {% for c,v in icinga2_checkcommands.items() %}
+    {% if v['name'] is defined %}
+      {% set _name = v['name'] %}
+      {% set _v = v.pop('name') %}
+    {% else %}
+      {% set _name = c %}
+    {% endif %}
 object CheckCommand "{{ _name }}" {
-{% for k, ve in icinga2_checkcommands[c].items() %}
-{% if k == 'import' %}
+    {% for k, ve in icinga2_checkcommands[c].items() %}
+      {% if k == 'import' %}
   {{ k }} "{{ ve }}"
-{% elif k == 'arguments' %}
+      {% elif k == 'arguments' %}
   arguments = {
     {{ ve | indent(4) }}
   }
-{% elif k == 'arguments_append' %}
+      {% elif k == 'arguments_append' %}
   arguments += {
     {{ ve | indent(4) }}
   }
-{% elif k == 'command' %}
+      {% elif k == 'command' %}
   {{ k }} = {{ ve }}
-{% else %}
+      {% else %}
   {{ k }} = {{ ve }}
-{% endif -%}
-{%- endfor -%}
+      {% endif %}
+    {% endfor %}
 }
-
-{% endfor -%}
-
+  {% endfor %}
 {% endif %}

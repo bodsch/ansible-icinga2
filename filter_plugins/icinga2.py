@@ -21,24 +21,25 @@ class FilterModule(object):
         return {
             'primary_master': self.filter_primary,
             'reorder_master': self.filter_reorder,
-            'satellite_zone': self.satellite_zone
+            'satellite_zone': self.satellite_zone,
+            'apply_service_name': self.apply_service_name
         }
 
-    """
-      return the primary icinga2 master
-
-      icinga2_masters:
-        blackbox.matrix.lan:
-          type: primary
-          ip: 192.168.0.5
-        second:
-          # overwrite: icinga.xanhaem.de
-          ip: 192.168.10.10
-
-      returns 'blackbox.matrix.lan'
-    """
 
     def filter_primary(self, mydict):
+        """
+          return the primary icinga2 master
+
+          icinga2_masters:
+            blackbox.matrix.lan:
+              type: primary
+              ip: 192.168.0.5
+            second:
+              # overwrite: icinga.xanhaem.de
+              ip: 192.168.10.10
+
+          returns 'blackbox.matrix.lan'
+        """
         seen = ''
 
         count = len(mydict.keys())
@@ -75,21 +76,20 @@ class FilterModule(object):
 
         return seen
 
-    """
-      reorganize 'icinga2_masters' dict
-
-      icinga2_masters:
-        blackbox.matrix.lan:
-          overwrite: icinga.boone-schulz.de
-
-      to:
-
-      icinga2_masters:
-        icinga.boone-schulz.de:
-
-    """
-
     def filter_reorder(self, mydict):
+        """
+          reorganize 'icinga2_masters' dict
+
+          icinga2_masters:
+            blackbox.matrix.lan:
+              overwrite: icinga.boone-schulz.de
+
+          to:
+
+          icinga2_masters:
+            icinga.boone-schulz.de:
+
+        """
         seen = ''
 
         count = len(mydict.keys())
@@ -101,10 +101,6 @@ class FilterModule(object):
         display.v("return reorder: {}".format(seen))
 
         return seen
-
-    """
-
-    """
 
     def satellite_zone(self, mydict, ansible_fqdn):
         seen = ansible_fqdn
@@ -129,12 +125,46 @@ class FilterModule(object):
 
         return seen
 
-    """
+    def apply_service_name(self, data, default):
+        """
+        """
+        display.v("apply_service_name({}, {})".format(data, default))
 
-    """
+        result = ""
+
+        # display.v("{}".format(type(data)))
+
+        _name = data.get('name', None)
+        _for = data.get('for', None)
+
+        if _name and _for:
+            result = '"{}" for {}'.format(_name , _for)
+            _ = data.pop("name")
+            _ = data.pop("for")
+        elif _name:
+            result = '"{}"'.format(_name)
+            _ = data.pop("name")
+        else:
+            result = '"{}"'.format(default)
+
+        display.v("= result {}".format(result))
+
+        return data, result
+        # {% if values['name'] is defined and
+        #       values.['for'] is defined %}
+        #   {% set _name = '"{}" for {}'.format(values.get('name'), values.get('for')) %}
+        #   {% set _v = values.pop('name') %}
+        #   {% set _v = values.pop('for') %}
+        # {% elif values['name'] is defined %}
+        #   {% set _name = '"{}"'.format(values.get('name')) %}
+        #   {% set _v = values.pop('name') %}
+        # {% else %}
+        #   {% set _name = '"{}"'.format(c) %}
+        # {% endif %}
 
     def __transform(self, multilevelDict):
-
+        """
+        """
         new = {}
 
         for key, value in multilevelDict.items():
@@ -153,11 +183,9 @@ class FilterModule(object):
 
         return new
 
-    """
-
-    """
-
     def __search(self, list, fqdn):
+        """
+        """
         for i in range(len(list)):
             if list[i] == fqdn:
                 return True

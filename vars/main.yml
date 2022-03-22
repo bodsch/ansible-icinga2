@@ -52,6 +52,8 @@ icinga2_apply_service_default:
   users:
     import: generic-service
     check_command: users
+    extra_parameters: |
+      vars.users_wgreater = 0
     assign_where: 'host.vars.os == "Linux"'
   apt:
     import: generic-service
@@ -140,3 +142,48 @@ icinga2_defaults_api:
       password: validate
       permissions:
         - "status/query"
+
+# https://icinga.com/docs/icinga-2/latest/doc/03-monitoring-basics/#apply-notifications-to-hosts-and-services
+icinga2_defaults_notification_apply_rules:
+  #
+  host-mail:
+    type: host
+    import: mail-host-notification
+    users: []
+    user_groups: []
+    interval: '2h'
+    extra_parameters: |
+      vars.notification_logtosyslog = true
+    assign_where: "host.vars.notification.mail"
+  #
+  service-mail:
+    type: service
+    import: mail-service-notification
+    users: []
+    user_groups: []
+    interval: '2h'
+    extra_parameters: |
+      vars.notification_logtosyslog = true
+
+    assign_where: "host.vars.notification.mail"
+
+icinga2_defaults_notification_templates:
+  #
+  generic-notification:
+    command: "mail-service-notification"
+    interval: 15m
+    period: "24x7"
+    states:
+      - Warning
+      - Critical
+      - Unknown
+    types:
+      - Problem
+      - Acknowledgement
+      - Recovery
+      - Custom
+      - FlappingStart
+      - FlappingEnd
+      - DowntimeStart
+      - DowntimeEnd
+      - DowntimeRemoved

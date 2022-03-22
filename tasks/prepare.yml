@@ -1,5 +1,8 @@
 ---
 
+- name: re-read ansible facts
+  setup:
+
 - name: include OS specific configuration
   include_vars: "{{ lookup('first_found', params) }}"
   vars:

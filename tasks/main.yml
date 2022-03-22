@@ -1,28 +1,35 @@
 ---
 
-- include: preparations.yml
-  become: true
+- name: prepare
+  include_tasks: prepare.yml
   tags:
-    - icinga2
+    - icinga2-install
 
-- include: install.yml
-  become: true
+- name: install
+  include_tasks: install.yml
   tags:
-    - icinga2
+    - icinga2-install
 
-- include_tasks: master.yml
-  when: icinga2_mode == 'master'
+- name: master
+  include_tasks: master.yml
+  when:
+    - icinga2_mode == 'master'
   tags:
-    - icinga2
+    - icinga2-configure
+    - icinga2-master
 
-- include_tasks: satellite.yml
-  when: icinga2_mode == 'satellite'
+- name: satellite
+  include_tasks: satellite.yml
+  when:
+    - icinga2_mode == 'satellite'
   tags:
-    - icinga2
+    - icinga2-configure
+    - icinga2-satellite
 
-- include_tasks: service.yml
+- name: service
+  include_tasks: service.yml
   tags:
-    - icinga2
+    - icinga2-service
 
 # ---------------------------------------------------------------------------------------
 
@@ -43,8 +50,10 @@
 - include_tasks: downtime.yml
   when:
     - icinga2_mode == 'master'
-    - icinga2_downtime_comment is defined and icinga2_downtime_comment | length != 0
-    - icinga2_downtime_duration is defined and icinga2_downtime_duration | int != 0
+    - icinga2_downtime_comment is defined
+    - icinga2_downtime_comment | length != 0
+    - icinga2_downtime_duration is defined
+    - icinga2_downtime_duration | int != 0
     - icinga2_api.user is defined
     - icinga2_api.password is defined
     - icinga2_downtime_system_name is defined

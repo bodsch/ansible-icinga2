@@ -1,7 +1,7 @@
 ---
 
-- include: satellite/pki.yml
-- include: satellite/configure.yml
-- include: satellite/features.yml
+- include_tasks: satellite/pki.yml
+- include_tasks: satellite/configure.yml
+- include_tasks: satellite/features.yml
 
 # /var/lib/icinga2/api/zones-stage/startup.log

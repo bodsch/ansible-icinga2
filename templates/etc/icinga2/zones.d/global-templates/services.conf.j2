@@ -1,55 +1,45 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
 // {{ ansible_managed }}
-
+{% set _name = "" %}
 {% if icinga2_apply_service %}
-{%- for c, v in icinga2_apply_service.items() -%}
-{%- if v['name'] is defined and v['for'] is defined -%}
-{%- set _name = '"%s" for %s' % (v['name'], v['for']) -%}
-{%- set _v = v.pop('name') -%}
-{%- set _v = v.pop('for') -%}
-{%- elif v['name'] is defined -%}
-{%- set _name = '"%s"' % (v['name']) -%}
-{%- set _v = v.pop('name') -%}
-{%- else -%}
-{%- set _name = '"%s"' % (c) -%}
-{%- endif -%}
-
-{% if v['description'] is defined %}
+  {% for c, v in icinga2_apply_service.items() %}
+    {% set v, _name = v | apply_service_name(c) %}
+    {# set _v = v.pop('name') #}
+    {# set _v = v.pop('for') #}
+    {% if v['description'] is defined %}
 // {{ v['description'] }}
-{% set _v = v.pop('description') %}
-{% endif %}
+      {% set _v = v.pop('description') %}
+    {% endif %}
 apply Service {{ _name }} {
-{% for k, ve in icinga2_apply_service[c].items()  %}
-{% if k == 'import' %}
+    {% for k, ve in icinga2_apply_service[c].items()  %}
+      {% if k == 'import' %}
   {{ k }} "{{ ve }}"
-  {% elif k in ['check_command', 'display_name', 'notes', 'notes_url','event_command'] %}
-{% if k == 'display_name' and '+' in ve %}
+      {% elif k in ['check_command', 'display_name', 'notes', 'notes_url', 'event_command'] %}
+        {% if k == 'display_name' and '+' in ve %}
   {{ k }} = {{ ve }}
-{% else %}
+        {% else %}
   {{ k }} = "{{ ve }}"
-{% endif %}
-{% elif k == 'extra_parameters' %}
+        {% endif %}
+      {% elif k == 'extra_parameters' %}
   {{ ve | indent(2) }}
-{% elif k == 'assign_where' %}
+      {% elif k == 'assign_where' %}
   assign where {{ ve }}
-{% elif k == 'ignore_where' %}
+      {% elif k == 'ignore_where' %}
   ignore where {{ ve }}
-{% else %}
-{% if ve is sameas true or ve is sameas false %}
+      {% else %}
+        {% if ve | type == "bool" %}
   {{ k }} = {{ ve | bool | ternary( 'true', 'false') }}
-{% else %}
+        {% else %}
   {{ k }} = {{ ve }}
-{% endif %}
-{% endif %}
-{% endfor %}
+        {% endif %}
+      {% endif %}
+    {% endfor %}
 }
-
-{% endfor -%}
-
+  {% endfor %}
 {% endif %}
 
 // --------------------------------------------------------------------------------------
-/*
-
+/* NOT USED!
 
 apply Service "dnssec " for (zone => config in host.vars.zones) {
   import "generic-service"

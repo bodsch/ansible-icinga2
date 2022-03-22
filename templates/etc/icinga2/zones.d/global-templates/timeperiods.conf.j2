@@ -1,18 +1,19 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
 // {{ ansible_managed }}
 
 {% for i in icinga2_timeperiod %}
 object TimePeriod "{{ i }}" {
   {% for k, v in icinga2_timeperiod[i].items() %}
-  {% if v is mapping %} {# ranges = {} #}
+    {% if v is mapping %} {# ranges = {} #}
   {{ k }} = {
-{% for k2, v2 in v.items() %}
+      {% for k2, v2 in v.items() %}
     {{ k2 }} = "{{ v2 }}"
-{% endfor %}
+      {% endfor %}
   }
-{% else %}
+    {% else %}
   {{ k }} = "{{ v }}"
-{% endif -%}
-{% endfor -%}
+    {% endif %}
+  {% endfor %}
 }
 
 {% endfor %}

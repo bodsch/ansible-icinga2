@@ -1,3 +1,4 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
 // {{ ansible_managed }}
 // {{ ansible_fqdn }} - icinga2 version: {{ icinga2_installed_version }}
 
@@ -5,7 +6,8 @@ const PluginDir          = "{{ monitoring_plugins_directory }}"
 const ManubulonPluginDir = "{{ monitoring_plugins_directory }}"
 const PluginContribDir   = "{{ monitoring_plugins_directory }}"
 const LogDir             = "{{ icinga2_filelogger.directory | default('/var/log/icinga2') }}"
-{% if icinga2_overwrite_nodename is defined and icinga2_overwrite_nodename %}
+{% if icinga2_overwrite_nodename is defined and
+      icinga2_overwrite_nodename | string | length > 0 %}
 const NodeName           = "{{ icinga2_certificate_cn }}"
 {% endif %}
 {% if icinga2_installed_version is version( "2.11.2", "<" ) %}
@@ -13,7 +15,8 @@ const NodeName           = "{{ icinga2_certificate_cn }}"
 {% endif %}
 // const ZoneName           = "{{ ansible_fqdn }}"
 
-{% if icinga2_mode == 'master' and icinga2_primary_master == ansible_fqdn %}
+{% if icinga2_mode == 'master' and
+      icinga2_primary_master == ansible_fqdn %}
 const TicketSalt         = "{{ icinga2_salt }}"
 {% else %}
 const TicketSalt         = ""

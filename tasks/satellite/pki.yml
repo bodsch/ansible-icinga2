@@ -158,6 +158,8 @@
         icinga2_fqdn_ticket: "{{ ticket.ticket }}"
 
     - name: wait for primary icinga2 master to be accessible
+      delegate_to: '{{ icinga2_primary_master }}'
+      remote_user: "{{ ansible_user_id }}"
       wait_for:
         host: '{{ icinga2_primary_master }}'
         port: "{{ icinga2_master_port | default(5665) }}"
