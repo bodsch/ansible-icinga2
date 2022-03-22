@@ -220,6 +220,27 @@
     name: "{{ icinga2_requirements | union(icinga2_os_requirements) }}"
     state: present
 
+# see https://stackoverflow.com/questions/67273590/pip-21-1-cant-import-invalidschemecombination
+- name: fix broken pip package
+  block:
+    #
+    - name: remove python-pip package
+      package:
+        name: python-pip
+        state: absent
+    - name: use python module ensurepip
+      command: |
+        python -m ensurepip
+
+    - name: update pip3 to latest
+      pip:
+        name: pip
+        state: latest
+        executable: pip3
+        umask: "0022"
+  when:
+    - ansible_os_family | lower == 'archlinux'
+
 - name: get latest system information
   setup:
 
