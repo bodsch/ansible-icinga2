@@ -25,7 +25,6 @@
 
 - name: define satellite zone
   block:
-
     - name: define satellite zone, when icinga2_satellites are configured
       set_fact:
         icinga2_satellite_zone: "{{ icinga2_satellites | satellite_zone(ansible_fqdn) }}"
@@ -223,21 +222,50 @@
 # see https://stackoverflow.com/questions/67273590/pip-21-1-cant-import-invalidschemecombination
 - name: fix broken pip package
   block:
-    #
-    - name: remove python-pip package
-      package:
-        name: python-pip
-        state: absent
-    - name: use python module ensurepip
-      command: |
-        python -m ensurepip
+    - name: detect pip init
+      find:
+        paths: "/usr/lib/python{{ ansible_python.version.major }}.{{ ansible_python.version.minor }}/site-packages/pip/"
+        file_type: file
+        patterns:
+          - "__init__.py"
+        recurse: false
+      register: found_init
 
-    - name: update pip3 to latest
-      pip:
-        name: pip
-        state: latest
-        executable: pip3
-        umask: "0022"
+    - name: define init file
+      set_fact:
+        __pip_init: "{{ found_init.files | sort(attribute='path', reverse=True) | map(attribute='path') | list | first }}"
+      when:
+        - found_init.files is defined
+        - found_init.files | count > 0
+
+    - name: get version string from init file
+      shell:
+        grep __version__ {{ __pip_init }} | cut -d '"' -f2
+      register: __pip_version
+      when:
+        - __pip_init is defined
+
+    - name: remove incompatible version
+      block:
+        #
+        - name: remove incompatible python-pip package (version {{ __pip_version.stdout }})
+          package:
+            name: python-pip
+            state: absent
+        - name: use python module ensurepip
+          become: true
+          shell:
+            rm -rf /usr/lib/python{{ ansible_python.version.major }}.{{ ansible_python.version.minor }}/site-packages/pip* ;
+            python -m ensurepip --default-pip --upgrade
+
+        - name: update pip3 to latest
+          pip:
+            name: pip
+            state: latest
+            executable: pip3
+            umask: "0022"
+      when:
+        - __pip_version.stdout is version('21.0', '<=')
   when:
     - ansible_os_family | lower == 'archlinux'
 
