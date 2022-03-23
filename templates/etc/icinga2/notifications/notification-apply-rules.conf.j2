@@ -1,0 +1,28 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+// {{ ansible_managed }}
+{% set _type = "" %}
+{% if icinga2_notification_apply_rules  is defined and
+      icinga2_notification_apply_rules | count > 0 %}
+  {% for n, data in icinga2_notification_apply_rules.items() %}
+    {% set _type = icinga2_notification_apply_rules[n]['type'] %}
+    {% set _ = icinga2_notification_apply_rules[n].pop('type') %}
+apply Notification "{{ n }}" to {{  _type | capitalize }} {
+    {% for key, value in data.items() %}
+      {% if key == 'import' %}
+  import "{{ value }}"
+      {% elif key in ['users', 'display_name', 'user_groups', 'interval'] %}
+        {% if value | string | length > 0 %}
+  {{ key }}  = {{ value }}
+        {% endif %}
+      {% elif key == 'extra_parameters' %}
+  {{ value | indent(2) }}
+      {% elif key == 'assign_where' %}
+  assign where {{ value }}
+      {% elif key == 'ignore_where' %}
+  ignore where {{ value }}
+      {% endif %}
+    {% endfor %}
+}
+
+  {% endfor %}
+{% endif %}

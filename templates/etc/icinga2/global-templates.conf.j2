@@ -1,3 +1,4 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
 // {{ ansible_managed }}
 
 template Host "generic-host" {
@@ -8,7 +9,6 @@ template Host "generic-host" {
   check_command = "hostalive"
 }
 
-
 template Service "generic-service" {
   max_check_attempts = 5
   check_interval = 1m
@@ -16,14 +16,4 @@ template Service "generic-service" {
 }
 
 template User "generic-user" {
-
 }
-
-/*
- * wrong definition - not used
-template Service "icinga-satellite-service" {
-  import "generic-service"
-  command_endpoint    = host.vars.remote_endpoint
-  zone                = host.vars.remote_endpoint
-}
-*/

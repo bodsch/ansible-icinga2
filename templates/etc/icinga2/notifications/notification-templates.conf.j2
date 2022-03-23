@@ -1,0 +1,72 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+// {{ ansible_managed }}
+
+{% if icinga2_notification_templates  is defined and
+      icinga2_notification_templates | count > 0 %}
+  {% for n, data in icinga2_notification_templates.items() %}
+    {% if data['description'] is defined %}
+// {{ data['description'] }}
+      {% set _v = data.pop('description') %}
+    {% endif %}
+template Notification "{{ n }}" {
+    {% for key, value in data.items() %}
+      {% if key in ["command", "period"] %}
+  {{ key }} = "{{ value  }}"
+      {% elif key in ["states","types"] %}
+  {{ key }} = [  {{ value | join(', ') }} ]
+      {% elif key == 'extra_parameters' %}
+  {{ value | indent(2) }}
+      {% endif %}
+    {% endfor %}
+}
+
+  {% endfor %}
+{% endif %}
+
+// -----------------------------------------------------------------------------------------------
+
+/**
+ * Provides default settings for host notifications.
+ * By convention all host notifications should import
+ * this template.
+ */
+template Notification "mail-host-notification" {
+  command = "mail-host-notification"
+
+  states = [ Up, Down ]
+  types = [ Problem, Acknowledgement, Recovery, Custom,
+            FlappingStart, FlappingEnd,
+            DowntimeStart, DowntimeEnd, DowntimeRemoved ]
+
+  vars += {
+    // notification_icingaweb2url = "https://www.example.com/icingaweb2"
+    // notification_from = "Icinga 2 Host Monitoring <icinga@example.com>"
+    notification_logtosyslog = false
+  }
+
+  period = "24x7"
+}
+
+/**
+ * Provides default settings for service notifications.
+ * By convention all service notifications should import
+ * this template.
+ */
+template Notification "mail-service-notification" {
+  command = "mail-service-notification"
+
+  states = [ OK, Warning, Critical, Unknown ]
+  types = [ Problem, Acknowledgement, Recovery, Custom,
+            FlappingStart, FlappingEnd,
+            DowntimeStart, DowntimeEnd, DowntimeRemoved ]
+
+  vars += {
+    // notification_icingaweb2url = "https://www.example.com/icingaweb2"
+    // notification_from = "Icinga 2 Service Monitoring <icinga@example.com>"
+    notification_logtosyslog = false
+  }
+
+  period = "24x7"
+}
+
+// -----------------------------------------------------------------------------------------------

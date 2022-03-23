@@ -1,6 +1,7 @@
 ---
 
 icinga2_mode: master
+icinga2_salt: tmpams80tqx
 
 icinga2_masters:
   instance:
@@ -33,7 +34,7 @@ icinga2_master_features_enabled:
 
 icinga2_features:
   influxdb2:
-    active: true
+    active: false
     host: localhost
     port: 8086
     organization: monitoring
@@ -66,4 +67,29 @@ icinga2_host_object:
         }
       }
 
-icinga2_salt: tmpams80tqx
+icinga2_apply_service:
+  #
+  icinga:
+    check_command: icinga
+    name: 'icinga'
+    display_name: 'icinga satellite'
+    notes: "icinga satellite"
+    notes_url: "/operations/icinga.md"
+    max_check_attempts: 2
+    check_interval: 30s
+    retry_interval: 10s
+    enable_notifications: false
+
+    assign_where: 'host.name == NodeName || host.vars.satellite'
+  #
+  dnssec:
+    import: generic-service
+    name: 'dnssec '
+    for: '(zone => config in host.vars.zones)'
+    check_command: delv
+    check_interval: 2h
+    extra_parameters: |
+      vars += config
+    assign_where: host.vars.zones
+
+...

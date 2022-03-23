@@ -21,6 +21,11 @@
   when:
     - icinga2_validate_config is defined
 
+- name: reload icinga2
+  service:
+    name: icinga2
+    state: reloaded
+
 - name: restart icinga2
   service:
     name: icinga2

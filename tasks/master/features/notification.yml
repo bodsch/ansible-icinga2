@@ -8,10 +8,25 @@
     group: "{{ icinga2_group }}"
     mode: 0750
 
-- name: define graphite feature state
+- name: define notifications feature state
   set_fact:
     feature_notification_state: "{{ 'present' if icinga2_master_features_enabled | join('|') |
       regex_search('notification') else 'absent' }}"
+
+- name: merge icinga2 notification templates between defaults and custom
+  set_fact:
+    icinga2_notification_templates: "{{ icinga2_defaults_notification_templates |
+      combine( icinga2_notification_templates, recursive=True ) }}"
+
+- name: merge icinga2 notification objects between defaults and custom
+  set_fact:
+    icinga2_notification_objects: "{{ icinga2_defaults_notification_objects |
+      combine( icinga2_notification_objects, recursive=True ) }}"
+
+- name: merge icinga2 notification apply rules between defaults and custom
+  set_fact:
+    icinga2_notification_apply_rules: "{{ icinga2_defaults_notification_apply_rules |
+      combine( icinga2_notification_apply_rules, recursive=True ) }}"
 
 - name: configure notification feature
   template:
@@ -20,6 +35,39 @@
     owner: "{{ icinga2_user }}"
     group: "{{ icinga2_group }}"
     mode: 0666
+
+- name: configure notification templates
+  template:
+    src: etc/icinga2/notifications/notification-templates.conf.j2
+    dest: /etc/icinga2/notifications/notification-templates.conf
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
+    mode: 0666
+  notify:
+    - check configuration
+    - reload icinga2
+
+- name: configure notification objects
+  template:
+    src: etc/icinga2/notifications/notification-objects.conf.j2
+    dest: /etc/icinga2/notifications/notification-objects.conf
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
+    mode: 0666
+  notify:
+    - check configuration
+    - reload icinga2
+
+- name: configure notification apply rules
+  template:
+    src: etc/icinga2/notifications/notification-apply-rules.conf.j2
+    dest: /etc/icinga2/notifications/notification-apply-rules.conf
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
+    mode: 0666
+  notify:
+    - check configuration
+    - reload icinga2
 
 - name: enable notification feature
   icinga2_feature:
