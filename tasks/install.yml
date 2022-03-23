@@ -87,6 +87,13 @@
     group: root
     mode: 0755
 
+- name: create sudo rules for icinga
+  template:
+    src: etc/sudo.j2
+    dest: /etc/sudoers.d/icinga
+    mode: 0440
+    validate: 'visudo -cf %s'
+
 - name: do facts module to get latest information
   setup:
 

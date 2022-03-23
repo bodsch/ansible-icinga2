@@ -272,13 +272,6 @@
 - name: get latest system information
   setup:
 
-- name: create sudo rules for icinga
-  template:
-    src: etc/sudo.j2
-    dest: /etc/sudoers.d/icinga
-    mode: 0440
-    validate: 'visudo -cf %s'
-
 - name: make sure ansible local facts directory exists
   file:
     dest: /etc/ansible/facts.d

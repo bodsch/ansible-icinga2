@@ -1,3 +1,4 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
 // {{ ansible_managed }}
 {# https://icinga.com/docs/icinga2/latest/doc/09-object-types/#graphitewriter #}
 
@@ -5,20 +6,22 @@
   'service_name_template','enable_send_thresholds','enable_send_metadata',
   'enable_ha'] %}
 
-{% if icinga2_features.graphite is defined and icinga2_features.graphite.host is defined %}
+{% if icinga2_features.graphite is defined and
+      icinga2_features.graphite.host is defined %}
 object GraphiteWriter "graphite" {
-{% if icinga2_features.graphite is defined and icinga2_features.graphite | count != 0 %}
-{% for k, v in icinga2_features.graphite.items() %}
-{% if k in _attr %}
-{% if v is sameas true or v is sameas false %}
+  {% if icinga2_features.graphite is defined and
+        icinga2_features.graphite | count != 0 %}
+    {% for k, v in icinga2_features.graphite.items() %}
+      {% if k in _attr %}
+        {% if v is sameas true or v is sameas false %}
   {{ k }} = {{ v | bool | ternary('true', 'false') }}
-{% elif k is string %}
+        {% elif k is string %}
   {{ k }} = "{{ v }}"
-{% else %}
+        {% else %}
   {{ k }} = {{ v }}
-{% endif %}
-{% endif %}
-{% endfor %}
-{% endif %}
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
 }
 {% endif %}

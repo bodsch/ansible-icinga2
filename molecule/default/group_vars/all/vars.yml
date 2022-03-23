@@ -14,6 +14,13 @@ icinga2_api:
     root:
       password: foo
       permissions: '*'
+    icingaweb:
+      password: barbarbar
+      permissions:
+        - "status/query"
+        - "actions/*"
+        - "objects/modify/*"
+        - "objects/query/*"
 
 icinga2_ido:
   username: icinga2_ido
@@ -67,6 +74,52 @@ icinga2_host_object:
         }
       }
 
+icinga2_notification_usergroups:
+  icingaadmins:
+    display_name: "Icinga2 Admin Group"
+
+icinga2_notification_user:
+  icingaadmin:
+    import: generic-user
+    display_name: "Icinga2 Admin"
+    groups:
+      - icingaadmins
+    email: admin@example.com
+
+  admin:
+    import: generic-user
+    display_name: Next Admin
+    groups:
+      - icingaadmins
+    email: admin@example.com
+
+icinga2_service_downtimes:
+  backup-downtime:
+    author: icingaadmin
+    comment: Scheduled downtime for backup
+    ranges:
+      monday: service.vars.backup_downtime
+      tuesday: service.vars.backup_downtime
+      wednesday: service.vars.backup_downtime
+      thursday: service.vars.backup_downtime
+      friday: service.vars.backup_downtime
+      saturday: service.vars.backup_downtime
+      sunday: service.vars.backup_downtime
+    assign_where: service.vars.backup_downtime != ""
+  nas-downtime:
+    author: icingaadmin
+    comment: Scheduled downtime for NAS
+    ranges:
+      monday:    '"21:00-24:00,00:00-07:00"'
+      tuesday:   '"21:00-24:00,00:00-07:00"'
+      wednesday: '"21:00-24:00,00:00-07:00"'
+      thursday:  '"21:00-24:00,00:00-07:00"'
+      friday:    '"21:00-24:00,00:00-07:00"'
+      saturday:  '"21:00-24:00,00:00-09:00"'
+      sunday:    '"21:00-24:00,00:00-09:00"'
+    assign_where: host.name == "nas.matrix.lan"
+
+
 icinga2_apply_service:
   #
   icinga:
@@ -91,5 +144,38 @@ icinga2_apply_service:
     extra_parameters: |
       vars += config
     assign_where: host.vars.zones
+
+  disk:
+    import: generic-service
+    name: ''
+    for: '(disk => config in host.vars.disks)'
+    check_command: disk
+    extra_parameters: |
+      vars += config
+    assign_where: host.vars.disks
+  #
+  diskstat:
+    name: ''
+    for: '(device => config in host.vars.diskstat)'
+    import: generic-service
+    check_command: check_diskstat
+    check_interval: 2m
+    extra_parameters: |
+      var warn = check_dictionary(config, "diskstat_warn")
+      var crit = check_dictionary(config, "diskstat_critical")
+      if(!warn) {
+        warn = "500,280000,500000"
+      }
+      if(!crit) {
+        crit = "600,350000,600000"
+      }
+      vars = {
+        "diskstat_dev" = device
+        "diskstat_warn" = warn
+        "diskstat_critical" = crit
+      }
+
+    # vars += config
+    assign_where: host.vars.diskstat
 
 ...

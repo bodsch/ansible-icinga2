@@ -1,46 +1,49 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
 // {{ ansible_managed }}
 {# https://icinga.com/docs/icinga2/latest/doc/13-addons/#influxdb #}
 {# https://icinga.com/docs/icinga2/latest/doc/14-features/#influxdb-writer #}
 {# https://github.com/Icinga/icinga2/blob/master/etc/icinga2/features-available/influxdb2.conf #}
 
-{%- set _attr = [
+{% set _attr = [
     'host','port','organization', 'bucket', 'auth_token',
     'flush_threshold','flush_interval',
     'host_template','service_template',
     'enable_ha','enable_send_thresholds','enable_send_metadata',
     'ssl_enable', 'ssl_insecure_noverify', 'ssl_ca_cert', 'ssl_cert', 'ssl_key'
   ]
--%}
+%}
 
-{% if icinga2_features.influxdb2 is defined and icinga2_features.influxdb2.host is defined %}
+{% if icinga2_features.influxdb2 is defined and
+      icinga2_features.influxdb2.host is defined %}
 object Influxdb2Writer "influxdb2" {
-{% if icinga2_features.influxdb2 is defined and icinga2_features.influxdb2 | count != 0 %}
-{% for key, value in icinga2_features.influxdb2.items() %}
+  {% if icinga2_features.influxdb2 is defined and
+        icinga2_features.influxdb2 | count != 0 %}
+    {% for key, value in icinga2_features.influxdb2.items() %}
 {# {{ key }} = {{ key | type }} / {{ value }} = {{ value | type }} #}
-{% if key in _attr %}
-{% if key in ["host", "organization", "bucket", "auth_token"] %}
+      {% if key in _attr %}
+        {% if key in ["host", "organization", "bucket", "auth_token"] %}
   {{ key }} = "{{ value }}"
-{% elif value | type == "bool" %}
+        {% elif value | type == "bool" %}
   {{ key }} = {{ value | bool | ternary('true', 'false') }}
-{% elif key in ["host_template", "service_template"] and value | type == "dict" %}
+        {% elif key in ["host_template", "service_template"] and value | type == "dict" %}
   {{ key }} = {
-{% for dict_key, dict_value in value.items() | sort %}
-{% if dict_key == "tags" %}
+          {% for dict_key, dict_value in value.items() | sort %}
+            {% if dict_key == "tags" %}
     tags = {
-{% for tag_key, tag_value in dict_value.items() | sort %}
+              {% for tag_key, tag_value in dict_value.items() | sort %}
       {{ tag_key  }} = "{{ tag_value }}"
-{% endfor %}
+              {% endfor %}
     }
-{% else %}
+            {% else %}
     {{ dict_key  }} = "{{ dict_value }}"
-{% endif %}
-{% endfor %}
+            {% endif %}
+          {% endfor %}
   }
-{% else %}
+        {% else %}
   {{ key }} = {{ value }}
-{% endif %}
-{% endif %}
-{% endfor %}
-{% endif %} {# 1 #}
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+  {% endif %} {# 1 #}
 }
 {% endif %}

@@ -1,6 +1,6 @@
 #jinja2: trim_blocks: True, lstrip_blocks: True
 // {{ ansible_managed }}
-// {{ ansible_fqdn }} - icinga2 version: {{ icinga2_installed_version }}
+// this is: {{ ansible_fqdn }} - version: {{ icinga2_installed_version }}
 
 const PluginDir          = "{{ monitoring_plugins_directory }}"
 const ManubulonPluginDir = "{{ monitoring_plugins_directory }}"

@@ -4,27 +4,27 @@
 /**
  * Host groups
  */
-{% if icinga2_hostgroups is defined and icinga2_hostgroups %}
-{% for item in icinga2_hostgroups %}
+{% if icinga2_hostgroups is defined and
+      icinga2_hostgroups %}
+  {% for item in icinga2_hostgroups %}
 object HostGroup "{{ item.name }}" {
   display_name = "{{ item.displayname }}"
-{% if item.conditions is defined and item.conditions != '' %}
+    {% if item.conditions is defined and
+          item.conditions != '' %}
   {{ item.conditions }}
-{% endif %}
+    {% endif %}
 }
-
-{% endfor %}
+  {% endfor %}
 {% endif %}
 
 /**
  * Service groups
  */
 {% if icinga2_servicegroups is defined and icinga2_servicegroups %}
-{% for item in icinga2_servicegroups %}
+  {% for item in icinga2_servicegroups %}
 object ServiceGroup "{{ item.name }}" {
   display_name = "{{ item.displayname }}"
   {{ item.conditions }}
 }
-
-{% endfor %}
+  {% endfor %}
 {% endif %}

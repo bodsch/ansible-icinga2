@@ -1,12 +1,13 @@
 #jinja2: trim_blocks: True, lstrip_blocks: True
 // {{ ansible_managed }}
 
-{% for u in icinga2_notification_user | sort %}
-object User "{{ u }}" {
-  {% for k,v in icinga2_notification_user[u].items() | sort %}
-
-    {% if k == 'import' %}{{ k }} "{{ v }}"
-    {% elif k == 'groups' %}{{ k }} = ["{{ v|join('","') }}"]
+{% for user in icinga2_notification_user | sort %}
+object User "{{ user }}" {
+  {% for k,v in icinga2_notification_user[user].items() | sort %}
+    {% if k == 'import' %}
+  {{ k }} "{{ v }}"
+    {% elif k == 'groups' %}
+  {{ k }} = [ "{{ v | join('", "') }}" ]
     {% else %}
   {{ k }} = "{{ v }}"
     {% endif %}
@@ -14,10 +15,10 @@ object User "{{ u }}" {
 }
 {% endfor %}
 
-{% for u in icinga2_notification_usergroups | sort %}
-object UserGroup "{{ u }}" {
-  {% for k,v in icinga2_notification_usergroups[u].items() | sort %}
-{{ k }} = "{{ v }}"
-}
+{% for group in icinga2_notification_usergroups | sort %}
+object UserGroup "{{ group }}" {
+  {% for k,v in icinga2_notification_usergroups[group].items() | sort %}
+  {{ k }} = "{{ v }}"
   {% endfor %}
+}
 {% endfor %}

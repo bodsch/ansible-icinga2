@@ -1,8 +1,18 @@
 #jinja2: trim_blocks: True, lstrip_blocks: True
 // {{ ansible_managed }}
 
-{% if icinga2_api.user is defined and icinga2_api.user | count != 0 -%}
-{% for key  in icinga2_api.user -%}
-object ApiUser "{{ key }}" { {% for k,v in icinga2_api.user[key].items() -%} {% if k == 'permissions' %}{{ k }} = ["{{ v|join('","') }}"]; {% else %}{{ k }} = "{{ v }}"; {% endif -%} {% endfor %} }
-{% endfor %}
+{% if icinga2_api.user is defined and
+      icinga2_api.user | count != 0 %}
+  {% for api_user  in icinga2_api.user %}
+object ApiUser "{{ api_user }}" {
+  {% for key, value in icinga2_api.user[api_user].items() %}
+    {% if key == 'permissions' %}
+  {{ key }} = [ "{{ value | join('", "') }}" ]
+    {% else %}
+  {{ key }} = "{{ value }}"
+    {% endif %}
+  {% endfor %}
+}
+
+  {% endfor %}
 {% endif %}

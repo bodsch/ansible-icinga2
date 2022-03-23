@@ -1,5 +1,9 @@
-{%- if icinga2_sudo_cmd is defined and icinga2_sudo_cmd | count > 0 -%}
-{%- for value in icinga2_sudo_cmd -%}
-icinga ALL=(ALL) NOPASSWD: {{ value }}
-{% endfor -%}
-{%- endif -%}
+#jinja2: trim_blocks: True, lstrip_blocks: True
+# {{ ansible_managed }}
+
+{% if icinga2_sudo_cmd is defined and
+      icinga2_sudo_cmd | count > 0 %}
+  {% for value in icinga2_sudo_cmd %}
+{{ icinga2_user }} ALL=(ALL) NOPASSWD: {{ value }}
+  {% endfor %}
+{% endif %}

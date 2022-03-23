@@ -2,12 +2,7 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
-# from ansible.errors import AnsibleError, AnsibleParserError
-# from ansible.plugins.lookup import LookupBase
 from ansible.utils.display import Display
-
-# https://docs.ansible.com/ansible/latest/dev_guide/developing_plugins.html
-# https://blog.oddbit.com/post/2019-04-25-writing-ansible-filter-plugins/
 
 display = Display()
 
@@ -24,7 +19,6 @@ class FilterModule(object):
             'satellite_zone': self.satellite_zone,
             'apply_service_name': self.apply_service_name
         }
-
 
     def filter_primary(self, mydict):
         """
@@ -131,17 +125,14 @@ class FilterModule(object):
         display.v("apply_service_name({}, {})".format(data, default))
 
         result = ""
-
-        # display.v("{}".format(type(data)))
-
         _name = data.get('name', None)
         _for = data.get('for', None)
 
-        if _name and _for:
-            result = '"{}" for {}'.format(_name , _for)
+        if isinstance(_for, str) and isinstance(_name, str):
+            result = '"{}" for {}'.format(_name, _for)
             _ = data.pop("name")
             _ = data.pop("for")
-        elif _name:
+        elif isinstance(_name, str):
             result = '"{}"'.format(_name)
             _ = data.pop("name")
         else:
@@ -150,17 +141,6 @@ class FilterModule(object):
         display.v("= result {}".format(result))
 
         return data, result
-        # {% if values['name'] is defined and
-        #       values.['for'] is defined %}
-        #   {% set _name = '"{}" for {}'.format(values.get('name'), values.get('for')) %}
-        #   {% set _v = values.pop('name') %}
-        #   {% set _v = values.pop('for') %}
-        # {% elif values['name'] is defined %}
-        #   {% set _name = '"{}"'.format(values.get('name')) %}
-        #   {% set _v = values.pop('name') %}
-        # {% else %}
-        #   {% set _name = '"{}"'.format(c) %}
-        # {% endif %}
 
     def __transform(self, multilevelDict):
         """

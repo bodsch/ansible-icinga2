@@ -1,34 +1,37 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
 // {{ ansible_managed }}
 
-// full documentation: https://icinga.com/docs/icinga2/latest/doc/09-object-types/#objecttype-idomysqlconnection
+{# full documentation: https://icinga.com/docs/icinga2/latest/doc/09-object-types/#objecttype-idomysqlconnection #}
 {% set _cleanup_attr = ['acknowledgements_age','commenthistory_age','contactnotifications_age',
   'contactnotificationmethods_age','downtimehistory_age','eventhandlers_age',
   'externalcommands_age','flappinghistory_age','hostchecks_age','logentries_age',
   'notifications_age','processevents_age','statehistory_age','servicechecks_age',
   'systemcommands_age'] %}
-{%- set _ido_attr = ['host','port','socket_path','user','password','database',
+{% set _ido_attr = ['host','port','socket_path','user','password','database',
   'enable_ssl','ssl_key','ssl_cert','ssl_ca','ssl_capath',
   'ssl_cipher','table_prefix','instance_name','instance_description',
-  'enable_ha','failover_timeout','categories'] -%}
+  'enable_ha','failover_timeout','categories'] %}
 
 library "db_ido_mysql"
 
 object IdoMysqlConnection "ido-mysql" {
-{% if icinga2_ido is defined and icinga2_ido | count != 0 %}
-{% for k, v in icinga2_ido.items() | sort %}
-{% if k in _ido_attr %}
+{% if icinga2_ido is defined and
+      icinga2_ido | count != 0 %}
+  {% for k, v in icinga2_ido.items() | sort %}
+    {% if k in _ido_attr %}
   {{ k }} = "{{ v }}"
-{% endif %}
-{% endfor %}
+    {% endif %}
+  {% endfor %}
 {% endif %}
 
-{% if icinga2_ido.cleanup is defined and icinga2_ido.cleanup | count != 0 %}
+{% if icinga2_ido.cleanup is defined and
+      icinga2_ido.cleanup | count != 0 %}
   cleanup = {
-{% for k, v in icinga2_ido.cleanup.items() | sort %}
-{% if k in _cleanup_attr %}
+  {% for k, v in icinga2_ido.cleanup.items() | sort %}
+    {% if k in _cleanup_attr %}
     {{ k }} = {{ v | default('0',true) }}
-{% endif %}
-{% endfor %}
+    {% endif %}
+  {% endfor %}
   }
 {% endif %}
 }

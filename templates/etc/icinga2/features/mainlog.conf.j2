@@ -1,27 +1,30 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
 // {{ ansible_managed }}
 
-{%- set _logger_attr = ['debug','notice','information','warning','critical'] %}
-{%- set _default_mainlog_severity = 'information' %}
-{%- set _default_debuglog_severity = 'notice' %}
+{% set _logger_attr = ['debug','notice','information','warning','critical'] %}
+{% set _default_mainlog_severity = 'information' %}
+{% set _default_debuglog_severity = 'notice' %}
 
 {% if icinga2_filelogger.mainlog is defined %}
 object FileLogger "main-log" {
-{% if icinga2_filelogger.mainlog.severity is defined and icinga2_filelogger.mainlog.severity in _logger_attr %}
-{% set mainlog_severity = icinga2_filelogger.mainlog.severity %}
-{% else %}
-{% set mainlog_severity = _default_mainlog_severity %}
-{% endif %}
+  {% if icinga2_filelogger.mainlog.severity is defined and
+        icinga2_filelogger.mainlog.severity in _logger_attr %}
+    {% set mainlog_severity = icinga2_filelogger.mainlog.severity %}
+  {% else %}
+    {% set mainlog_severity = _default_mainlog_severity %}
+  {% endif %}
   severity = "{{ mainlog_severity }}"
   path     = LogDir + "/{{ icinga2_filelogger.mainlog.logfile | default('/icinga2.log') }}"
 }
 {% endif %}
 {% if icinga2_filelogger.debuglog is defined %}
 object FileLogger "debug-file" {
-{% if icinga2_filelogger.debuglog.severity is defined and icinga2_filelogger.debuglog.severity in _logger_attr %}
-{% set debuglog_severity = icinga2_filelogger.debuglog.severity %}
-{% else %}
-{% set debuglog_severity = _default_debuglog_severity %}
-{% endif %}
+  {% if icinga2_filelogger.debuglog.severity is defined and
+        icinga2_filelogger.debuglog.severity in _logger_attr %}
+    {% set debuglog_severity = icinga2_filelogger.debuglog.severity %}
+  {% else %}
+    {% set debuglog_severity = _default_debuglog_severity %}
+  {% endif %}
   severity = "{{ debuglog_severity }}"
   path     = LogDir + "/{{ icinga2_filelogger.debuglog.logfile | default('/debug  .log') }}"
 }

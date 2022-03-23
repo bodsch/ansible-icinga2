@@ -1,7 +1,7 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
 // {{ ansible_managed }}
 {# full documentation: https://icinga.com/docs/icinga2/latest/doc/09-object-types/#apilistener #}
-
-{%- set _attr = [
+{% set _attr = [
   'ticket_salt',
   'crl_path',
   'bind_host','bind_port',
@@ -11,27 +11,28 @@
   'access_control_allow_origin',
   'environment'
   ]
--%}
+%}
 
 object ApiListener "api" {
-
 {% for key, value in icinga2_api.items() | sort %}
-{% if key in _attr %}
-{% if key == 'ticket_salt' and icinga2_mode == 'master' and icinga2_primary_master == ansible_fqdn %}
+  {% if key in _attr %}
+    {% if key == 'ticket_salt' and
+          icinga2_mode == 'master' and
+          icinga2_primary_master == ansible_fqdn %}
   ticket_salt     = {{ icinga2_api.ticket_salt }}
-{% else %}
-{% if key in [ "bind_host", "bind_port"] %}
+    {% else %}
+      {% if key in [ "bind_host", "bind_port"] %}
   {{ "%-18s" | format(key,) }} = "{{ value }}"
-{% elif value is string %}
+      {% elif value is string %}
   {{ "%-18s" | format(key,) }} = {{ value }}
-{% elif value | type == "bool" %}
+      {% elif value | type == "bool" %}
   {{ "%-18s" | format(key,) }} = {{ value | bool | ternary('true', 'false') }}
-{% elif value is iterable %}
+      {% elif value is iterable %}
   {{ "%-18s" | format(key,) }} = {{ value | join(':') }}
-{% else %}
+      {% else %}
   {{ "%-18s" | format(key,) }} = {{ value }}
-{% endif %}
-{% endif %}
-{% endif %}
+      {% endif %}
+    {% endif %}
+  {% endif %}
 {% endfor %}
 }
