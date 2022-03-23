@@ -17,7 +17,8 @@ class FilterModule(object):
             'primary_master': self.filter_primary,
             'reorder_master': self.filter_reorder,
             'satellite_zone': self.satellite_zone,
-            'apply_service_name': self.apply_service_name
+            'apply_service_name': self.apply_service_name,
+            'dns_lookup': self.dns_lookup
         }
 
     def filter_primary(self, mydict):
@@ -141,6 +142,17 @@ class FilterModule(object):
         display.v("= result {}".format(result))
 
         return data, result
+
+    def dns_lookup(self, domain):
+        """
+        """
+        ip = None
+        import dns.resolver
+        answers = dns.resolver.query(domain)
+        for answer in answers:
+            ip = answer.to_text()
+
+        return ip
 
     def __transform(self, multilevelDict):
         """

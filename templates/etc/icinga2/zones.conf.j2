@@ -1,16 +1,32 @@
 #jinja2: trim_blocks: True, lstrip_blocks: True
 // {{ ansible_managed }}
+{% import 'templates/macros.j2' as tpl with context %}
 
+{#
+ #  icinga2 master or primary
+ #}
 {% if icinga2_masters is mapping %}
   {% set icinga2_reordered_masters = icinga2_masters | reorder_master %}
   {% set icinga2_master = '' %}
   {% set _keys = icinga2_reordered_masters.keys() %}
-  {% for m in _keys %}
-object Endpoint "{{ m }}" { {% if icinga2_reordered_masters[m]['ip'] is defined %} host = "{{ icinga2_reordered_masters[m]['ip'] }}"; {% endif %}port = "5665" }
-  {% endfor %}
-object Zone "master" { endpoints = [ "{{ _keys | join( '", "') }}" ] }
+  {% for endpoint in _keys %}
+{{
+  tpl.endpoint(
+    endpoint = endpoint,
+    host = icinga2_reordered_masters[endpoint]['ip']
+  ) | indent(0, first=False)
+}}
+   {% endfor %}
+{{
+  tpl.zone(
+    endpoints = _keys,
+    zone = "primary"
+  ) | indent(0, first=False)
+}}
 {% endif %}
-
+{#
+ #  icinga2 satellite
+ #}
 {% if icinga2_mode == 'satellite' %}
 // icinga2_satellite_zone: {{ icinga2_satellite_zone }}
 // icinga2_satellites    : {{ icinga2_satellites }}
@@ -18,26 +34,55 @@ object Zone "master" { endpoints = [ "{{ _keys | join( '", "') }}" ] }
     {% if icinga2_satellites is mapping %}
       {% if icinga2_satellites[icinga2_satellite_zone] is defined %}
         {% set _keys = icinga2_satellites[icinga2_satellite_zone].keys() %}
-        {% for s in _keys %}
-object Endpoint "{{ s }}" {
-          {% if icinga2_satellites[icinga2_satellite_zone][s]['ip'] is defined %}
-  host = "{{ icinga2_satellites[icinga2_satellite_zone][s]['ip'] }}";
-          {% endif %}
-  port = "5665" }
+        {% for endpoints in _keys %}
+{{
+  tpl.endpoint(
+    endpoint = endpoints,
+    host = icinga2_satellites[icinga2_satellite_zone][endpoints]['ip']
+  ) | indent(0, first=False)
+}}
         {% endfor %}
-object Zone "{{ icinga2_satellite_zone }}" { endpoints = [ "{{ _keys | join( '", "') }}" ] ; parent = "master" }
+{{
+  tpl.zone(
+    zone = icinga2_satellite_zone,
+    endpoints = _keys, parent = "primary"
+  ) | indent(0, first=False)
+}}
       {% else %}
 // no zone config for '{{ icinga2_satellite_zone }}' found!
-object Endpoint "{{ icinga2_satellite_zone }}" { host = "{{ icinga2_satellite_zone }}"; port = "5665" }
-object Zone "{{ icinga2_satellite_zone }}" { endpoints = [ "{{ icinga2_satellite_zone }}" ] ; parent = "master" }
+{{
+  tpl.endpoint(
+    endpoint = icinga2_satellite_zone,
+    host = icinga2_satellite_zone
+  ) | indent(0, first=False)
+}}
+{{
+  tpl.zone(
+    zone = icinga2_satellite_zone,
+    endpoints = icinga2_satellite_zone, parent = "primary"
+  ) | indent(0, first=False)
+}}
       {% endif %}
     {% else %}
+      {# use dns resolver on ansible controller #}
       {% set _ip = lookup('pipe', 'host ' + icinga2_satellite_zone   + ' | grep "has address" | cut -d" " -f4') %}
+      // {{ _ip }}
+      // {{ icinga2_satellite_zone | dns_lookup }}
       {% if _ip | length == 0 %}
         {% set _ip = icinga2_satellite_zone %}
       {% endif %}
-object Endpoint "{{ icinga2_satellite_zone }}" { host = "{{ _ip }}"; port = "5665" }
-object Zone "{{ icinga2_satellite_zone }}" { endpoints = [ "{{ icinga2_satellite_zone }}" ] ; parent = "master" }
+{{
+  tpl.endpoint(
+    endpoint = icinga2_satellite_zone,
+    host = _ip
+  ) | indent(0, first=False)
+}}
+{{
+  tpl.zone(
+    zone = icinga2_satellite_zone,
+    endpoints = icinga2_satellite_zone, parent = "primary"
+  ) | indent(0, first=False)
+}}
     {% endif %}
   {% endif %}
 {% endif %}

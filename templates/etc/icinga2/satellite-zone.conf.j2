@@ -38,8 +38,10 @@ object Host "{{ _name }}" {
   command_endpoint = "{{ ansible_fqdn }}"
   zone = "{{ _zone }}"
     {% for ke,ve in v.items() | sort %}
-      {% if ke == 'import' %}{{ ke }} "{{ ve }}"
-      {% elif ke == 'groups' %}{{ ke }} = ["{{ ve | join('","') }}"]
+      {% if ke == 'import' %}
+  {{ ke }} "{{ ve }}"
+      {% elif ke == 'groups' %}
+  {{ ke }} = ["{{ ve | join('","') }}"]
       {% elif ke == 'vars' %}
   vars = {
     {{ ve | indent(4) }}

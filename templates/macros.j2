@@ -1,0 +1,24 @@
+{#
+#   List of macros for icinga2
+#}
+{# set print = self #}
+
+{% macro endpoint(endpoint, host, port = "5665" ) %}
+object Endpoint "{{ endpoint }}" {
+  {% if host is defined and
+        host | string | length > 0 %}
+  host = "{{ host }}"
+  {% endif %}
+  port = "{{ port }}"
+}
+{% endmacro %}
+
+
+{% macro zone(endpoints, zone, parent = None) %}
+object Zone "{{ zone }}" {
+  endpoints = [ "{{ endpoints | join( '", "') }}" ]
+  {% if parent %}
+  parent = "{{ parent }}"
+  {% endif %}
+}
+{% endmacro %}
