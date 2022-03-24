@@ -11,9 +11,6 @@
     {{ valid_data }}
 */
 
-    {% set valid_data = true %} {# Always stay positive #}
-    {% set _type = icinga2_notification_apply_rules[n]['type'] %}
-    {% set _ = icinga2_notification_apply_rules[n].pop('type') %}
     {% set _users = data['users'] %}
     {% set _user_groups = data['user_groups'] %}
     // {{ (_users and _users | type == "str" and _users | length == 0) or

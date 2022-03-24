@@ -152,7 +152,7 @@ class FilterModule(object):
         notification_type = None
         valid_data = True
 
-        data = data.get(name)
+        data = data.get(name, {})
         display.v("  - data {}".format(data))
 
         notification_type = data.get('type').capitalize()
