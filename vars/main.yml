@@ -146,25 +146,24 @@ icinga2_defaults_api:
 # https://icinga.com/docs/icinga-2/latest/doc/03-monitoring-basics/#apply-notifications-to-hosts-and-services
 icinga2_defaults_notification_apply_rules:
   #
-  host-mail:
+  mail_host:
     type: host
     import: generic-host-notification
-    users: ""
-    user_groups: ""
-    interval: '2h'
-    extra_parameters: |
-      vars.notification_logtosyslog = true
+    users: []
+    user_groups: []
+    # interval: '2h'
+    # extra_parameters: |
+    #   vars.notification_logtosyslog = true
     assign_where: "host.vars.notification.mail"
   #
-  service-mail:
+  mail_service:
     type: service
     import: generic-service-notification
-    users: ""
-    user_groups: ""
-    interval: '2h'
-    extra_parameters: |
-      vars.notification_logtosyslog = true
-
+    users: []
+    user_groups: []
+    # interval: '2h'
+    # extra_parameters: |
+    #   vars.notification_logtosyslog = true
     assign_where: "host.vars.notification.mail"
 
 icinga2_defaults_notification_templates:
@@ -173,7 +172,7 @@ icinga2_defaults_notification_templates:
     description: |
       generic service notification to mail for 24/7 alarms
     command: "mail-service-notification"
-    interval: 15m
+    # interval: 15m
     period: "24x7"
     extra_parameters: |
       vars += {
@@ -200,7 +199,7 @@ icinga2_defaults_notification_templates:
     description: |
       generic host notification to mail for 24/7 alarms
     command: "mail-host-notification"
-    interval: 15m
+    # interval: 15m
     period: "24x7"
     extra_parameters: |
       vars += {

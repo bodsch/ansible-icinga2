@@ -7,3 +7,6 @@ pytest==6.2.5
 pytest-testinfra==6.4.0
 tox==3.24.3
 tox-gh-actions==2.6.0
+
+# for dns validation
+dnspython

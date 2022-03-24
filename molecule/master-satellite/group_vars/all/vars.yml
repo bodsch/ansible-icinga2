@@ -29,7 +29,7 @@ icinga2_master_features_enabled:
 
 icinga2_notification_apply_rules:
   #
-  host-mail:
+  mail_host:
     # type: host
     # import: generic-host-notification
     users:

@@ -16,7 +16,13 @@ object Endpoint "{{ endpoint }}" {
 
 {% macro zone(endpoints, zone, parent = None) %}
 object Zone "{{ zone }}" {
+  // {{ endpoints }} - {{ endpoints | type }}
+  {% if endpoints is defined and
+        endpoints | type == "list" %}
   endpoints = [ "{{ endpoints | join( '", "') }}" ]
+  {% else %}
+  endpoints = {{ endpoints  }}
+  {% endif %}
   {% if parent %}
   parent = "{{ parent }}"
   {% endif %}

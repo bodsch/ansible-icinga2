@@ -18,6 +18,7 @@ class FilterModule(object):
             'reorder_master': self.filter_reorder,
             'satellite_zone': self.satellite_zone,
             'apply_service_name': self.apply_service_name,
+            'apply_notification': self.apply_notification,
             'dns_lookup': self.dns_lookup
         }
 
@@ -142,6 +143,36 @@ class FilterModule(object):
         display.v("= result {}".format(result))
 
         return data, result
+
+    def apply_notification(self, data, name):
+        """
+        """
+        display.v("apply_notification({}, {})".format(data, name))
+
+        notification_type = None
+        valid_data = True
+
+        data = data.get(name)
+        display.v("  - data {}".format(data))
+
+        notification_type = data.get('type').capitalize()
+        _ = data.pop('type')
+
+        _users = data.get('users', None)
+        _usergroups = data.get('user_groups', None)
+
+        if _users is None and _usergroups is None:
+            valid_data = False
+        else:
+            if _users is None:
+                data.pop('users')
+            if _usergroups is None:
+                data.pop('user_groups')
+
+        display.v("  - notification_type {}".format(notification_type))
+        display.v("  - valid_data {}".format(valid_data))
+
+        return data, notification_type, valid_data
 
     def dns_lookup(self, domain):
         """

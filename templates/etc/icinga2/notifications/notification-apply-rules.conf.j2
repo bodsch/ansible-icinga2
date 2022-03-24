@@ -4,15 +4,31 @@
 {% if icinga2_notification_apply_rules  is defined and
       icinga2_notification_apply_rules | count > 0 %}
   {% for n, data in icinga2_notification_apply_rules.items() %}
+    {% set data, _type, valid_data = icinga2_notification_apply_rules | apply_notification(n) %}
+/*
+    {{ data }}
+    {{ _type }}
+    {{ valid_data }}
+*/
+
     {% set valid_data = true %} {# Always stay positive #}
     {% set _type = icinga2_notification_apply_rules[n]['type'] %}
     {% set _ = icinga2_notification_apply_rules[n].pop('type') %}
     {% set _users = data['users'] %}
     {% set _user_groups = data['user_groups'] %}
+    // {{ (_users and _users | type == "str" and _users | length == 0) or
+          (_users and _users | type == "list" and _users | count == 0) }}
+    // {{ (_user_groups and _user_groups | type == "str" and _user_groups | length == 0) or
+          (_user_groups and _user_groups | type == "list" and _user_groups | count == 0) }}
 
-    {% if _users | length == 0 and
-          _user_groups | length == 0 %}
+    {% if ((_users and _users | type == "str" and _users | length == 0) or
+          (_users and _users | type == "list" and _users | count == 0)) and
+          ((_user_groups and _user_groups | type == "str" and _user_groups | length == 0) or
+          (_user_groups and _user_groups | type == "list" and _user_groups | count == 0)) %}
       {% set valid_data = false %}
+      {% set _ = data.pop('users') %}
+      {% set _ = data.pop('user_groups') %}
+
 /*
  * You must define users OR user_groups for a valid notification!
  * The following apply rule is therefore deactivated for safety.
@@ -28,9 +44,10 @@ apply Notification "{{ n }}" to {{  _type | capitalize }} {
       {% elif key in ['users', 'display_name', 'user_groups', 'interval'] and
               value | string | length > 0 %}
         {% if key in ['users', 'user_groups'] and
-              value | type == "list" %}
+              value | type == "list" and
+              value | count > 0 %}
   {{ key }} = [ "{{ value | join( '", "') }}" ]
-        {% else %}
+        {% elif value | type == "str" %}
   {{ key }} = {{ value }}
         {% endif %}
       {% elif key == 'extra_parameters' %}

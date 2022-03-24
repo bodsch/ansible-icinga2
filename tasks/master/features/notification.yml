@@ -23,10 +23,25 @@
     icinga2_notification_objects: "{{ icinga2_defaults_notification_objects |
       combine( icinga2_notification_objects, recursive=True ) }}"
 
+- name: d
+  debug:
+    msg:
+      - "{{ icinga2_defaults_notification_apply_rules }}"
+      - "{{ icinga2_notification_apply_rules }}"
+
 - name: merge icinga2 notification apply rules between defaults and custom
   set_fact:
     icinga2_notification_apply_rules: "{{ icinga2_defaults_notification_apply_rules |
       combine( icinga2_notification_apply_rules, recursive=True ) }}"
+
+- name: d
+  debug:
+    msg:
+      - "{{ icinga2_notification_apply_rules }}"
+
+#- name: re-raise the error
+#  fail:
+#    msg: ":p"
 
 - name: configure notification feature
   template:
