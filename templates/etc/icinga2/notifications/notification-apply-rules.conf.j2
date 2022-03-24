@@ -4,15 +4,34 @@
 {% if icinga2_notification_apply_rules  is defined and
       icinga2_notification_apply_rules | count > 0 %}
   {% for n, data in icinga2_notification_apply_rules.items() %}
+    {% set valid_data = true %} {# Always stay positive #}
     {% set _type = icinga2_notification_apply_rules[n]['type'] %}
     {% set _ = icinga2_notification_apply_rules[n].pop('type') %}
+    {% set _users = data['users'] %}
+    {% set _user_groups = data['user_groups'] %}
+
+    {% if _users | length == 0 and
+          _user_groups | length == 0 %}
+      {% set valid_data = false %}
+/*
+ * You must define users OR user_groups for a valid notification!
+ * The following apply rule is therefore deactivated for safety.
+ */
+
+/*
+    {% endif %}
 apply Notification "{{ n }}" to {{  _type | capitalize }} {
+
     {% for key, value in data.items() %}
       {% if key == 'import' %}
   import "{{ value }}"
-      {% elif key in ['users', 'display_name', 'user_groups', 'interval'] %}
-        {% if value | string | length > 0 %}
-  {{ key }}  = {{ value }}
+      {% elif key in ['users', 'display_name', 'user_groups', 'interval'] and
+              value | string | length > 0 %}
+        {% if key in ['users', 'user_groups'] and
+              value | type == "list" %}
+  {{ key }} = [ "{{ value | join( '", "') }}" ]
+        {% else %}
+  {{ key }} = {{ value }}
         {% endif %}
       {% elif key == 'extra_parameters' %}
   {{ value | indent(2) }}
@@ -23,6 +42,9 @@ apply Notification "{{ n }}" to {{  _type | capitalize }} {
       {% endif %}
     {% endfor %}
 }
+    {% if not valid_data %}
+*/
+    {% endif %}
 
   {% endfor %}
 {% endif %}

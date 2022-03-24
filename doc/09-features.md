@@ -223,6 +223,8 @@ icinga2_ido:
 
 ## notification
 
+see also documentation at [icinga.com](https://icinga.com/docs/icinga-2/latest/doc/09-object-types/#notification)
+
 All relevant files for notifications are stored under `/etc/icinga2/notifications`.  
 3 definitions are needed:
 - template: `notification-templates.conf`
@@ -232,6 +234,21 @@ All relevant files for notifications are stored under `/etc/icinga2/notification
 The [vars/main.yml](`vars/main.yml`) already contains default definitions for notifications via email.
 
 **At the moment the corresponding notification scripts have to be rolled out separately!**
+
+### notification template
+
+creates an `template Notification` object.
+
+| Variable                | Type        |          | Description  |
+| :---------              | :---        |          | :----------- |
+| `description`           | String      | Optional |              |
+| `command`               | String      | Required |              |
+| `interval`              | String      | Required |              |
+| `period`                | String      | Required |              |
+| `extra_parameters`      | Text        | Required |              |
+| `states`                | List        | Optional |              |
+| `types`                 | List        | Optional |              |
+
 
 ```yaml
 icinga2_notification_templates:
@@ -262,6 +279,16 @@ icinga2_notification_templates:
       - DowntimeEnd
       - DowntimeRemoved
 ```
+
+### notification object
+
+creates an `object NotificationCommand` object.
+
+| Variable                | Type        |          | Description  |
+| :---------              | :---        |          | :----------- |
+| `description`           | String      | Optional |              |
+| `command`               | List        | Required |              |
+| `extra_parameters`      | Text        | Required |              |
 
 ```yaml
 icinga2_notification_objects:
@@ -300,14 +327,36 @@ icinga2_notification_objects:
 
 ```
 
+### notification apply rules
+
+creates an `apply Notification` object.
+
+| Variable                | Type        |          | Description  |
+| :---------              | :---        |          | :----------- |
+| `type`                  | String      | Required | May be either `host` or `service`. |
+| `import`                | List        | Required |              |
+| `users`                 | List or String | Required | A list of user names who should be notified.<br>**Optional** if the `user_groups` attribute is set.    |
+| `user_groups`           | List or String | Required | A list of user group names who should be notified.<br>**Optional** if the `users` attribute is set. |
+| `interval`              | String      | Optional | The notification interval (in seconds). This interval is used for active notifications.<br>Defaults to 30 minutes. If set to 0, re-notifications are disabled.             |
+| `extra_parameters`      | Text        | Required |              |
+| `assign_where`          | String      | Required |              |
+| `ignore_where`          | String      | Optional |              |
+
+**note**
+
+> For `users` and `user_groups`, a list of users or groups can be specified as well as an object reference!  
+  Users or groups must be addressable via `icinga2_notification_user` or `icinga2_notification_usergroups`.  
+  Object references such as `host.vars.notification.mail.groups` are defined as host variables via `icinga2_host_object`.
+
+
 ```yaml
 icinga2_notification_apply_rules:
   #
   host-mail:
     type: host
     import: generic-host-notification
-    users: ""
-    user_groups: ""
+    users: []
+    user_groups: []
     interval: '2h'
     extra_parameters: |
       vars.notification_logtosyslog = true
@@ -316,29 +365,22 @@ icinga2_notification_apply_rules:
   service-mail:
     type: service
     import: generic-service-notification
-    users: ""
-    user_groups: ""
+    user_groups: host.vars.notification.mail.groups
     interval: '2h'
     extra_parameters: |
       vars.notification_logtosyslog = true
 
     assign_where: "host.vars.notification.mail"
-  #  
+  #
   host-slack:
     type: host
     import: slack-host-notification
-    # interval: 2h
-    users:
-      - icinga_admin
     extra_parameters: |
       vars.notification_logtosyslog = true
     assign_where: host.vars.notification.slack
   service-slack:
     type: service
     import: slack-service-notification
-    # interval: 2h
-    users:
-      - icinga_admin
     extra_parameters: |
       vars.notification_logtosyslog = true
     assign_where: host.vars.notification.slack

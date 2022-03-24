@@ -8,6 +8,7 @@
 - name: install
   include_tasks: install.yml
   tags:
+    - icinga2-configure
     - icinga2-install
 
 - name: master
