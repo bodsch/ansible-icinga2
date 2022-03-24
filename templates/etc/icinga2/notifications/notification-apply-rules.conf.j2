@@ -1,5 +1,6 @@
 #jinja2: trim_blocks: True, lstrip_blocks: True
 // {{ ansible_managed }}
+
 {% set _type = "" %}
 {% if icinga2_notification_apply_rules  is defined and
       icinga2_notification_apply_rules | count > 0 %}
@@ -11,6 +12,10 @@
 /*
  * You must define users OR user_groups for a valid notification!
  * The following apply rule is therefore deactivated for safety.
+    {% endif %}
+    {% if data['description'] is defined %}
+// {{ data['description'] }}
+      {% set _ = data.pop('description') %}
     {% endif %}
 apply Notification "{{ n }}" to {{  _type | capitalize }} {
 

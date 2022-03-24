@@ -28,8 +28,6 @@
  #  icinga2 satellite
  #}
 {% if icinga2_mode == 'satellite' %}
-// icinga2_satellite_zone: {{ icinga2_satellite_zone }}
-// icinga2_satellites    : {{ icinga2_satellites }}
   {% if icinga2_satellite_zone is defined %}
     {% if icinga2_satellites is mapping %}
       {% if icinga2_satellites[icinga2_satellite_zone] is defined %}

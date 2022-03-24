@@ -16,7 +16,6 @@ object Endpoint "{{ endpoint }}" {
 
 {% macro zone(endpoints, zone, parent = None) %}
 object Zone "{{ zone }}" {
-  // {{ endpoints }} - {{ endpoints | type }}
   {% if endpoints is defined and
         endpoints | type == "list" or
         endpoints | type == "dict_keys" %}

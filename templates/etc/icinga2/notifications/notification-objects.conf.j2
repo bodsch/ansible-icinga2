@@ -6,7 +6,7 @@
   {% for n, data in icinga2_notification_objects.items() %}
     {% if data['description'] is defined %}
 // {{ data['description'] }}
-      {% set _v = data.pop('description') %}
+      {% set _ = data.pop('description') %}
     {% endif %}
 object NotificationCommand "{{ n }}" {
     {% for key, value in data.items() %}
