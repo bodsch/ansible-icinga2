@@ -28,16 +28,17 @@ icinga2_master_features_enabled:
   - mainlog
 
 icinga2_notification_apply_rules:
-  #
-  mail_host:
-    # type: host
-    # import: generic-host-notification
-    users:
-      - bodsch
-    # user_groups: ""
-    # interval: '2h'
-    # extra_parameters: |
-    #   vars.notification_logtosyslog = true
-    # assign_where: "host.vars.notification.mail"
-
+  # #
+  # mail-host:
+  #   # type: host
+  #   # import: generic-host-notification
+  #   users:
+  #     - bodsch
+  #   # user_groups: ""
+  #   # interval: '2h'
+  #   # extra_parameters: |
+  #   #   vars.notification_logtosyslog = true
+  #   # assign_where: "host.vars.notification.mail"
+  mail-service:
+    user_groups: host.vars.notification.mail.groups
 ...

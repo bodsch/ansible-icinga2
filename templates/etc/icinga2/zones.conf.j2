@@ -66,8 +66,6 @@
     {% else %}
       {# use dns resolver on ansible controller #}
       {% set _ip = lookup('pipe', 'host ' + icinga2_satellite_zone   + ' | grep "has address" | cut -d" " -f4') %}
-      // {{ _ip }}
-      // {{ icinga2_satellite_zone | dns_lookup }}
       {% if _ip | length == 0 %}
         {% set _ip = icinga2_satellite_zone %}
       {% endif %}

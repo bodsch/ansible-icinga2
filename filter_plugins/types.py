@@ -28,6 +28,10 @@ class FilterModule(object):
         '''
           Get the type of a variable
         '''
+
+        if isinstance(var, str) or type(var).__name__ == "AnsibleUnsafeText":
+            return "str"
+
         return type(var).__name__
 
     def has_values(self, var):

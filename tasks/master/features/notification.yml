@@ -39,10 +39,6 @@
     msg:
       - "{{ icinga2_notification_apply_rules }}"
 
-#- name: re-raise the error
-#  fail:
-#    msg: ":p"
-
 - name: configure notification feature
   template:
     src: etc/icinga2/features/notification.conf.j2
@@ -83,6 +79,10 @@
   notify:
     - check configuration
     - reload icinga2
+
+#- name: re-raise the error
+#  fail:
+#    msg: ":p"
 
 - name: enable notification feature
   icinga2_feature:

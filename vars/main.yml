@@ -146,7 +146,7 @@ icinga2_defaults_api:
 # https://icinga.com/docs/icinga-2/latest/doc/03-monitoring-basics/#apply-notifications-to-hosts-and-services
 icinga2_defaults_notification_apply_rules:
   #
-  mail_host:
+  mail-host:
     type: host
     import: generic-host-notification
     users: []
@@ -156,7 +156,7 @@ icinga2_defaults_notification_apply_rules:
     #   vars.notification_logtosyslog = true
     assign_where: "host.vars.notification.mail"
   #
-  mail_service:
+  mail-service:
     type: service
     import: generic-service-notification
     users: []

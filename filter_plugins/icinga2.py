@@ -153,37 +153,65 @@ class FilterModule(object):
         valid_data = True
 
         data = data.get(name, {})
-        display.v("  - data {}".format(data))
 
         notification_type = data.get('type').capitalize()
         _ = data.pop('type')
 
         _users = data.get('users', None)
-        _usergroups = data.get('user_groups', None)
+        _groups = data.get('user_groups', None)
 
-        if _users is None and _usergroups is None:
+        valid_users = (isinstance(_users, list) and len(_users) != 0) or (isinstance(_users, str) and len(_users) != 0)
+        valid_groups = (isinstance(_groups, list) and len(_groups) != 0) or (isinstance(_groups, str) and len(_groups) != 0)
+
+        if not valid_users and not valid_groups:
             valid_data = False
         else:
             if _users is None:
                 data.pop('users')
-            if _usergroups is None:
+            if _groups is None:
                 data.pop('user_groups')
-
-        display.v("  - notification_type {}".format(notification_type))
-        display.v("  - valid_data {}".format(valid_data))
 
         return data, notification_type, valid_data
 
     def dns_lookup(self, domain):
         """
         """
-        ip = None
-        import dns.resolver
-        answers = dns.resolver.query(domain)
-        for answer in answers:
-            ip = answer.to_text()
+        from dns.exception import DNSException
+        from dns.resolver import Resolver
+        from dns import reversename, query, zone
 
-        return ip
+        def dns_lookup(input, timeout=3, server=""):
+            """
+              Perform a simple DNS lookup, return results in a dictionary
+            """
+            resolver = Resolver()
+            resolver.timeout = float(timeout)
+            resolver.lifetime = float(timeout)
+
+            result = {}
+
+            if server:
+                resolver.nameservers = [server]
+            try:
+                records = resolver.resolve(input)
+                result = {
+                    "addrs": [ii.address for ii in records],
+                    "error": "",
+                    "name": input,
+                }
+            except DNSException as e:
+                result = {
+                    "addrs": [],
+                    "error": repr(e),
+                    "name": input,
+                }
+
+            return result
+
+        # print(dns_lookup("boone-schulz.de"))
+        # print(dns_lookup("satellite.matrix.lan"))
+
+        return None
 
     def __transform(self, multilevelDict):
         """
