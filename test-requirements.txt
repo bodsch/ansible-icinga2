@@ -9,4 +9,4 @@ tox==3.24.3
 tox-gh-actions==2.6.0
 
 # for dns validation
-dnspython
+# dnspython

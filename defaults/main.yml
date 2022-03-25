@@ -63,8 +63,6 @@ icinga2_service_downtimes: []
 
 icinga2_host_downtimes: []
 
-# icinga2_notification: []
-
 icinga2_notification_user: {}
 
 icinga2_notification_usergroups: {}

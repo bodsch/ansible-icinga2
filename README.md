@@ -16,7 +16,7 @@ Ansible role to setup Icinga2 master or satellite.
 ## Requirements & Dependencies
 
  - running mariadb / mysql database
- - python package `dnspython`
+
 
 ### Operating systems
 
@@ -46,9 +46,10 @@ If you want to use something stable, please use a [Tagged Version](https://gitla
 ## Credits
 
 - [Michael Friedrich](https://gitlab.com/dnsmichi)
-- [Nicolai Buchwitz](https://gitlab.com/nbuchwitz)
-- [Julien Tognazzi](https://gitlab.com/jtognazzi)
-- [Carsten Köbke](https://gitlab.com/Mikeschova)
+- [Nicolai Buchwitz](https://github.com/nbuchwitz)
+- [Julien Tognazzi](https://github.com/jtognazzi)
+- [Carsten Köbke](https://github.com/Mikesch-mp)
+- [Jo. Fiedler](https://github.com/jofiedler)
 - and many others to make icinga2 what it is
 
 ---

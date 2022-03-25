@@ -104,7 +104,7 @@ icinga2_apply_service:
 ```
 
 ```
-icinga2_checkcommands_default:
+icinga2_defaults_checkcommands:
   hostname:
     import: plugin-check-command
     command: '[ PluginDir + "/check_docker_container" ]'

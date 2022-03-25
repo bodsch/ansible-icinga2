@@ -91,17 +91,17 @@
 
 - name: merge icinga2 filelogger configuration between defaults and custom
   set_fact:
-    icinga2_filelogger: "{{ icinga2_filelogger_default |
+    icinga2_filelogger: "{{ icinga2_defaults_filelogger |
       combine( icinga2_filelogger, recursive=True ) }}"
 
 - name: merge icinga2 api configuration between defaults and custom
   set_fact:
-    icinga2_api: "{{ icinga2_api_default |
+    icinga2_api: "{{ icinga2_defaults_api |
       combine( icinga2_api, recursive=True ) }}"
 
 - name: merge icinga2 timeperiod configuration between defaults and custom
   set_fact:
-    icinga2_timeperiod: "{{ icinga2_timeperiod_default |
+    icinga2_timeperiod: "{{ icinga2_defaults_timeperiod |
       combine( icinga2_timeperiod, recursive=True ) }}"
 
 - block:

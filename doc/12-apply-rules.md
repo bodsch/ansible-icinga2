@@ -20,10 +20,10 @@ icinga2_apply_service:
       }
     assign_where: 'host.vars.https_vhosts'
 ```
-(for more, see the `icinga2_apply_service_default` in `vars/main.yml`)
+(for more, see the `icinga2_defaults_apply_service` in `vars/main.yml`)
 
 ```yaml
-icinga2_apply_service_default:
+icinga2_defaults_apply_service:
   ssh:
     import: generic-service
     check_command: ssh
