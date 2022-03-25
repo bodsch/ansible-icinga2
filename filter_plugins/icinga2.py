@@ -17,7 +17,9 @@ class FilterModule(object):
             'primary_master': self.filter_primary,
             'reorder_master': self.filter_reorder,
             'satellite_zone': self.satellite_zone,
-            'apply_service_name': self.apply_service_name
+            'apply_service_name': self.apply_service_name,
+            'apply_notification': self.apply_notification,
+            'dns_lookup': self.dns_lookup
         }
 
     def filter_primary(self, mydict):
@@ -141,6 +143,78 @@ class FilterModule(object):
         display.v("= result {}".format(result))
 
         return data, result
+
+    def apply_notification(self, data, name):
+        """
+        """
+        display.v("apply_notification({}, {})".format(data, name))
+
+        notification_type = None
+        valid_data = True
+
+        data = data.get(name, {})
+
+        notification_type = data.get('type', None)
+
+        if notification_type:
+            notification_type.capitalize()
+            _ = data.pop('type')
+
+        _users = data.get('users', None)
+        _groups = data.get('user_groups', None)
+
+        valid_users = (isinstance(_users, list) and len(_users) != 0) or (isinstance(_users, str) and len(_users) != 0)
+        valid_groups = (isinstance(_groups, list) and len(_groups) != 0) or (isinstance(_groups, str) and len(_groups) != 0)
+
+        if not valid_users and not valid_groups:
+            valid_data = False
+        else:
+            if data.get('users') and _users is None:
+                data.pop('users')
+            if data.get('user_groups') and _groups is None:
+                data.pop('user_groups')
+
+        return data, notification_type, valid_data
+
+    def dns_lookup(self, domain):
+        """
+        """
+        from dns.exception import DNSException
+        from dns.resolver import Resolver
+        from dns import reversename, query, zone
+
+        def dns_lookup(input, timeout=3, server=""):
+            """
+              Perform a simple DNS lookup, return results in a dictionary
+            """
+            resolver = Resolver()
+            resolver.timeout = float(timeout)
+            resolver.lifetime = float(timeout)
+
+            result = {}
+
+            if server:
+                resolver.nameservers = [server]
+            try:
+                records = resolver.resolve(input)
+                result = {
+                    "addrs": [ii.address for ii in records],
+                    "error": "",
+                    "name": input,
+                }
+            except DNSException as e:
+                result = {
+                    "addrs": [],
+                    "error": repr(e),
+                    "name": input,
+                }
+
+            return result
+
+        # print(dns_lookup("boone-schulz.de"))
+        # print(dns_lookup("satellite.matrix.lan"))
+
+        return None
 
     def __transform(self, multilevelDict):
         """

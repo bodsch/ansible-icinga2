@@ -8,7 +8,7 @@ The following objects are created by default:
 - 24x7
 
 ```yaml
-icinga2_timeperiod_default:
+icinga2_defaults_timeperiod:
   never:
     display_name: Icinga2 never TimePeriod
     ranges: {}

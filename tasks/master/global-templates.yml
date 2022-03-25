@@ -2,12 +2,12 @@
 
 - name: merge icinga2_apply_service configuration between defaults and custom
   set_fact:
-    icinga2_apply_service: "{{ icinga2_apply_service_default |
+    icinga2_apply_service: "{{ icinga2_defaults_apply_service |
       combine( icinga2_apply_service, recursive=True ) }}"
 
-- name: merge icinga2_checkcommands_default configuration between defaults and custom
+- name: merge icinga2_defaults_checkcommands configuration between defaults and custom
   set_fact:
-    icinga2_checkcommands: "{{ icinga2_checkcommands_default |
+    icinga2_checkcommands: "{{ icinga2_defaults_checkcommands |
       combine( icinga2_checkcommands, recursive=True ) }}"
 
 - block:

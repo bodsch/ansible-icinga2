@@ -27,4 +27,7 @@ icinga2_master_features_enabled:
   - ido-mysql
   - mainlog
 
+icinga2_notification_apply_rules:
+  mail-service:
+    user_groups: host.vars.notification.mail.groups
 ...

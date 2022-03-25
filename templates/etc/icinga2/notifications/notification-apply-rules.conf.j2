@@ -1,28 +1,49 @@
 #jinja2: trim_blocks: True, lstrip_blocks: True
 // {{ ansible_managed }}
+
 {% set _type = "" %}
 {% if icinga2_notification_apply_rules  is defined and
       icinga2_notification_apply_rules | count > 0 %}
   {% for n, data in icinga2_notification_apply_rules.items() %}
-    {% set _type = icinga2_notification_apply_rules[n]['type'] %}
-    {% set _ = icinga2_notification_apply_rules[n].pop('type') %}
-apply Notification "{{ n }}" to {{  _type | capitalize }} {
-    {% for key, value in data.items() %}
-      {% if key == 'import' %}
-  import "{{ value }}"
-      {% elif key in ['users', 'display_name', 'user_groups', 'interval'] %}
-        {% if value | string | length > 0 %}
-  {{ key }}  = {{ value }}
-        {% endif %}
-      {% elif key == 'extra_parameters' %}
-  {{ value | indent(2) }}
-      {% elif key == 'assign_where' %}
-  assign where {{ value }}
-      {% elif key == 'ignore_where' %}
-  ignore where {{ value }}
+    {% set data, _type, valid_data = icinga2_notification_apply_rules | apply_notification(n) %}
+    {% set _users = data['users'] %}
+    {% set _user_groups = data['user_groups'] %}
+    {% if _type %}
+      {% if not valid_data %}
+/*
+ * You must define users OR user_groups for a valid notification!
+ * The following apply rule is therefore deactivated for safety.
       {% endif %}
-    {% endfor %}
-}
+      {% if data['description'] is defined %}
+// {{ data['description'] }}
+        {% set _ = data.pop('description') %}
+      {% endif %}
+apply Notification "{{ n }}" to {{  _type | capitalize }} {
 
+      {% for key, value in data.items() %}
+        {% if key == 'import' %}
+  import "{{ value }}"
+        {% elif key in ['users', 'display_name', 'user_groups', 'interval'] and
+                value | string | length > 0 %}
+          {% if key in ['users', 'user_groups'] and
+                value | type == "list" and
+                value | count > 0 %}
+  {{ key }} = [ "{{ value | join( '", "') }}" ]
+          {% elif value | type == "str" %}
+  {{ key }} = {{ value }}
+          {% endif %}
+        {% elif key == 'extra_parameters' %}
+  {{ value | indent(2) }}
+        {% elif key == 'assign_where' %}
+  assign where {{ value }}
+        {% elif key == 'ignore_where' %}
+  ignore where {{ value }}
+        {% endif %}
+      {% endfor %}
+}
+      {% if not valid_data %}
+*/
+      {% endif %}
+    {% endif %}
   {% endfor %}
 {% endif %}

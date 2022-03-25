@@ -1,5 +1,6 @@
 #jinja2: trim_blocks: True, lstrip_blocks: True
 // {{ ansible_managed }}
+{% import 'templates/macros.j2' as tpl with context %}
 
 {% if icinga2_mode == 'satellite' %}
   {% if icinga2_satellite_zone is defined %}
@@ -8,24 +9,67 @@
       {% if icinga2_satellites[icinga2_satellite_zone] is defined %}
         {% set _keys = icinga2_satellites[icinga2_satellite_zone].keys() %}
         {% for s in _keys %}
+{{
+  tpl.endpoint(
+    endpoint = s,
+    host = icinga2_satellites[icinga2_satellite_zone][s]['ip']
+  ) | indent(0, first=False)
+}}
+/*
 object Endpoint "{{ s }}" {
           {% if icinga2_satellites[icinga2_satellite_zone][s]['ip'] is defined %}
   host = "{{ icinga2_satellites[icinga2_satellite_zone][s]['ip'] }}";
           {% endif %}
   port = "5665" }
+*/
         {% endfor %}
-object Zone "{{ icinga2_satellite_zone }}" { endpoints = [ "{{ _keys | join( '", "') }}" ] ; parent = "master" }
+{{
+  tpl.zone(
+    endpoints = _keys,
+    zone = icinga2_satellite_zone,
+    parent = "primary"
+  ) | indent(0, first=False)
+}}
+// object Zone "{{ icinga2_satellite_zone }}" { endpoints = [ "{{ _keys | join( '", "') }}" ] ; parent = "primary" }
       {% else %}
-object Endpoint "{{ icinga2_satellite_zone }}" { host = "{{ icinga2_satellite_zone }}"; port = "5665" }
-object Zone "{{ icinga2_satellite_zone }}" { endpoints = [ "{{ icinga2_satellite_zone }}" ] ; parent = "master" }
+{{
+  tpl.endpoint(
+    endpoint = icinga2_satellite_zone,
+    host = icinga2_satellite_zone
+  ) | indent(0, first=False)
+}}
+{{
+  tpl.zone(
+    endpoints = icinga2_satellite_zone,
+    zone = icinga2_satellite_zone,
+    parent = "primary"
+  ) | indent(0, first=False)
+}}
+
+// object Endpoint "{{ icinga2_satellite_zone }}" { host = "{{ icinga2_satellite_zone }}"; port = "5665" }
+// object Zone "{{ icinga2_satellite_zone }}" { endpoints = [ "{{ icinga2_satellite_zone }}" ] ; parent = "primary" }
       {% endif %}
     {% else %}
       {% set _ip = lookup('pipe', 'host ' + icinga2_satellite_zone   + ' | grep "has address" | cut -d" " -f4') %}
       {% if _ip | length == 0 %}
         {% set _ip = icinga2_satellite_zone %}
       {% endif %}
-object Endpoint "{{ icinga2_satellite_zone }}" { host = "{{ _ip }}"; port = "5665" }
-object Zone "{{ icinga2_satellite_zone }}" { endpoints = [ "{{ icinga2_satellite_zone }}" ] ; parent = "master" }
+{{
+  tpl.endpoint(
+    endpoint = icinga2_satellite_zone,
+    host = _ip
+  ) | indent(0, first=False)
+}}
+{{
+  tpl.zone(
+    endpoints = icinga2_satellite_zone,
+    zone = icinga2_satellite_zone,
+    parent = "primary"
+  ) | indent(0, first=False)
+}}
+
+// object Endpoint "{{ icinga2_satellite_zone }}" { host = "{{ _ip }}"; port = "5665" }
+// object Zone "{{ icinga2_satellite_zone }}" { endpoints = [ "{{ icinga2_satellite_zone }}" ] ; parent = "primary" }
     {% endif %}
   {% endif %}
 {% endif %}

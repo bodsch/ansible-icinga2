@@ -69,6 +69,10 @@
     - check configuration
     - reload icinga2
 
+#- name: re-raise the error
+#  fail:
+#    msg: ":p"
+
 - name: enable notification feature
   icinga2_feature:
     name: notification

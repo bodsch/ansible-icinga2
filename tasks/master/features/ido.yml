@@ -2,7 +2,7 @@
 
 - name: merge icinga2 ido configuration between defaults and custom
   set_fact:
-    icinga2_ido: "{{ icinga2_ido_default |
+    icinga2_ido: "{{ icinga2_defaults_ido |
       combine( icinga2_ido, recursive=True ) }}"
 
 - include_tasks: ido-mysql.yml

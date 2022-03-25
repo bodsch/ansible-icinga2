@@ -19,7 +19,7 @@ icinga2_needs_update: true
 
 icinga2_downtime_system_name_internal: ''
 
-icinga2_apply_service_default:
+icinga2_defaults_apply_service:
   ssh:
     import: generic-service
     check_command: ssh
@@ -73,7 +73,7 @@ icinga2_apply_service_default:
     assign_where: '"memory" in host.vars.services'
     ignore_where: 'host.vars.os == "Windows"'
 
-icinga2_checkcommands_default:
+icinga2_defaults_checkcommands:
   system_uptime:
     import: plugin-check-command
     command: '[ PluginDir + "/check_uptime.sh" ]'
@@ -81,7 +81,7 @@ icinga2_checkcommands_default:
     import: plugin-check-command
     command: '[ PluginDir + "/check_mem" ]'
 
-icinga2_timeperiod_default:
+icinga2_defaults_timeperiod:
   never:
     display_name: Icinga2 never TimePeriod
     ranges: {}
@@ -108,7 +108,7 @@ icinga2_timeperiod_default:
       saturday: "00:00-24:00"
       sunday: "00:00-24:00"
 
-icinga2_ido_default:
+icinga2_defaults_ido:
   type: mysql
   enabled: true
   user: 'icinga2_ido'
@@ -123,48 +123,44 @@ icinga2_ido_default:
     schema_file: /usr/share/icinga2-ido-mysql/schema/mysql.sql
     schema_upgrade: /usr/share/icinga2-ido-mysql/schema/upgrade
 
-icinga2_api_default:
+icinga2_defaults_api:
   enabled: true
   accept_config: true
   accept_commands: true
   ticket_salt: TicketSalt
-  user: {}
-
-icinga2_filelogger_default:
-  directory: /var/log/icinga2
-  mainlog:
-    severity: warning
-    logfile: icinga2.log
-
-icinga2_defaults_api:
   user:
     validate:
       password: validate
       permissions:
         - "status/query"
 
+icinga2_defaults_filelogger:
+  directory: /var/log/icinga2
+  mainlog:
+    severity: warning
+    logfile: icinga2.log
+
 # https://icinga.com/docs/icinga-2/latest/doc/03-monitoring-basics/#apply-notifications-to-hosts-and-services
 icinga2_defaults_notification_apply_rules:
   #
-  host-mail:
+  mail-host:
     type: host
     import: generic-host-notification
-    users: ""
-    user_groups: ""
-    interval: '2h'
-    extra_parameters: |
-      vars.notification_logtosyslog = true
+    users: []
+    user_groups: []
+    # interval: '2h'
+    # extra_parameters: |
+    #   vars.notification_logtosyslog = true
     assign_where: "host.vars.notification.mail"
   #
-  service-mail:
+  mail-service:
     type: service
     import: generic-service-notification
-    users: ""
-    user_groups: ""
-    interval: '2h'
-    extra_parameters: |
-      vars.notification_logtosyslog = true
-
+    users: []
+    user_groups: []
+    # interval: '2h'
+    # extra_parameters: |
+    #   vars.notification_logtosyslog = true
     assign_where: "host.vars.notification.mail"
 
 icinga2_defaults_notification_templates:
@@ -173,7 +169,7 @@ icinga2_defaults_notification_templates:
     description: |
       generic service notification to mail for 24/7 alarms
     command: "mail-service-notification"
-    interval: 15m
+    # interval: 15m
     period: "24x7"
     extra_parameters: |
       vars += {
@@ -200,7 +196,7 @@ icinga2_defaults_notification_templates:
     description: |
       generic host notification to mail for 24/7 alarms
     command: "mail-host-notification"
-    interval: 15m
+    # interval: 15m
     period: "24x7"
     extra_parameters: |
       vars += {
@@ -359,22 +355,4 @@ icinga2_defaults_notification_objects:
         notification_servicedisplayname = "$service.display_name$"
       }
 
-
-  # slack-host-notification:
-  #   import: "plugin-notification-command"
-  #   command:
-  #     - SCRIPT_DIR
-  #     - '"slack/slack-host-notification.py"'
-  #   timeout: 1m
-  #   extra_parameters: |
-  #     arguments += {
-  #       "--address" = "$address$"
-  #       "--hostdisplayname" = "$host.display_name$"
-  #       "--hostname" = "$host.name$"
-  #       "--hostoutput" = "$host.output$"
-  #       "--hoststate" = "$host.state$"
-  #       "--notification-author" = "$notification.author$"
-  #       "--notification-comment" = "$notification.comment$"
-  #       "--notification-type" = "$notification.type$"
-  #     }
-
+...

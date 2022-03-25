@@ -93,6 +93,24 @@ icinga2_notification_user:
       - icingaadmins
     email: admin@example.com
 
+icinga2_notification_apply_rules:
+  #
+  mail-host:
+    # type: host
+    # import: generic-host-notification
+    users:
+      - bodsch
+  #
+  mail-service:
+    user_groups: host.vars.notification.mail
+  #
+  # must fail!
+  # must fail because the following parameters are missing:
+  #   - type
+  host_FAIL:
+    users:
+      - bodsch
+
 icinga2_service_downtimes:
   backup-downtime:
     author: icingaadmin
