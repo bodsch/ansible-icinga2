@@ -62,7 +62,6 @@ def local_facts(host):
     "/var/lib/icinga2/api/packages/_api",
     "/var/lib/icinga2/api/zones",
     "/var/lib/icinga2/api/zones/global-templates",
-    "/var/lib/icinga2/api/zones/master",
 ])
 def test_directories(host, directories):
     d = host.file(directories)
