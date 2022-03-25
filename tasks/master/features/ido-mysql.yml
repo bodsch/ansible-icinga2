@@ -28,9 +28,9 @@
     # missing 'libmariadbclient-dev'?
 
     - block:
-        - debug:
-            msg:
-              - "{{ icinga2_mariadb_build_packages }}"
+        #- debug:
+        #    msg:
+        #      - "{{ icinga2_mariadb_build_packages }}"
 
         - name: install build essentials
           package:
