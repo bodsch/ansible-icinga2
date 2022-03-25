@@ -30,7 +30,7 @@ object Endpoint "{{ s }}" {
     parent = "primary"
   ) | indent(0, first=False)
 }}
-// object Zone "{{ icinga2_satellite_zone }}" { endpoints = [ "{{ _keys | join( '", "') }}" ] ; parent = "master" }
+// object Zone "{{ icinga2_satellite_zone }}" { endpoints = [ "{{ _keys | join( '", "') }}" ] ; parent = "primary" }
       {% else %}
 {{
   tpl.endpoint(
@@ -47,7 +47,7 @@ object Endpoint "{{ s }}" {
 }}
 
 // object Endpoint "{{ icinga2_satellite_zone }}" { host = "{{ icinga2_satellite_zone }}"; port = "5665" }
-// object Zone "{{ icinga2_satellite_zone }}" { endpoints = [ "{{ icinga2_satellite_zone }}" ] ; parent = "master" }
+// object Zone "{{ icinga2_satellite_zone }}" { endpoints = [ "{{ icinga2_satellite_zone }}" ] ; parent = "primary" }
       {% endif %}
     {% else %}
       {% set _ip = lookup('pipe', 'host ' + icinga2_satellite_zone   + ' | grep "has address" | cut -d" " -f4') %}
@@ -69,7 +69,7 @@ object Endpoint "{{ s }}" {
 }}
 
 // object Endpoint "{{ icinga2_satellite_zone }}" { host = "{{ _ip }}"; port = "5665" }
-// object Zone "{{ icinga2_satellite_zone }}" { endpoints = [ "{{ icinga2_satellite_zone }}" ] ; parent = "master" }
+// object Zone "{{ icinga2_satellite_zone }}" { endpoints = [ "{{ icinga2_satellite_zone }}" ] ; parent = "primary" }
     {% endif %}
   {% endif %}
 {% endif %}
