@@ -128,20 +128,17 @@ icinga2_defaults_api:
   accept_config: true
   accept_commands: true
   ticket_salt: TicketSalt
-  user: {}
+  user:
+    validate:
+      password: validate
+      permissions:
+        - "status/query"
 
 icinga2_defaults_filelogger:
   directory: /var/log/icinga2
   mainlog:
     severity: warning
     logfile: icinga2.log
-
-icinga2_defaults_api:
-  user:
-    validate:
-      password: validate
-      permissions:
-        - "status/query"
 
 # https://icinga.com/docs/icinga-2/latest/doc/03-monitoring-basics/#apply-notifications-to-hosts-and-services
 icinga2_defaults_notification_apply_rules:
