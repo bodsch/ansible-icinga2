@@ -154,8 +154,11 @@ class FilterModule(object):
 
         data = data.get(name, {})
 
-        notification_type = data.get('type').capitalize()
-        _ = data.pop('type')
+        notification_type = data.get('type', None)
+
+        if notification_type:
+            notification_type.capitalize()
+            _ = data.pop('type')
 
         _users = data.get('users', None)
         _groups = data.get('user_groups', None)
@@ -166,9 +169,9 @@ class FilterModule(object):
         if not valid_users and not valid_groups:
             valid_data = False
         else:
-            if _users is None:
+            if data.get('users') and _users is None:
                 data.pop('users')
-            if _groups is None:
+            if data.get('user_groups') and _groups is None:
                 data.pop('user_groups')
 
         return data, notification_type, valid_data

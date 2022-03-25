@@ -95,17 +95,21 @@ icinga2_notification_user:
 
 icinga2_notification_apply_rules:
   #
-  host-mail:
+  mail-host:
     # type: host
     # import: generic-host-notification
     users:
       - bodsch
-    # user_groups: ""
-    # interval: '2h'
-    # extra_parameters: |
-    #   vars.notification_logtosyslog = true
-    # assign_where: "host.vars.notification.mail"
-
+  #
+  mail-service:
+    user_groups: host.vars.notification.mail
+  #
+  # must fail!
+  # must fail because the following parameters are missing:
+  #   - type
+  host_FAIL:
+    users:
+      - bodsch
 
 icinga2_service_downtimes:
   backup-downtime:
