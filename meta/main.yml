@@ -9,27 +9,21 @@ galaxy_info:
   author: Bodo Schulz
   description: ansible role for handling icinga2 as master or satellite
   license: "BSD"
-  min_ansible_version: 2.8
+  min_ansible_version: 2.10
   platforms:
+    - name: ArchLinux
     - name: Ubuntu
       versions:
-        # 16.04
-        - cosmic
-        # 18.04
-        - bionic
         # 20.04
         - focal
     - name: Debian
       versions:
-        # 9
-        - etch
         # 10
         - buster
+        - bullseye
     - name: EL
       versions:
-        - 7
         - 8
-    - name: ArchLinux
 
   galaxy_tags:
     - monitoring

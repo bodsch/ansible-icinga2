@@ -22,7 +22,7 @@ jobs:
       fail-fast: false
       matrix:
         image:
-          - debian:10
+          - debian:11
         python-version:
           - '3.9'
         ansible-version:
