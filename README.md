@@ -118,7 +118,6 @@ A complete test setup can be found in the GitLab under [icinga2-infrastructure](
           }
           services = [ "uptime", "memory" ]
 
-
   roles:
     - role: icinga2
 ```
