@@ -30,7 +30,7 @@
       {% set _ = v.pop('display_name') %}
     {% endif %}
 
-object Host "{{ key }}" {
+object Host "{{ _name }}" {
     {% if _ip is defined and
           _ip | length != 0 %}
   address = "{{ _ip }}"
@@ -39,7 +39,7 @@ object Host "{{ key }}" {
   display_name = "{{ display_name }}"
     {% endif %}
     {% if endpoint %}
-  command_endpoint = "{{ _name }}"
+  command_endpoint = "{{ ansible_fqdn }}"
     {% endif %}
     {% if _zone is defined %}
   zone = "{{ _zone }}"
