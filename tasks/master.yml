@@ -36,9 +36,9 @@
     mode: 0666
     backup: true
 
-- name: create directory for master zone
+- name: create directory for primary zone
   file:
-    path: /etc/icinga2/zones.d/master
+    path: /etc/icinga2/zones.d/primary
     state: directory
     owner: "{{ icinga2_user }}"
     group: "{{ icinga2_group }}"
@@ -51,7 +51,7 @@
 - name: create hosts.conf
   template:
     src: etc/icinga2/hosts.conf.j2
-    dest: /etc/icinga2/zones.d/master/{{ ansible_fqdn }}.conf
+    dest: /etc/icinga2/zones.d/primary/{{ ansible_fqdn }}.conf
     owner: "{{ icinga2_user }}"
     group: "{{ icinga2_group }}"
     mode: 0666
