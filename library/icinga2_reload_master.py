@@ -36,7 +36,7 @@ class SimpleFlock:
                 fcntl.flock(self._fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
                 # Lock acquired!
                 return
-            except (OSError, IOError) as ex:
+            except (OSError, IOError, BlockingIOError) as ex:
                 if ex.errno != errno.EAGAIN:  # Resource temporarily unavailable
                     raise
                 elif self._timeout is not None and time.time() > (start_lock_search + self._timeout):

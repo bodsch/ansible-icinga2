@@ -130,6 +130,7 @@
         # WIP
         # url_username are hardcoded  ..
         - name: get state of primary master '{{ icinga2_primary_master }}'
+          delegate_to: "{{ icinga2_primary_master }}"
           uri:
             url: "https://{{ icinga2_primary_master }}:{{ icinga2_master_port | default(5665) }}/v1/status/IcingaApplication"
             url_username: root
@@ -149,6 +150,7 @@
 
         # TODO wenn icinga2_primary_master nicht per DNS auflösbar ist, gibt es hier einen timeout
         - name: wait for primary master ({{ icinga2_primary_master }}:{{ icinga2_master_port | default(5665) }}) to startup
+          delegate_to: "{{ icinga2_primary_master }}"
           wait_for:
             host: "{{ icinga2_primary_master }}"
             port: "{{ icinga2_master_port | default(5665) }}"
