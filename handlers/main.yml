@@ -3,7 +3,7 @@
 - name: yum-clean-metadata
   command: yum clean metadata
   args:
-    warn: no
+    warn: false
 
 - name: check configuration
   icinga2_daemon:
@@ -52,3 +52,4 @@
   when:
     - _icinga2_master_reloaded is defined
 
+...

@@ -148,10 +148,10 @@
             method: GET
             return_content: true
             status_code:
-              - 200 # OK
+              - 200  # OK
               - 301
               - 302
-              - 401 # Unauthorized
+              - 401  # Unauthorized
           register: icinga2_api_test
           until: icinga2_api_test is succeeded
           retries: 5
