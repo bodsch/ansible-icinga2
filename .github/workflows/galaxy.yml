@@ -21,7 +21,7 @@ jobs:
       - name: Check out the codebase
         uses: actions/checkout@v2
         with:
-          path: 'ansible-glauth'
+          path: 'ansible-icinga2'
 
       - name: galaxy
         uses: robertdebock/galaxy-action@1.2.1

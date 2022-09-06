@@ -14,8 +14,9 @@
     mode: 0660
 
 - name: enable gelf feature
-  icinga2_feature:
-    name: gelf
+  icinga2_features:
+    features:
+      - gelf
     state: "{{ feature_gelf_state }}"
   notify:
     - check configuration

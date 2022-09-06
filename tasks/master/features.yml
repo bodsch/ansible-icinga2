@@ -1,11 +1,9 @@
 ---
 
 - name: disable icinga2 features
-  icinga2_feature:
-    name: "{{ item }}"
+  icinga2_features:
+    features: "{{ icinga2_master_features_disabled }}"
     state: absent
-  loop:
-    "{{ icinga2_master_features_disabled }}"
   notify:
     - check configuration
     - restart icinga2
@@ -13,13 +11,28 @@
     - icinga2
     - features
 
-- include_tasks: features/api.yml
-- include_tasks: features/notification.yml
-- include_tasks: features/ido.yml
-- include_tasks: features/icingadb.yml
-- include_tasks: features/graphite.yml
-- include_tasks: features/influxdb.yml
-- include_tasks: features/influxdb2.yml
-- include_tasks: features/gelf.yml
+- name: features api
+  include_tasks: features/api.yml
+
+- name: features notification
+  include_tasks: features/notification.yml
+
+- name: features ido
+  include_tasks: features/ido.yml
+
+- name: features icingadb
+  include_tasks: features/icingadb.yml
+
+- name: features graphite
+  include_tasks: features/graphite.yml
+
+- name: features influxdb
+  include_tasks: features/influxdb.yml
+
+- name: features influxdb2
+  include_tasks: features/influxdb2.yml
+
+- name: features gelf
+  include_tasks: features/gelf.yml
 
 ...

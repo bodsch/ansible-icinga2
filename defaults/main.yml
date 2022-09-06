@@ -7,6 +7,8 @@ icinga2_use_external_repo: true
 icinga2_repo_archlinux: https://aur.archlinux.org/icinga2.git
 
 icinga2_validate_primary_master: true
+
+# WIP!
 icinga2_validate_restart: true
 
 icinga2_certificate_cn: '{{ ansible_fqdn }}'
@@ -79,7 +81,8 @@ icinga2_timeperiod: {}
 
 icinga2_apply_service: {}
 
-icinga2_aide_enabled: true
+# OBSOLETE
+icinga2_aide_enabled: false
 
 icinga2_cmd_group: icingacmd
 

@@ -2,8 +2,9 @@
 
 - block:
     - name: enable icingadb feature
-      icinga2_feature:
-        name: icingadb
+      icinga2_features:
+        features:
+          - icingadb
         state: present
       notify:
         - check configuration

@@ -6,8 +6,9 @@
       regex_search('influxdb') else 'absent' }}"
 
 - name: enable influxdb feature
-  icinga2_feature:
-    name: influxdb
+  icinga2_features:
+    features:
+      - influxdb
     state: "{{ feature_influxdb_state }}"
   notify:
     - check configuration

@@ -14,8 +14,9 @@
     mode: 0660
 
 - name: enable graphite feature
-  icinga2_feature:
-    name: graphite
+  icinga2_features:
+    features:
+      - graphite
     state: "{{ feature_graphite_state }}"
   notify:
     - check configuration

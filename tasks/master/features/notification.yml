@@ -74,8 +74,9 @@
 #    msg: ":p"
 
 - name: enable notification feature
-  icinga2_feature:
-    name: notification
+  icinga2_features:
+    features:
+      - notification
     state: "{{ feature_notification_state }}"
   notify:
     - check configuration

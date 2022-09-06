@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# (c) 2020, Bodo Schulz <bodo@boone-schulz.de>
+# (c) 2020-2022, Bodo Schulz <bodo@boone-schulz.de>
 # BSD 2-clause (see LICENSE or https://opensource.org/licenses/BSD-2-Clause)
+# SPDX-License-Identifier: BSD-2-Clause
 
 from __future__ import absolute_import, division, print_function
 import os
@@ -51,7 +52,7 @@ class Icinga2CaHelper(object):
             ansible_module_results="none"
         )
 
-        if(self.force):
+        if (self.force):
             self.module.log(msg="force mode ...")
 
             self._remove_directory(os.path.join(self.lib_directory, 'ca'))
@@ -135,7 +136,7 @@ class Icinga2CaHelper(object):
         #   --cert {{ icinga2_pki_dir }}/{{ inventory_hostname }}.crt
         self.module.log(msg="Reads a Certificate Signing Request from stdin and prints a signed certificate on stdout.")
 
-        if(not os.path.isfile(cert)):
+        if (not os.path.isfile(cert)):
             args = [self._icinga2]
             args.append("pki")
             args.append("sign-csr")
@@ -206,7 +207,7 @@ def main():
     icinga = Icinga2CaHelper(module)
     result = icinga.run()
 
-    module.log(msg="= result: {}".format(result))
+    module.log(msg=f"= result: {result}")
 
     module.exit_json(**result)
 

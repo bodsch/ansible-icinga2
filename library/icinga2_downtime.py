@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# (c) 2020, Bodo Schulz <bodo@boone-schulz.de>
+# (c) 2020-2022, Bodo Schulz <bodo@boone-schulz.de>
 # BSD 2-clause (see LICENSE or https://opensource.org/licenses/BSD-2-Clause)
+# SPDX-License-Identifier: BSD-2-Clause
 #
 # My thanks go to Thilo Wening and Nicolai Buchwitz for their input and support!
 
@@ -280,14 +281,14 @@ class Icinga2Api(object):
         self.connection.headers.update(headers)
 
         try:
-            if(method == 'GET'):
+            if (method == 'GET'):
                 ret = self.connection.get(
                     url,
                     verify=False
                 )
                 self.connection.close()
 
-            elif(method == 'POST'):
+            elif (method == 'POST'):
                 self.connection.close()
                 ret = self.connection.post(
                     url,
@@ -333,7 +334,7 @@ class Icinga2Api(object):
 
         results = ret['results']
 
-        if(code == 200 and len(results) != 0):
+        if (code == 200 and len(results) != 0):
             # code   = results[0]['code']
             # status = results[0]['status']
             attrs = results[0]['attrs']
@@ -361,7 +362,7 @@ class Icinga2Api(object):
 
         results = ret['results']
 
-        if(len(results) != 0):
+        if (len(results) != 0):
             # print(json.dumps(results[0]))
 
             code = int(results[0]['code'])
@@ -406,7 +407,7 @@ def main():
 
     result = icinga.run()
 
-    module.log(msg="= result: {}".format(result))
+    module.log(msg=f"= result: {result}")
 
     module.exit_json(**result)
 

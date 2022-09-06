@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# (c) 2020, Bodo Schulz <bodo@boone-schulz.de>
+# (c) 2020-2022, Bodo Schulz <bodo@boone-schulz.de>
 # BSD 2-clause (see LICENSE or https://opensource.org/licenses/BSD-2-Clause)
+# SPDX-License-Identifier: BSD-2-Clause
 
 from __future__ import print_function
 
@@ -75,6 +76,8 @@ class Icinga2ReloadMaster(object):
 
         self._icinga2 = module.get_bin_path('icinga2', True)
         self.requester = module.params.get("requester")
+        self.wait = module.params.get("wait")
+        self.timeout = module.params.get("timeout")
 
         self.pid_file = "/run/icinga2/icinga2.pid"
         self.lock_file = "/run/icinga2/reload.lock"
@@ -83,64 +86,43 @@ class Icinga2ReloadMaster(object):
         """
           runner
         """
-        result = dict(
-            failed=True,
-            ansible_module_results='failed'
-        )
-
         self.module.log(msg="Acquiring lock...")
 
-        with SimpleFlock(self.lock_file, 2):
+        with SimpleFlock(self.lock_file, self.timeout):
             self.module.log(msg="Lock acquired.")
 
             pid = self._get_pid()
 
-            if pid is None:
+            if not pid:
 
                 return dict(
                     failed=True,
-                    msg="pid file {pid} not found.".format(pid=self.pid_file)
+                    msg=f"pid file {self.pid_file} not found."
                 )
-
-            # self.module.log(msg="= '{}'".format(pid))
 
             self.module.log(msg="send SIGHUP")
             os.kill(pid, signal.SIGHUP)
             self.module.log(msg="done")
 
-            time.sleep(2)
+            time.sleep(int(self.wait))
 
         self.module.log(msg="Lock released.")
 
-        result['failed'] = False
-
         return dict(
-            failed=False
+            failed=False,
+            changed=False,
+            msg="process reloaded"
         )
-
-    def _exec(self):
-        """
-          execute safe-reload
-        """
-        cmd = ['/usr/lib/icinga2/safe-reload', self._icinga2]
-
-        self.module.log(msg="cmd: {}".format(cmd))
-
-        rc, out, err = self.module.run_command(cmd, check_rc=True)
-        return rc, out, err
 
     def _get_pid(self):
         """
-          split and flatten parameter list
-          input:  ['--validate', '--log-level debug', '--config /etc/icinga2/icinga2.conf']
-          output: ['--validate', '--log-level', 'debug', '--config', '/etc/icinga2/icinga2.conf']
         """
         try:
             with open(self.pid_file, "r") as inputFile:
                 return int(inputFile.read().strip())
         except Exception:
             # No pid file --- maybe it was not running?
-            self.module.log(msg="File not found: {}".format(self.pid_file))
+            self.module.log(msg=f"File not found: {self.pid_file}")
             return None
 
 
@@ -153,7 +135,20 @@ def main():
 
     module = AnsibleModule(
         argument_spec=dict(
-            requester=dict(required=True, type='str'),
+            requester=dict(
+                required=True,
+                type='str'
+            ),
+            wait=dict(
+                required=False,
+                type='int',
+                default=2
+            ),
+            timeout=dict(
+                required=False,
+                type='int',
+                default=2
+            ),
         ),
         supports_check_mode=True,
     )
@@ -161,7 +156,7 @@ def main():
     icinga = Icinga2ReloadMaster(module)
     result = icinga.run()
 
-    module.log(msg="= result: {}".format(result))
+    module.log(msg=f"= result: {result}")
 
     module.exit_json(**result)
 

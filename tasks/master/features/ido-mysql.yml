@@ -85,7 +85,7 @@
       retries: 10
       delay: 10
 
-    - name: get mysql ido version
+    - name: detect mysql ido version
       icinga2_ido_version:
         dba_host: "{{ icinga2_ido.host }}"
         dba_user: "{{ icinga2_ido.user }}"
@@ -126,8 +126,9 @@
     mode: 0660
 
 - name: enable ido-mysql feature
-  icinga2_feature:
-    name: ido-mysql
+  icinga2_features:
+    features:
+      - ido-mysql
     state: present
   notify:
     - restart icinga2

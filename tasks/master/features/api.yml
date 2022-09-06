@@ -2,8 +2,9 @@
 
 - block:
     - name: enable api feature
-      icinga2_feature:
-        name: api
+      icinga2_features:
+        features:
+          - api
         state: present
       notify:
         - check configuration

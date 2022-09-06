@@ -58,6 +58,9 @@ icinga2_defaults_apply_service:
   apt:
     import: generic-service
     check_command: apt
+    check_interval: 30m
+    retry_interval: 2
+    max_check_attempts: 2
     assign_where: 'host.vars.os == "Linux" && (host.vars.dist == "Debian" || host.vars.dist == "Ubuntu")'
   uptime:
     import: generic-service
@@ -72,6 +75,50 @@ icinga2_defaults_apply_service:
     retry_interval: '10s'
     assign_where: '"memory" in host.vars.services'
     ignore_where: 'host.vars.os == "Windows"'
+  #
+  processes:
+    name: "process: "
+    for: '(c => process in host.vars.processes)'
+
+    import: generic-service
+
+    extra_parameters: |
+      if (!process.proc_crit) {
+        process.proc_crit = "1:"
+      }
+      vars.procs_warning = process.proc_warn
+      vars.procs_critical = process.proc_crit
+
+      if (process.argument) {
+        vars.procs_argument = process.argument
+        check_command = "procs"
+      } else if (process.command) {
+        vars.procs_command = process.command
+        check_command = "procs"
+      }
+  #
+  dns:
+    name: "dns: "
+    for: '(c => config in host.vars.zones)'
+
+    import: generic-service
+    check_command: dns
+
+    check_interval: 5m
+    max_check_attempts: 2
+
+    extra_parameters: |
+      var dns_lookup = check_dictionary(config, "dns_lookup")
+      if(!dns_lookup) {
+        dns_lookup = "google.com"
+      }
+      vars = {
+        "dns_server" = "127.0.0.1"
+        "dns_lookup" = dns_lookup
+        "dns_timeout" = 2
+      }
+    assign_where: host.vars.zones
+
 
 icinga2_defaults_checkcommands:
   system_uptime:

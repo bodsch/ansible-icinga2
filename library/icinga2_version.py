@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# (c) 2020, Bodo Schulz <bodo@boone-schulz.de>
+# (c) 2020-2022, Bodo Schulz <bodo@boone-schulz.de>
 # BSD 2-clause (see LICENSE or https://opensource.org/licenses/BSD-2-Clause)
+# SPDX-License-Identifier: BSD-2-Clause
 
 from __future__ import absolute_import, division, print_function
 import re
@@ -34,7 +35,13 @@ class Icinga2Version(object):
             changed=False,
         )
 
-        rc, out, err = self._exec(['--version'])
+        args = []
+        args.append(self._icinga2)
+        args.append("--version")
+
+        self.module.log(msg=f"  args: '{args}'")
+
+        rc, out, err = self._exec(args, False)
 
         version_string = "unknown"
 
@@ -51,8 +58,6 @@ class Icinga2Version(object):
             version = re.search(pattern_2, version.group('version'))
             version_string = version.group('version')
 
-        # self.module.log(msg="version: {}".format(version_string))
-
         result['rc'] = rc
 
         if rc == 0:
@@ -61,16 +66,16 @@ class Icinga2Version(object):
 
         return result
 
-    def _exec(self, args):
-        '''   '''
-        cmd = [self._icinga2] + args
+    def _exec(self, commands, check_rc=True):
+        """
+          execute shell program
+        """
+        rc, out, err = self.module.run_command(commands, check_rc=check_rc)
 
-        # self.module.log(msg="cmd: {}".format(cmd))
+        # self.module.log(msg=f"  rc : '{rc}'")
+        # self.module.log(msg=f"  out: '{out}'")
+        # self.module.log(msg=f"  err: '{err}'")
 
-        rc, out, err = self.module.run_command(cmd, check_rc=True)
-        # self.module.log(msg="  rc : '{}'".format(rc))
-        # self.module.log(msg="  out: '{}' ({})".format(out, type(out)))
-        # self.module.log(msg="  err: '{}'".format(err))
         return rc, out, err
 
 
@@ -90,7 +95,7 @@ def main():
     icinga = Icinga2Version(module)
     result = icinga.run()
 
-    module.log(msg="= result: {}".format(result))
+    module.log(msg=f"= result: {result}")
 
     module.exit_json(**result)
 

@@ -2,31 +2,30 @@
 name: icinga2 with influxdb
 
 on:
-  pull_request:
-  push:
-    branches:
-      - main
   schedule:
-    - cron: "45 4 * * 0"
+    - cron: "55 4 * * 0"
+  workflow_dispatch:
+  workflow_run:
+    workflows:
+      - "code linter"
+    types:
+      - completed
 
 defaults:
   run:
     working-directory: 'ansible-icinga2'
 
 jobs:
-
   deb:
-    name: "${{ matrix.image }} / python: ${{ matrix.python-version }}, ansible: ${{ matrix.ansible-version }}"
-    runs-on: ubuntu-18.04
+    name: "${{ matrix.image }} / ansible: ${{ matrix.ansible-version }}"
+    runs-on: ubuntu-20.04
+    if: ${{ github.event_name == 'schedule' || github.event.workflow_run.conclusion == 'success' }}
     strategy:
       fail-fast: false
       matrix:
         image:
           - debian:11
-        python-version:
-          - '3.9'
         ansible-version:
-          - '4.1.0'
           - '5.1.0'
 
     steps:
@@ -35,10 +34,10 @@ jobs:
         with:
           path: 'ansible-icinga2'
 
-      - name: set up python ${{ matrix.python-version }}
+      - name: 🐍 set up python
         uses: actions/setup-python@v2
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: '3.x'
 
       - name: install dependencies
         run: |
@@ -54,8 +53,8 @@ jobs:
 
       - name: test master with satellite
         run: |
-          tox -e py$(printf "${{ matrix.python-version }}" | tr -d '.')-ansible$(printf "${{ matrix.ansible-version }}" | tr -d '.') -- \
-            molecule test --scenario-name icinga2-influxdb
+          tox -e ansible_$(printf "${{ matrix.ansible-version }}") \
+            -- molecule test --scenario-name icinga2-influxdb
         env:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'

@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# (c) 2020, Bodo Schulz <bodo@boone-schulz.de>
+# (c) 2020-2022, Bodo Schulz <bodo@boone-schulz.de>
 # BSD 2-clause (see LICENSE or https://opensource.org/licenses/BSD-2-Clause)
+# SPDX-License-Identifier: BSD-2-Clause
 
 from __future__ import absolute_import, division, print_function
 
@@ -69,7 +70,7 @@ class Icinga2Daemon(object):
         parameters = []
 
         for _parameter in arr:
-            if(' ' in _parameter):
+            if (' ' in _parameter):
                 _list = _parameter.split(' ')
                 for _element in _list:
                     parameters.append(_element)
@@ -96,7 +97,7 @@ def main():
     icinga = Icinga2Daemon(module)
     result = icinga.run()
 
-    module.log(msg="= result: {}".format(result))
+    module.log(msg=f"= result: {result}")
 
     module.exit_json(**result)
 

@@ -1,43 +1,41 @@
 #jinja2: trim_blocks: True, lstrip_blocks: True
 // {{ ansible_managed }}
-{% set endpoint = false %}
+
 {% if icinga2_host_object is defined and
       icinga2_host_object | count != 0 %}
   {% for key, v in icinga2_host_object.items() %}
-// {{ key }}
     {% if v['endpoint_name'] is defined %}
-      {% set endpoint = true %}
       {% set _name = v['endpoint_name'] %}
-      {% set _ = v.pop('endpoint_name') %}
+      {% set _v = v.pop('endpoint_name') %}
     {% else %}
       {% set _name = key %}
     {% endif %}
     {% if v['zone'] is defined %}
       {% set _zone = v['zone'] %}
-      {% set _ = v.pop('zone') %}
-    {% endif %}
-    {% if icinga2_masters[_name] is defined and
-          icinga2_masters[_name]['ip'] is defined %}
-      {% set _ip = icinga2_masters[_name]['ip'] %}
-      {% set _ = v.pop('address') %}
+      {% set _v = v.pop('zone') %}
     {% else %}
-{# use you *functional* dns to resolve hostname.
-  this runs on the ansible-host and not on the destination machine! #}
-      {% set _ip = lookup('pipe', 'host ' + ansible_fqdn   + ' | grep "has address" | cut -d" " -f4') %}
+      {% set _zone = ansible_fqdn %}
+    {% endif %}
+    {% if icinga2_satellites[icinga2_satellite_zone] is defined and
+          icinga2_satellites[icinga2_satellite_zone][_name] is defined and
+          icinga2_satellites[icinga2_satellite_zone][_name]['ip'] is defined %}
+      {% set satellite_ip = icinga2_satellites[icinga2_satellite_zone][_name]['ip'] %}
+    {% else %}
+      {% set satellite_ip = lookup('pipe', 'host ' + ansible_fqdn   + ' | grep "has address" | cut -d" " -f4') %}
     {% endif %}
     {% if v['display_name'] is defined %}
       {% set display_name = v['display_name'] %}
-      {% set _ = v.pop('display_name') %}
+      {% set _v = v.pop('display_name') %}
     {% endif %}
     {% if v['check_command'] is defined %}
       {% set check_command = v['check_command'] %}
       {% set _ = v.pop('check_command') %}
     {% endif %}
+// {{ _name }}
 
-object Host "{{ key }}" {
-    {% if _ip is defined and
-          _ip | length != 0 %}
-  address = "{{ _ip }}"
+object Host "{{ _name }}" {
+    {% if satellite_ip is defined and satellite_ip | length != 0 %}
+  address = "{{ satellite_ip }}"
     {% endif %}
     {% if check_command is defined %}
   check_command = "{{ check_command }}"
@@ -45,12 +43,8 @@ object Host "{{ key }}" {
     {% if display_name is defined %}
   display_name = "{{ display_name }}"
     {% endif %}
-    {% if endpoint %}
-  command_endpoint = "{{ _name }}"
-    {% endif %}
-    {% if _zone is defined %}
+  command_endpoint = "{{ ansible_fqdn }}"
   zone = "{{ _zone }}"
-    {% endif %}
     {% for ke,ve in v.items() | sort %}
       {% if ke == 'import' %}
   {{ ke }} "{{ ve }}"
@@ -64,8 +58,6 @@ object Host "{{ key }}" {
   {{ ke }} = "{{ ve }}"
       {% endif %}
     {% endfor %}
-
 }
-
   {% endfor %}
 {% endif %}
