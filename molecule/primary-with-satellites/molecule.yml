@@ -1,0 +1,143 @@
+---
+dependency:
+  name: galaxy
+
+driver:
+  name: docker
+
+lint: |
+  set -e
+  yamllint .
+  ansible-lint .
+  flake8 .
+
+platforms:
+  - name: database
+    image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
+    command: ${MOLECULE_DOCKER_COMMAND:-""}
+    docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
+    privileged: true
+    pre_build_image: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    docker_networks:
+      - name: icinga2
+        ipam_config:
+          - subnet: "10.15.0.0/16"
+            gateway: "10.15.0.254"
+    networks:
+      - name: icinga2
+        ipv4_address: "10.15.0.10"
+
+  - name: instance
+    image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
+    command: ${MOLECULE_DOCKER_COMMAND:-""}
+    docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
+    privileged: true
+    pre_build_image: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    groups:
+      - icinga
+      - primary
+    networks:
+      - name: icinga2
+        ipv4_address: "10.15.0.20"
+
+  - name: satellite-01
+    image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
+    command: ${MOLECULE_DOCKER_COMMAND:-""}
+    docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
+    privileged: true
+    pre_build_image: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    groups:
+      - icinga
+      - satellite
+    networks:
+      - name: icinga2
+        ipv4_address: "10.15.0.31"
+
+  - name: satellite-02
+    image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
+    command: ${MOLECULE_DOCKER_COMMAND:-""}
+    docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
+    privileged: true
+    pre_build_image: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    groups:
+      - icinga
+      - satellite
+    networks:
+      - name: icinga2
+        ipv4_address: "10.15.0.32"
+
+  - name: satellite-03
+    image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
+    command: ${MOLECULE_DOCKER_COMMAND:-""}
+    docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
+    privileged: true
+    pre_build_image: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    groups:
+      - icinga
+      - satellite
+    networks:
+      - name: icinga2
+        ipv4_address: "10.15.0.33"
+
+  - name: satellite-04
+    image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
+    command: ${MOLECULE_DOCKER_COMMAND:-""}
+    docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
+    privileged: true
+    pre_build_image: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    groups:
+      - icinga
+      - satellite
+    networks:
+      - name: icinga2
+        ipv4_address: "10.15.0.34"
+
+  - name: satellite-05
+    image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
+    command: ${MOLECULE_DOCKER_COMMAND:-""}
+    docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
+    privileged: true
+    pre_build_image: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    groups:
+      - icinga
+      - satellite
+    networks:
+      - name: icinga2
+        ipv4_address: "10.15.0.35"
+
+provisioner:
+  name: ansible
+  config_options:
+    defaults:
+      deprecation_warnings: True
+      stdout_callback: yaml
+      callbacks_enabled: profile_tasks
+
+scenario:
+  test_sequence:
+    # - lint
+    - destroy
+    - dependency
+    - syntax
+    - create
+    - prepare
+    - converge
+    - verify
+    - destroy
+
+verifier:
+  name: testinfra

@@ -26,7 +26,7 @@ jobs:
         image:
           - debian:11
         ansible-version:
-          - '5.1.0'
+          - '5.1'
 
     steps:
       - name: check out the codebase.
@@ -54,7 +54,7 @@ jobs:
       - name: test master with satellite
         run: |
           tox -e ansible_$(printf "${{ matrix.ansible-version }}") \
-            -- molecule test --scenario-name icinga2-icingadb
+            -- molecule test --scenario-name icinga2-with-icingadb
         env:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'

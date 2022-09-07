@@ -1,0 +1,33 @@
+---
+
+icinga2_salt: tmpams80tqx
+
+icinga2_masters:
+  instance:
+
+icinga2_api:
+  user:
+    root:
+      password: foo
+      permissions: '*'
+
+icinga2_ido:
+  username: icinga2_ido
+  password: icinga2
+  host: database
+  # socket: /var/lib/mysql/mysql.sock
+  cleanup:
+    acknowledgements_age: 24h
+    hostchecks_age: 24h
+    servicechecks_age: 24h
+
+icinga2_master_features_enabled:
+  - checker
+  - api
+  - ido-mysql
+  - mainlog
+
+icinga2_notification_apply_rules:
+  mail-service:
+    user_groups: host.vars.notification.mail.groups
+...

@@ -1,0 +1,23 @@
+---
+
+icinga2_mode: master
+
+icinga2_sudo_cmd:
+  - /sbin/service foo restart
+
+icinga2_host_object:
+  instance:
+    import: generic-host
+    address: '{{ ansible_default_ipv4.address }}'
+    display_name: "{{ ansible_fqdn }}"
+    vars: |
+      os = "Linux"
+      dist = "{{ ansible_distribution }}"
+      dist_ver = "{{ ansible_distribution_version }}"
+      disks = {
+        "disk /" = {
+          disk_partitions = "/"
+        }
+      }
+
+...

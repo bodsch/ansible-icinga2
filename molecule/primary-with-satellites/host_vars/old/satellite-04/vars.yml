@@ -1,0 +1,24 @@
+---
+
+icinga2_mode: satellite
+
+icinga2_masters:
+  instance:
+
+icinga2_host_object:
+  satellite-04:
+    import: generic-host
+    address: '{{ ansible_default_ipv4.address }}'
+    display_name: "{{ ansible_fqdn }}"
+    vars: |
+      os = "Linux"
+      dist = "{{ ansible_distribution }}"
+      dist_ver = "{{ ansible_distribution_version }}"
+      satellite = true
+      disks = {
+        "disk /" = {
+          disk_partitions = "/"
+        }
+      }
+
+...
