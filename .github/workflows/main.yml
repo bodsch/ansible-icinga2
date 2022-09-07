@@ -23,9 +23,9 @@ jobs:
     if: ${{ github.event_name == 'schedule' || github.event.workflow_run.conclusion == 'success' }}
     strategy:
       fail-fast: false
+      matrix:
         image:
           - archlinux:latest
-          - artixlinux:latest
         ansible-version:
           - '5.1'
           - '6.1'
