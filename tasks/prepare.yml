@@ -127,7 +127,8 @@
 
 # debian based
 #
-- block:
+- name: based on debian
+  block:
     - name: add icinga2 GPG key
       apt_key:
         id: F51A91A5EE001AA5D77D53C4C6E319C334410682
@@ -144,7 +145,8 @@
 
 # redhat based
 #
-- block:
+- name: based on redhat
+  block:
     - name: import EPEL GPG key
       rpm_key:
         key: https://archive.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}
@@ -182,7 +184,8 @@
 
 # arch-linux based
 #
-- block:
+- name: based on arch linux
+  block:
     - name: install build tools
       package:
         name: "{{ item }}"

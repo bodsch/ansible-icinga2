@@ -5,12 +5,14 @@
     icinga2_ido: "{{ icinga2_defaults_ido |
       combine( icinga2_ido, recursive=True ) }}"
 
-- include_tasks: ido-mysql.yml
+- name: ido mysql
+  include_tasks: ido-mysql.yml
   when:
     - icinga2_ido.enabled | bool
     - icinga2_master_features_enabled | join('|') | regex_search('ido-mysql')
 
-- include_tasks: ido-pgsql.yml
+- name: ido pgsql
+  include_tasks: ido-pgsql.yml
   when:
     - icinga2_ido.enabled | bool
     - icinga2_master_features_enabled | join('|') | regex_search('ido-pgsql')

@@ -36,5 +36,5 @@
 #   notify:
 #     - check configuration
 #     - restart icinga2
-#     - restart icinga2 master
+#     - reload icinga2 master config
 #

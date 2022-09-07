@@ -1,12 +1,14 @@
 ---
 
-- name: create restart script
-  copy:
-    src: icinga2/restart_icinga2.sh
-    dest: /etc/icinga2/restart_icinga2.sh
-    owner: root
-    group: root
-    mode: 0755
+# OBSOLETE
+# replaced with: 'icinga2_reload_master'
+# - name: create restart script
+#   copy:
+#     src: icinga2/restart_icinga2.sh
+#     dest: /etc/icinga2/restart_icinga2.sh
+#     owner: root
+#     group: root
+#     mode: 0755
 
 - name: create icinga2 constants.conf
   template:
@@ -90,20 +92,26 @@
     group: "{{ icinga2_group }}"
     mode: 0755
 
-- include_tasks: master/pki.yml
+- name: master pki
+  include_tasks: master/pki.yml
   when:
     - icinga2_primary_master is defined
     - icinga2_primary_master == ansible_fqdn
 
-- include_tasks: master/configure.yml
-- include_tasks: master/features.yml
+- name: master configue
+  include_tasks: master/configure.yml
 
-- include_tasks: master/global-templates.yml
+- name: master features
+  include_tasks: master/features.yml
+
+- name: master global-templates
+  include_tasks: master/global-templates.yml
   when:
     - icinga2_primary_master is defined
     - icinga2_primary_master == ansible_fqdn
 
-- block:
+- name: validate master restart
+  block:
     - name: validate icinga2 configuration
       icinga2_daemon:
         parameters:
@@ -120,13 +128,14 @@
         - icinga2_validate_config.failed is defined
         - not icinga2_validate_config
 
-    - name: restart icinga2 master
+    - name: reload icinga2 master config
       service:
         name: icinga2
         state: restarted
       register: _restart_icinga2_master
 
-    - block:
+    - name: get state from primary master
+      block:
         # WIP
         # url_username are hardcoded  ..
         - name: get state of primary master '{{ icinga2_primary_master }}'
@@ -139,10 +148,10 @@
             method: GET
             return_content: true
             status_code:
-              - 200 # OK
+              - 200  # OK
               - 301
               - 302
-              - 401 # Unauthorized
+              - 401  # Unauthorized
           register: icinga2_api_test
           until: icinga2_api_test is succeeded
           retries: 5
@@ -163,7 +172,8 @@
     - icinga2_primary_master is defined
     - icinga2_primary_master == ansible_fqdn
 
-- include_tasks: master/secondary.yml
+- name: master secondary
+  include_tasks: master/secondary.yml
   when:
     - icinga2_primary_master is defined
     - not icinga2_primary_master == ansible_fqdn

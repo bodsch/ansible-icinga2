@@ -8,8 +8,10 @@ galaxy_info:
 
   author: Bodo Schulz
   description: ansible role for handling icinga2 as master or satellite
+
   license: "BSD"
   min_ansible_version: 2.10
+
   platforms:
     - name: ArchLinux
     - name: Ubuntu

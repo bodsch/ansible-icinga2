@@ -1,6 +1,7 @@
 ---
 
-- block:
+- name: backup and restore
+  block:
     - name: add backup and restore config
       template:
         src: backup.config.j2
@@ -22,7 +23,8 @@
     - icinga2_primary_master is defined
     - icinga2_primary_master == ansible_fqdn
 
-- block:
+- name: restore
+  block:
     - name: define primary icinga2 master
       set_fact:
         icinga2_primary_master: "{{ icinga2_masters | primary_master }}"

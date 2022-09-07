@@ -28,7 +28,8 @@
     path: "{{ icinga2_pki_ca_cert }}"
   register: __ca_crt
 
-- block:
+- name: create a ticket from icinga2 master for the secondary master
+  block:
     - name: "create a ticket from icinga2 master for the secondary master '{{ ansible_fqdn }}'"
       delegate_to: "{{ icinga2_primary_master }}"
       icinga2_ticket:
@@ -100,7 +101,7 @@
     group: "{{ icinga2_group }}"
     mode: 0666
   notify:
-    - restart icinga2 master
+    - reload icinga2 master config
   when:
     - icinga2_primary_master is defined
     - icinga2_primary_master != ansible_fqdn
@@ -115,6 +116,7 @@
   notify:
     - check configuration
 
-- include_tasks: features.yml
+- name: secondary master features
+  include_tasks: features.yml
 
 ...

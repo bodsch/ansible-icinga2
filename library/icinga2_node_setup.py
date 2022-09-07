@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# (c) 2020, Bodo Schulz <bodo@boone-schulz.de>
+# (c) 2020-2022, Bodo Schulz <bodo@boone-schulz.de>
 # BSD 2-clause (see LICENSE or https://opensource.org/licenses/BSD-2-Clause)
+# SPDX-License-Identifier: BSD-2-Clause
 
 from __future__ import absolute_import, division, print_function
 # import json
@@ -61,7 +62,7 @@ class Icinga2NodeSetupHelper(object):
             ansible_module_results="none"
         )
 
-        if(self.force):
+        if (self.force):
             self.module.log(msg="force mode ...")
 
             self._remove_directory(os.path.join(self.lib_directory, 'ca'))
@@ -81,7 +82,7 @@ class Icinga2NodeSetupHelper(object):
         self.module.log(msg="  key  : '{}'".format(key))
         self.module.log(msg="  cert : '{}'".format(cert))
 
-        if(not os.path.isfile(key) and not os.path.isfile(cert)):
+        if (not os.path.isfile(key) and not os.path.isfile(cert)):
             rc, out = self._exec([
                 "new-cert",
                 "--cn", "{}".format(self.common_name),
@@ -93,7 +94,7 @@ class Icinga2NodeSetupHelper(object):
 
             result['ansible_module_results'] = "Command returns {}".format(out)
 
-            if(rc == 0):
+            if (rc == 0):
                 result['changed'] = True
             else:
                 result['failed'] = True
@@ -117,7 +118,7 @@ class Icinga2NodeSetupHelper(object):
         self.module.log(msg="  cert    : '{}'".format(cert))
         self.module.log(msg="  trusted : '{}'".format(trusted_master))
 
-        if(not os.path.isfile(trusted_master)):
+        if (not os.path.isfile(trusted_master)):
             rc, out = self._exec([
                 "pki",
                 "save-cert",
@@ -129,7 +130,7 @@ class Icinga2NodeSetupHelper(object):
 
             result['ansible_module_results'] = "Command returns {}".format(out)
 
-            if(rc == 0):
+            if (rc == 0):
                 result['changed'] = True
             else:
                 result['failed'] = True
@@ -160,7 +161,7 @@ class Icinga2NodeSetupHelper(object):
         self.module.log(msg="  ca.key  : '{}'".format(ca_key))
         self.module.log(msg="  trusted : '{}'".format(trusted_master))
 
-        if(not os.path.isfile(ca_key) and not os.path.isfile(trusted_master)):
+        if (not os.path.isfile(ca_key) and not os.path.isfile(trusted_master)):
             rc, out = self._exec([
                 "pki",
                 "request",
@@ -177,7 +178,7 @@ class Icinga2NodeSetupHelper(object):
 
             result['ansible_module_results'] = "Command returns {}".format(out)
 
-            if(rc == 0):
+            if (rc == 0):
                 result['changed'] = True
             else:
                 result['failed'] = True
@@ -208,7 +209,7 @@ class Icinga2NodeSetupHelper(object):
         self.module.log(msg="  parent_host: '{}'".format(self.parent_host))
         self.module.log(msg="  trusted    : '{}'".format(trusted_master))
 
-        if(not os.path.isfile(saved_ticket) and not os.path.isfile(key) and not os.path.isfile(cert)):
+        if (not os.path.isfile(saved_ticket) and not os.path.isfile(key) and not os.path.isfile(cert)):
             rc, out = self._exec([
                 "node",
                 "setup",
@@ -223,7 +224,7 @@ class Icinga2NodeSetupHelper(object):
 
             result['ansible_module_results'] = "Command returns {}".format(out)
 
-            if(rc == 0):
+            if (rc == 0):
                 result['changed'] = True
             else:
                 result['failed'] = True
@@ -284,7 +285,7 @@ def main():
     icinga = Icinga2NodeSetupHelper(module)
     result = icinga.run()
 
-    module.log(msg="= result: {}".format(result))
+    module.log(msg=f"= result: {result}")
 
     module.exit_json(**result)
 

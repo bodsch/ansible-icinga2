@@ -12,7 +12,8 @@
 - name: do facts module to get latest information
   setup:
 
-- block:
+- name: installed icinga2 version
+  block:
     - name: detect installed icinga2 version
       icinga2_version:
       register: __installed_icinga2_version

@@ -3,7 +3,7 @@
 - name: yum-clean-metadata
   command: yum clean metadata
   args:
-    warn: no
+    warn: false
 
 - name: check configuration
   icinga2_daemon:
@@ -27,14 +27,29 @@
     state: reloaded
 
 - name: restart icinga2
+  run_once: true
   service:
     name: icinga2
     state: restarted
 
-- name: restart icinga2 master
+- name: reload icinga2 master config
+  run_once: true
   icinga2_reload_master:
-    requester: '{{ ansible_fqdn }}'
+    requester: "{{ ansible_fqdn }}"
+    wait: 2
+    timeout: 4
   ignore_errors: false
   delegate_to: "{{ item.key }}"
   with_dict:
     "{{ icinga2_masters }}"
+  register: _icinga2_master_reloaded
+  notify:
+    - reloaded config
+
+- name: reloaded config
+  debug:
+    var: _icinga2_master_reloaded
+  when:
+    - _icinga2_master_reloaded is defined
+
+...

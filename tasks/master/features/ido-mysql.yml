@@ -25,13 +25,8 @@
       ignore_errors: true
       # no_log: true
 
-    # missing 'libmariadbclient-dev'?
-
-    - block:
-        #- debug:
-        #    msg:
-        #      - "{{ icinga2_mariadb_build_packages }}"
-
+    - name: install python ip modules
+      block:
         - name: install build essentials
           package:
             name: "{{ icinga2_mariadb_build_packages }}"
@@ -50,11 +45,6 @@
         - pip_install.failed
         - icinga2_mariadb_build_packages is defined
         - icinga2_mariadb_build_packages | length > 0
-
-    # - name: remove requirements.txt
-    #   file:
-    #     path: /tmp/icinga2-requirements.txt
-    #     state: absent
   when:
     - icinga2_mariadb_python_packages is defined
     - icinga2_mariadb_python_packages | length > 0
@@ -85,7 +75,7 @@
       retries: 10
       delay: 10
 
-    - name: get mysql ido version
+    - name: detect mysql ido version
       icinga2_ido_version:
         dba_host: "{{ icinga2_ido.host }}"
         dba_user: "{{ icinga2_ido.user }}"
@@ -126,8 +116,9 @@
     mode: 0660
 
 - name: enable ido-mysql feature
-  icinga2_feature:
-    name: ido-mysql
+  icinga2_features:
+    features:
+      - ido-mysql
     state: present
   notify:
     - restart icinga2

@@ -1,14 +1,14 @@
 ---
 
 - name: disable icinga2 features
-  icinga2_feature:
-    name: "{{ item }}"
+  icinga2_features:
     state: absent
-  loop:
-    - perfdata
-    - notification
-    - livestatus
-    - ido-mysql
+    ignore_unknown: true
+    features:
+      - perfdata
+      - notification
+      - livestatus
+      - ido-mysql
   notify:
     - check configuration
     - restart icinga2
@@ -16,7 +16,8 @@
     - icinga2
     - features
 
-- block:
+- name: configure api feature
+  block:
     - name: configure api feature
       template:
         src: etc/icinga2/features/api.conf.j2
@@ -26,8 +27,9 @@
         mode: 0666
 
     - name: enable api feature
-      icinga2_feature:
-        name: api
+      icinga2_features:
+        features:
+          - api
         state: present
       notify:
         - check configuration

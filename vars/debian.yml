@@ -6,7 +6,9 @@ icinga2_mariadb_packages:
 
 icinga2_mariadb_python_packages:
   - name: mysqlclient
-    # version: 2.0.3
+
+icinga2_mariadb_build_packages:
+  - libmariadbclient-dev
 
 icinga2_os_requirements:
   - iproute2

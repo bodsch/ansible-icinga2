@@ -2,7 +2,8 @@
 
 # primary master
 #
-- block:
+- name: primary master
+  block:
     - name: check if {{ icinga2_pki_cadir }}/ca.crt exists
       stat:
         path: "{{ icinga2_pki_cadir }}/ca.crt"

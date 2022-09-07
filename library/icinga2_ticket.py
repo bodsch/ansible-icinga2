@@ -1,17 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# (c) 2020, Bodo Schulz <bodo@boone-schulz.de>
+# (c) 2020-2022, Bodo Schulz <bodo@boone-schulz.de>
 # BSD 2-clause (see LICENSE or https://opensource.org/licenses/BSD-2-Clause)
+# SPDX-License-Identifier: BSD-2-Clause
 
 from __future__ import absolute_import, division, print_function
-# import json
-# import os
 
 from ansible.module_utils.basic import AnsibleModule
-
-# import urllib3
-# from requests import Session
 
 
 class Icinga2TicketHelper(object):
@@ -30,9 +26,6 @@ class Icinga2TicketHelper(object):
         self.salt = module.params.get("salt")
 
         self._icinga2 = module.get_bin_path('icinga2', True)
-        # module.log(msg="icinga2     : {}".format(self._icinga2))
-        # module.log(msg="common_name : {}".format(self.common_name))
-        # module.log(msg="salt        : {}".format(self.salt))
 
     def run(self):
         """
@@ -92,7 +85,7 @@ def main():
     icinga = Icinga2TicketHelper(module)
     result = icinga.run()
 
-    module.log(msg="= result: {}".format(result))
+    module.log(msg=f"= result: {result}")
 
     module.exit_json(**result)
 

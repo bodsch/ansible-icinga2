@@ -1,6 +1,7 @@
 ---
 
-- block:
+- name: global zones directory
+  block:
     - name: create global-templates directory
       file:
         name: /etc/icinga2/zones.d/global-templates
