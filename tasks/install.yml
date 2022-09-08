@@ -3,9 +3,9 @@
 - name: check installed
   include_tasks: check_installed.yml
 
-- name: update package cache
-  package:
-    update_cache: true
+#- name: update package cache
+#  package:
+#    update_cache: true
 
 - name: based on arch linux
   block:
@@ -26,10 +26,6 @@
       when:
         - ansible_service_mgr | lower == "openrc"
 
-    - name: d
-      debug:
-        msg: "{{ _icinga2_installed }}"
-
     - name: check installed
       include_tasks: check_installed.yml
 
@@ -47,7 +43,7 @@
           exit 101
         mode: 0755
 
-    - name: install icinga2 packages (redhat based)
+    - name: install icinga2 packages
       package:
         name: "{{ icinga2_packages }}"
         state: present
@@ -68,8 +64,8 @@
     - not icinga2_installed
     - ansible_os_family | lower != 'archlinux'
 
-- name: re-read ansible facts
-  setup:
+#- name: re-read ansible facts
+#  setup:
 
 - name: detect icinga2_user
   icinga2_prepared_vars:
