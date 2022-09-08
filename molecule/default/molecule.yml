@@ -43,11 +43,17 @@ platforms:
 
 provisioner:
   name: ansible
+  ansible_args:
+    - --diff
+  #   - -v
   config_options:
     defaults:
       deprecation_warnings: True
       stdout_callback: yaml
       callbacks_enabled: profile_tasks
+      fact_caching: "jsonfile"
+      fact_caching_timeout: 8640
+      fact_caching_connection: "/tmp/.facts"
 
 scenario:
   test_sequence:

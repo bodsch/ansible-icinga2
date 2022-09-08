@@ -5,36 +5,31 @@
     path: /usr/sbin/icinga2
   register: icinga2_binary_file
 
+- name: detect installed icinga2 version
+  icinga2_version:
+  register: installed_icinga2_version
+  when:
+    - icinga2_binary_file.stat.exists
+
+- name: define icinga2 version
+  set_fact:
+    icinga2_installed_version: "{{ installed_icinga2_version.version }}"
+  when:
+    - installed_icinga2_version is defined
+    - installed_icinga2_version.rc is defined
+    - installed_icinga2_version.rc | int == 0
+
 - name: define icinga2_installed
   set_fact:
-    icinga2_installed: "{{ icinga2_binary_file.stat.exists }}"
-
-- name: do facts module to get latest information
-  setup:
+    icinga2_installed: true
+  when:
+    - installed_icinga2_version is defined
+    - installed_icinga2_version.rc is defined
+    - installed_icinga2_version.rc | int == 0
 
 - name: installed icinga2 version
-  block:
-    - name: detect installed icinga2 version
-      icinga2_version:
-      register: __installed_icinga2_version
-
-    - name: define icinga2 version
-      set_fact:
-        icinga2_installed_version: "{{ __installed_icinga2_version.version }}"
-        cacheable: true
-      when:
-        - __installed_icinga2_version is defined
-        - __installed_icinga2_version.rc is defined
-        - __installed_icinga2_version.rc == 0
-
-    - name: installed icinga2 version
-      debug:
-        var: icinga2_installed_version
-      when:
-        - icinga2_installed_version is defined
-        - icinga2_installed_version | length != 0
-
-  when:
-    icinga2_installed
+  debug:
+    verbosity: 4
+    var: icinga2_installed_version | default('not installed')
 
 ...

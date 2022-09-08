@@ -14,6 +14,7 @@ icinga2_requirements:
   - ca-certificates
 
 icinga2_remove_old_cert: false
+icinga2_installed: false
 icinga2_installed_version: ''
 icinga2_needs_update: true
 
@@ -118,7 +119,6 @@ icinga2_defaults_apply_service:
         "dns_timeout" = 2
       }
     assign_where: host.vars.zones
-
 
 icinga2_defaults_checkcommands:
   system_uptime:
