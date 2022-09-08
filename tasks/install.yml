@@ -49,8 +49,8 @@
         state: present
       register: _icinga2_installed
 
-    - name: do facts module to get latest information
-      setup:
+    #- name: do facts module to get latest information
+    #  setup:
 
     - name: remove policy-rc.d
       file:
