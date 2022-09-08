@@ -8,6 +8,10 @@ on:
   workflow_run:
     workflows:
       - "code linter"
+    branches:
+      - main
+      - feature/*
+      - fix/*
     types:
       - completed
 
