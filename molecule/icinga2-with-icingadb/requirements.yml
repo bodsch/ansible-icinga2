@@ -14,7 +14,7 @@
 
 - name: mariadb
   src: bodsch.mariadb
-  version: 2.2.12
+  version: 2.2.13
 
 - name: icingadb
   src: bodsch.icingadb
