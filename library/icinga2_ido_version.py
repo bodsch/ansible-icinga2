@@ -88,10 +88,9 @@ class Icinga2IdoVersion(object):
         if error:
             return (False, error, message)
 
-        query = "select version from {database}.icinga_dbversion"
-        query = query.format(database=self.dba_database)
+        query = f"select version from {self.dba_database}.icinga_dbversion"
 
-        # self.module.log(msg="query : {}".format(query))
+        self.module.log(msg=f"query : {query}")
 
         failed = True
         ido_version = None
@@ -102,20 +101,21 @@ class Icinga2IdoVersion(object):
         except mysql_driver.ProgrammingError as e:
             (errcode, message) = e.args
 
-            # self.module.log(msg="error code   : {}".format(errcode))
-            # self.module.log(msg="error message: {}".format(message))
+            self.module.log(msg=f"error code   : {errcode}")
+            self.module.log(msg=f"error message: {message}")
 
             if errcode == 1146:
                 pass
             else:
-                self.module.fail_json(msg="Cannot execute query: {error}".format(error=to_native(e)))
+                self.module.fail_json(msg=f"Cannot execute query: {to_native(e)}")
 
         if not failed:
             ido_version, = cursor.fetchone()
-            # self.module.log(msg="ido_version: {}".format(ido_version))
 
         cursor.close()
         conn.close()
+
+        self.module.log(msg=f"ido_version: {ido_version}")
 
         if ido_version:
             return True, ido_version
@@ -157,9 +157,8 @@ class Icinga2IdoVersion(object):
         except Exception as e:
             message = "unable to connect to database. "
             message += "check login_host, login_user and login_password are correct "
-            message += "or {0} has the credentials. "
-            message += "Exception message: {1}"
-            message = message.format(config_file, to_native(e))
+            message += f"or {config_file} has the credentials. "
+            message += f"Exception message: {to_native(e)}"
 
             self.module.log(msg=message)
 

@@ -76,23 +76,23 @@ class Icinga2NodeSetupHelper(object):
 
         self.module.log(msg="Creates a new Certificate Signing Request, a self-signed X509 certificate or both.")
 
-        key = os.path.join(os.path.join(self.lib_directory, 'certs', '{}.key'.format(self.common_name)))
-        cert = os.path.join(os.path.join(self.lib_directory, 'certs', '{}.crt'.format(self.common_name)))
+        key = os.path.join(os.path.join(self.lib_directory, 'certs', f'{self.common_name}.key'))
+        cert = os.path.join(os.path.join(self.lib_directory, 'certs', f'{self.common_name}.crt'))
 
-        self.module.log(msg="  key  : '{}'".format(key))
-        self.module.log(msg="  cert : '{}'".format(cert))
+        self.module.log(msg=f"  key  : '{key}'")
+        self.module.log(msg=f"  cert : '{cert}'")
 
         if (not os.path.isfile(key) and not os.path.isfile(cert)):
             rc, out = self._exec([
                 "new-cert",
-                "--cn", "{}".format(self.common_name),
-                "--key", "{}".format(key),
-                "--cert", "{}".format(cert)
+                "--cn", f"{self.common_name}",
+                "--key", f"{key}",
+                "--cert", f"{cert}"
             ])
-            self.module.log(msg="  rc : '{}'".format(rc))
-            self.module.log(msg="  out: '{}'".format(out))
+            self.module.log(msg=f"  rc : '{rc}'")
+            self.module.log(msg=f"  out: '{out}'")
 
-            result['ansible_module_results'] = "Command returns {}".format(out)
+            result['ansible_module_results'] = f"Command returns {out}"
 
             if (rc == 0):
                 result['changed'] = True
@@ -110,25 +110,25 @@ class Icinga2NodeSetupHelper(object):
 
         self.module.log(msg="Saves another Icinga 2 instance's certificate.")
 
-        key = os.path.join(os.path.join(self.lib_directory, 'certs', '{}.key'.format(self.common_name)))
-        cert = os.path.join(os.path.join(self.lib_directory, 'certs', '{}.crt'.format(self.common_name)))
+        key = os.path.join(os.path.join(self.lib_directory, 'certs', f'{self.common_name}.key'))
+        cert = os.path.join(os.path.join(self.lib_directory, 'certs', f'{self.common_name}.crt'))
         trusted_master = os.path.join(os.path.join(self.lib_directory, 'certs', 'trusted-master.crt'))
 
-        self.module.log(msg="  key     : '{}'".format(key))
-        self.module.log(msg="  cert    : '{}'".format(cert))
-        self.module.log(msg="  trusted : '{}'".format(trusted_master))
+        self.module.log(msg=f"  key     : '{key}'")
+        self.module.log(msg=f"  cert    : '{cert}'")
+        self.module.log(msg=f"  trusted : '{trusted_master}'")
 
         if (not os.path.isfile(trusted_master)):
             rc, out = self._exec([
                 "pki",
                 "save-cert",
-                "--trustedcert", "{}".format(trusted_master),
-                "--host", "{}".format(self.parent_host)
+                "--trustedcert", f"{trusted_master}",
+                "--host", f"{self.parent_host}"
             ])
-            self.module.log(msg="  rc : '{}'".format(rc))
-            self.module.log(msg="  out: '{}'".format(out))
+            self.module.log(msg=f"  rc : '{rc}'")
+            self.module.log(msg=f"  out: '{out}'")
 
-            result['ansible_module_results'] = "Command returns {}".format(out)
+            result['ansible_module_results'] = f"Command returns {out}"
 
             if (rc == 0):
                 result['changed'] = True
@@ -151,32 +151,32 @@ class Icinga2NodeSetupHelper(object):
 
         self.module.log(msg="Sends a PKI request to Icinga 2.")
 
-        key = os.path.join(os.path.join(self.lib_directory, 'certs', '{}.key'.format(self.common_name)))
-        cert = os.path.join(os.path.join(self.lib_directory, 'certs', '{}.crt'.format(self.common_name)))
+        key = os.path.join(os.path.join(self.lib_directory, 'certs', f'{self.common_name}.key'))
+        cert = os.path.join(os.path.join(self.lib_directory, 'certs', f'{self.common_name}.crt'))
         ca_key = os.path.join(os.path.join(self.lib_directory, 'certs', 'ca.key'))
         trusted_master = os.path.join(os.path.join(self.lib_directory, 'certs', 'trusted-master.crt'))
 
-        self.module.log(msg="  key     : '{}'".format(key))
-        self.module.log(msg="  cert    : '{}'".format(cert))
-        self.module.log(msg="  ca.key  : '{}'".format(ca_key))
-        self.module.log(msg="  trusted : '{}'".format(trusted_master))
+        self.module.log(msg=f"  key     : '{key}'")
+        self.module.log(msg=f"  cert    : '{cert}'")
+        self.module.log(msg=f"  ca.key  : '{ca_key}'")
+        self.module.log(msg=f"  trusted : '{trusted_master}'")
 
         if (not os.path.isfile(ca_key) and not os.path.isfile(trusted_master)):
             rc, out = self._exec([
                 "pki",
                 "request",
-                "--key", "{}".format(key),
-                "--cert", "{}".format(cert),
-                "--ca", "{}".format(ca_key),
-                "--trustedcert", "{}".format(trusted_master),
-                "--host", "{}".format(self.parent_host),
-                "--port", "{}".format(self.parent_port),
-                "--ticket", "{}".format(self.ticket)
+                "--key", f"{key}",
+                "--cert", f"{cert}",
+                "--ca", f"{ca_key}",
+                "--trustedcert", f"{trusted_master}",
+                "--host", f"{self.parent_host}",
+                "--port", f"{self.parent_port}",
+                "--ticket", f"{self.ticket}"
             ])
-            self.module.log(msg="  rc : '{}'".format(rc))
-            self.module.log(msg="  out: '{}'".format(out))
+            self.module.log(msg=f"  rc : '{rc}'")
+            self.module.log(msg=f"  out: '{out}'")
 
-            result['ansible_module_results'] = "Command returns {}".format(out)
+            result['ansible_module_results'] = f"Command returns {out}"
 
             if (rc == 0):
                 result['changed'] = True
@@ -184,8 +184,9 @@ class Icinga2NodeSetupHelper(object):
                 result['failed'] = True
 
         else:
-            result['ansible_module_results'] = "skip, ca.key and trusted-master.crt already created"
-            self.module.log(msg="skip, ca.key and trusted-master.crt already created")
+            msg = "skip, ca.key and trusted-master.crt already created"
+            result['ansible_module_results'] = msg
+            self.module.log(msg=msg)
 
         # Sets up an Icinga 2 node.
         # icinga2 node setup
@@ -197,32 +198,32 @@ class Icinga2NodeSetupHelper(object):
 
         self.module.log(msg="Sets up an Icinga 2 node.")
 
-        key = os.path.join(os.path.join(self.lib_directory, 'certs', '{}.key.orig'.format(self.common_name)))
-        cert = os.path.join(os.path.join(self.lib_directory, 'certs', '{}.crt.orig'.format(self.common_name)))
+        key = os.path.join(os.path.join(self.lib_directory, 'certs', f'{self.common_name}.key.orig'))
+        cert = os.path.join(os.path.join(self.lib_directory, 'certs', f'{self.common_name}.crt.orig'))
         # ca_key = os.path.join(os.path.join(self.lib_directory, 'certs', 'ca.key'))
         trusted_master = os.path.join(os.path.join(self.lib_directory, 'certs', 'trusted-master.crt'))
         saved_ticket = os.path.join(os.path.join(self.lib_directory, 'certs', 'ticket'))
 
-        self.module.log(msg="  ticket     : '{}'".format(self.ticket))
-        self.module.log(msg="  endpoint   : '{}'".format(self.endpoint))
-        self.module.log(msg="  zone       : '{}'".format(self.zone))
-        self.module.log(msg="  parent_host: '{}'".format(self.parent_host))
-        self.module.log(msg="  trusted    : '{}'".format(trusted_master))
+        self.module.log(msg=f"  ticket     : '{self.ticket}'")
+        self.module.log(msg=f"  endpoint   : '{self.endpoint}'")
+        self.module.log(msg=f"  zone       : '{self.zone}'")
+        self.module.log(msg=f"  parent_host: '{self.parent_host}'")
+        self.module.log(msg=f"  trusted    : '{trusted_master}'")
 
         if (not os.path.isfile(saved_ticket) and not os.path.isfile(key) and not os.path.isfile(cert)):
             rc, out = self._exec([
                 "node",
                 "setup",
-                "--ticket", "{}".format(self.ticket),
-                "--endpoint", "{}".format(self.endpoint),
-                "--zone", "{}".format(self.zone),
-                "--parent_host", "{}".format(self.parent_host),
-                "--trustedcert", "{}".format(trusted_master)
+                "--ticket", f"{self.ticket}",
+                "--endpoint", f"{self.endpoint}",
+                "--zone", f"{self.zone}",
+                "--parent_host", f"{self.parent_host}",
+                "--trustedcert", f"{trusted_master}"
             ])
-            self.module.log(msg="  rc : '{}'".format(rc))
-            self.module.log(msg="  out: '{}'".format(out))
+            self.module.log(msg=f"  rc : '{rc}'")
+            self.module.log(msg=f"  out: '{out}'")
 
-            result['ansible_module_results'] = "Command returns {}".format(out)
+            result['ansible_module_results'] = f"Command returns {out}"
 
             if (rc == 0):
                 result['changed'] = True
@@ -230,8 +231,9 @@ class Icinga2NodeSetupHelper(object):
                 result['failed'] = True
 
         else:
-            result['ansible_module_results'] = "skip, node already created"
-            self.module.log(msg="skip, node already created")
+            msg = "skip, node already created"
+            result['ansible_module_results'] = msg
+            self.module.log(msg=msg)
 
         return result
 
@@ -243,14 +245,14 @@ class Icinga2NodeSetupHelper(object):
         '''   '''
         cmd = [self._icinga2] + args
 
-        self.module.log(msg="cmd: {}".format(cmd))
+        self.module.log(msg=f"cmd: {cmd}")
 
         rc, out, err = self.module.run_command(cmd, check_rc=True)
         return rc, out
 
     def _remove_directory(self, directory):
         ''' .... '''
-        self.module.log(msg="remove directory {}".format(directory))
+        self.module.log(msg=f"remove directory {directory}")
 
         for root, dirs, files in os.walk(directory, topdown=False):
             for name in files:

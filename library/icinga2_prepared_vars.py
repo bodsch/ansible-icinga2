@@ -25,17 +25,17 @@ class Icinga2PreparedVars(object):
         self.module = module
 
         self.default_file = module.params.get("default_file")
-        self.variable = module.params.get("variable")
+        self.variable = module.params.get("variable").upper()
 
-        # module.log(msg="default_file: {}".format(self.default_file))
-        # module.log(msg="variable    : {}".format(self.variable))
+        module.log(msg=f"default_file: {self.default_file}")
+        module.log(msg=f"variable    : {self.variable}")
 
     def run(self):
         """
           runner
         """
         content = []
-        pattern = re.compile(r'.*{}:="(?P<var>[0-9A-Za-z]*)".*'.format(self.variable), re.MULTILINE)
+        pattern = re.compile(fr'.*{self.variable}:="(?P<var>[0-9A-Za-z]*)".*', re.MULTILINE)
 
         if os.path.isfile(self.default_file):
             with open(self.default_file, "r") as _data:
@@ -43,7 +43,7 @@ class Icinga2PreparedVars(object):
         else:
             return dict(
                 failed=True,
-                msg="icinga2 is not correct installed. missing file {0}.".format(self.default_file)
+                msg=f"icinga2 is not correct installed. missing file {self.default_file}."
             )
 
         _list = list(filter(pattern.match, content))[0]  # Read Note
@@ -64,8 +64,13 @@ def main():
 
     module = AnsibleModule(
         argument_spec=dict(
-            default_file=dict(required=False, default='/usr/lib/icinga2/prepare-dirs'),
-            variable=dict(required=True),
+            default_file=dict(
+                required=False,
+                default='/usr/lib/icinga2/prepare-dirs'
+            ),
+            variable=dict(
+                required=True
+            ),
         ),
         supports_check_mode=True,
     )

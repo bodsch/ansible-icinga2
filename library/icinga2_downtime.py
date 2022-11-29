@@ -211,7 +211,7 @@ class Icinga2Api(object):
                         """
                         payload = {
                             'type': self.object_type,
-                            'filter': "host.name == \"{}\"".format(h),
+                            'filter': f"host.name == \"{h}\"",
                             'author': self.author,
                             'comment': self.comment,
                             'start_time': self.start_time,
@@ -232,12 +232,12 @@ class Icinga2Api(object):
                         if self.object_type == 'Host' and self.all_services is True:
                             payload.update(all_services=True)
 
-                        module.log(msg="downtime for: {}".format(h))
-                        module.log(msg="payload: {}".format(payload))
+                        module.log(msg=f"downtime for: {h}")
+                        module.log(msg=f"payload: {payload}")
 
                         code, msg = self.__schedule_downtime(payload)
 
-                        module.log(msg="{}: {}".format(code, msg))
+                        module.log(msg=f"{code}: {msg}")
 
                         r[h] = dict(
                             msg=msg,
@@ -245,9 +245,10 @@ class Icinga2Api(object):
                         )
 
                     else:
-                        module.log(msg="404: host {} is not known".format(h))
+                        msg = f"404: host {h} is not known"
+                        module.log(msg=msg)
                         r[h] = dict(
-                            msg="host {} is not known".format(h),
+                            msg=msg,
                             status_code=404,
                         )
 
@@ -276,8 +277,8 @@ class Icinga2Api(object):
                 'X-HTTP-Method-Override': method,
             }
 
-        url = "{0}/{1}".format(self.icinga_url, path)
-        print(url)
+        url = f"{self.icinga_url}/{path}"
+        module.log(msg=f"url: {url}")
         self.connection.headers.update(headers)
 
         try:
@@ -322,7 +323,7 @@ class Icinga2Api(object):
         data = {
             "type": "Host",
             "attrs": ["name"],
-            "filter": "match(\"{0}\", host.name)".format(hostname),
+            "filter": f"match(\"{hostname}\", host.name)",
         }
 
         code, ret = self.__call_url(
@@ -402,7 +403,7 @@ def main():
         icinga = Icinga2Api()
     except Exception as e:
         module.fail_json(
-            msg="unable to connect to Icinga. Exception message: %s" % (e)
+            msg=f"unable to connect to Icinga. Exception message: {e}"
         )
 
     result = icinga.run()

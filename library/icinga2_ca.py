@@ -77,7 +77,7 @@ class Icinga2CaHelper(object):
 
             rc, out, err = self._exec(args)
 
-            result['ansible_module_results'] = "Command returns {}".format(out)
+            result['ansible_module_results'] = f"Command returns {out}"
 
             if rc == 0:
                 result['changed'] = True
@@ -96,9 +96,9 @@ class Icinga2CaHelper(object):
 
         self.module.log(msg="Creates a new Certificate Signing Request, a self-signed X509 certificate or both.")
 
-        key = os.path.join(os.path.join(self.lib_directory, 'certs', '{}.key'.format(self.hostname)))
-        csr = os.path.join(os.path.join(self.lib_directory, 'certs', '{}.csr'.format(self.hostname)))
-        cert = os.path.join(os.path.join(self.lib_directory, 'certs', '{}.crt'.format(self.hostname)))
+        key = os.path.join(os.path.join(self.lib_directory, 'certs', f'{self.hostname}.key'))
+        csr = os.path.join(os.path.join(self.lib_directory, 'certs', f'{self.hostname}.csr'))
+        cert = os.path.join(os.path.join(self.lib_directory, 'certs', f'{self.hostname}.crt'))
 
         # self.module.log(msg="  key  : '{}'".format(key))
         # self.module.log(msg="  csr  : '{}'".format(csr))
@@ -119,7 +119,7 @@ class Icinga2CaHelper(object):
             # self.module.log(msg="  rc : '{}'".format(rc))
             # self.module.log(msg="  out: '{}'".format(out))
 
-            result['ansible_module_results'] = "Command returns {}".format(out)
+            result['ansible_module_results'] = f"Command returns {out}"
 
             if rc == 0:
                 result['changed'] = True
@@ -149,7 +149,7 @@ class Icinga2CaHelper(object):
             # self.module.log(msg="  rc : '{}'".format(rc))
             # self.module.log(msg="  out: '{}'".format(out))
 
-            result['ansible_module_results'] = "Command returns {}".format(out)
+            result['ansible_module_results'] = f"Command returns {out}"
 
             if rc == 0:
                 result['changed'] = True
@@ -176,7 +176,7 @@ class Icinga2CaHelper(object):
 
     def _remove_directory(self, directory):
         ''' .... '''
-        self.module.log(msg="remove directory {}".format(directory))
+        self.module.log(msg=f"remove directory {directory}")
 
         for root, dirs, files in os.walk(directory, topdown=False):
             for name in files:

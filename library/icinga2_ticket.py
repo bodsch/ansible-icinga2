@@ -50,7 +50,7 @@ class Icinga2TicketHelper(object):
 
         rc, out = self._exec(args)
 
-        result['ticket'] = "{}".format(out.rstrip())
+        result['ticket'] = f"{out.rstrip()}"
 
         if rc == 0:
             result['changed'] = True

@@ -42,7 +42,7 @@ class Icinga2Daemon(object):
 
         rc, out, err = self._exec(parameter_list)
 
-        result['ansible_module_results'] = "Command returns {}".format(out)
+        result['ansible_module_results'] = "Command returns {out}"
 
         if rc == 0:
             result['failed'] = False
