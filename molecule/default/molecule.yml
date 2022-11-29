@@ -13,7 +13,7 @@ lint: |
 
 platforms:
   - name: database
-    image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
+    image: "bodsch/ansible-debian:11"
     command: ${MOLECULE_DOCKER_COMMAND:-""}
     docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
     privileged: true
@@ -45,15 +45,15 @@ provisioner:
   name: ansible
   ansible_args:
     - --diff
-  #   - -v
+    - -v
   config_options:
     defaults:
       deprecation_warnings: True
       stdout_callback: yaml
       callbacks_enabled: profile_tasks
-      fact_caching: "jsonfile"
-      fact_caching_timeout: 8640
-      fact_caching_connection: "/tmp/.facts"
+      # fact_caching: "jsonfile"
+      # fact_caching_timeout: 8640
+      # fact_caching_connection: "/tmp/.facts"
 
 scenario:
   test_sequence:
