@@ -59,6 +59,20 @@ icinga2_defaults_apply_service:
   apt:
     import: generic-service
     check_command: apt
+
+    extra_parameters: |
+      if (host.vars.apt) {
+        vars = host.vars.apt
+      } else {
+        vars = {
+          apt_upgrade = true
+          apt_critical = 20
+          apt_warning = 10
+          apt_only_critical = true
+          apt_list = true
+        }
+      }
+
     check_interval: 30m
     retry_interval: 2
     max_check_attempts: 2
