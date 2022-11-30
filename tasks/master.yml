@@ -142,8 +142,8 @@
           delegate_to: "{{ icinga2_primary_master }}"
           uri:
             url: "https://{{ icinga2_primary_master }}:{{ icinga2_master_port | default(5665) }}/v1/status/IcingaApplication"
-            url_username: root
-            url_password: "{{ icinga2_api.user['root'].password }}"
+            url_username: icinga2
+            url_password: "{{ icinga2_api.user['icinga2'].password }}"
             validate_certs: false
             method: GET
             return_content: true
