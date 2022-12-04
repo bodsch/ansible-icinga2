@@ -1,0 +1,98 @@
+---
+dependency:
+  name: galaxy
+
+driver:
+  name: docker
+
+lint: |
+  set -e
+  yamllint .
+  ansible-lint .
+  flake8 .
+
+platforms:
+  - name: database
+    image: "bodsch/ansible-debian:11"
+    command: ${MOLECULE_DOCKER_COMMAND:-""}
+    docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
+    privileged: true
+    pre_build_image: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    docker_networks:
+      - name: icinga2
+        ipam_config:
+          - subnet: "10.15.0.0/24"
+            gateway: "10.15.0.2"
+    networks:
+      - name: icinga2
+        ipv4_address: "10.15.0.10"
+
+  - name: primary1
+    image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
+    command: ${MOLECULE_DOCKER_COMMAND:-""}
+    docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
+    privileged: true
+    pre_build_image: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    groups:
+      - icinga
+      - icinga_primary
+    networks:
+      - name: icinga2
+        ipv4_address: "10.15.0.21"
+
+  - name: primary2
+    image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
+    command: ${MOLECULE_DOCKER_COMMAND:-""}
+    docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
+    privileged: true
+    pre_build_image: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    groups:
+      - icinga
+      - icinga_primary
+    networks:
+      - name: icinga2
+        ipv4_address: "10.15.0.22"
+
+  - name: satellite
+    image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
+    command: ${MOLECULE_DOCKER_COMMAND:-""}
+    docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
+    privileged: true
+    pre_build_image: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    groups:
+      - icinga
+      - icinga_satellite
+    networks:
+      - name: icinga2
+        ipv4_address: "10.15.0.30"
+
+provisioner:
+  name: ansible
+  config_options:
+    defaults:
+      deprecation_warnings: True
+      stdout_callback: yaml
+      callbacks_enabled: profile_tasks
+
+scenario:
+  test_sequence:
+    # - lint
+    - destroy
+    - dependency
+    - syntax
+    - create
+    - prepare
+    - converge
+    - verify
+    - destroy
+
+verifier:
+  name: testinfra
