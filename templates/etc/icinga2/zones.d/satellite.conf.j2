@@ -1,9 +1,9 @@
 #jinja2: trim_blocks: True, lstrip_blocks: True
 // {{ ansible_managed }}
-
 {% if icinga2_host_object is defined and
       icinga2_host_object | count != 0 %}
   {% for key, v in icinga2_host_object.items() %}
+// satellite - {{ key }}
     {% if v['endpoint_name'] is defined %}
       {% set _name = v['endpoint_name'] %}
       {% set _v = v.pop('endpoint_name') %}

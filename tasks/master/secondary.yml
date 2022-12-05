@@ -96,7 +96,7 @@
   delegate_to: "{{ icinga2_primary_master }}"
   template:
     src: etc/icinga2/satellite-zone.conf.j2
-    dest: /etc/icinga2/zones.d/master/{{ ansible_fqdn }}.conf
+    dest: /etc/icinga2/zones.d/primary/{{ ansible_fqdn }}.conf
     owner: "{{ icinga2_user }}"
     group: "{{ icinga2_group }}"
     mode: 0666

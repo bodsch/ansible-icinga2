@@ -21,9 +21,18 @@
   # TODO
   # safe checksum into facts to speed-up this part
   block:
-    - name: copy ca.crt from primary icinga2 master {{ icinga2_primary_master }}
+    - name: Collect only facts returned by facter
       delegate_to: '{{ icinga2_primary_master }}'
-      remote_user: "{{ ansible_user_id }}"
+      ansible.builtin.setup:
+        gather_subset:
+          - '!all'
+          - '!<any valid subset>'
+          - facter
+
+    - name: copy ca.crt from primary icinga2 master '{{ icinga2_primary_master }}'
+      delegate_to: '{{ icinga2_primary_master }}'
+      become: true
+      # remote_user: "{{ ansible_user_id }}"
       fetch:
         src: "{{ icinga2_pki_ca_cert }}"
         dest: files/{{ icinga2_primary_master }}/ca.crt

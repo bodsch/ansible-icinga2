@@ -1,15 +1,5 @@
 ---
 
-# OBSOLETE
-# replaced with: 'icinga2_reload_master'
-# - name: create restart script
-#   copy:
-#     src: icinga2/restart_icinga2.sh
-#     dest: /etc/icinga2/restart_icinga2.sh
-#     owner: root
-#     group: root
-#     mode: 0755
-
 - name: create icinga2 constants.conf
   template:
     src: etc/icinga2/constants.conf.j2
@@ -111,6 +101,9 @@
     - icinga2_primary_master == ansible_fqdn
 
 - name: validate master restart
+  when:
+    - icinga2_primary_master is defined
+    - icinga2_primary_master == ansible_fqdn
   block:
     - name: validate icinga2 configuration
       icinga2_daemon:
@@ -135,6 +128,9 @@
       register: _restart_icinga2_master
 
     - name: get state from primary master
+      when:
+        - icinga2_validate_restart is defined
+        - icinga2_validate_restart
       block:
         # WIP
         # url_username are hardcoded  ..
@@ -142,8 +138,8 @@
           delegate_to: "{{ icinga2_primary_master }}"
           uri:
             url: "https://{{ icinga2_primary_master }}:{{ icinga2_master_port | default(5665) }}/v1/status/IcingaApplication"
-            url_username: icinga2
-            url_password: "{{ icinga2_api.user['icinga2'].password }}"
+            url_username: validate
+            url_password: "{{ icinga2_api.user['validate'].password }}"
             validate_certs: false
             method: GET
             return_content: true
@@ -165,12 +161,6 @@
             port: "{{ icinga2_master_port | default(5665) }}"
             delay: 5
             connect_timeout: 3
-      when:
-        - icinga2_validate_restart is defined
-        - icinga2_validate_restart
-  when:
-    - icinga2_primary_master is defined
-    - icinga2_primary_master == ansible_fqdn
 
 - name: master secondary
   include_tasks: master/secondary.yml

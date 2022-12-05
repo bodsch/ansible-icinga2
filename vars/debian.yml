@@ -6,6 +6,7 @@ icinga2_mariadb_packages:
 
 icinga2_mariadb_python_packages:
   - name: mysqlclient
+  - name: psutil
 
 icinga2_mariadb_build_packages:
   - libmariadbclient-dev

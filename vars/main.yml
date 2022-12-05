@@ -191,7 +191,7 @@ icinga2_defaults_api:
   ticket_salt: TicketSalt
   user:
     validate:
-      password: validate
+      password: iLIIDs3x9OE6HR4zOwyH7cZQiYT29KxWLtYQxqvVHx
       permissions:
         - "status/query"
 
