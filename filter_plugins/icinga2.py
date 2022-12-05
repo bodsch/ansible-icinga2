@@ -42,7 +42,7 @@ class FilterModule(object):
 
         display.vv("found: {} entries in {}".format(count, mydict))
 
-        if(count == 1):
+        if count == 1:
             k = mydict.keys()
             keys = list(k)
             display.v("key: {}".format(k))
@@ -52,16 +52,16 @@ class FilterModule(object):
             for k, i in mydict.items():
                 _type = None
 
-                if(isinstance(i, dict)):
+                if isinstance(i, dict):
                     _type = i.get('type', None)
 
-                if(_type is not None and _type == 'primary'):
+                if _type is not None and _type == 'primary':
                     seen = k
                     break
 
         display.vv("found primary: {}".format(seen))
 
-        if(seen == ''):
+        if seen == '':
             k = mydict.keys()
             keys = list(k)
             display.v("key: {}".format(k))
@@ -114,7 +114,7 @@ class FilterModule(object):
             display.vv("zone : {} -> values {} ({})".format(
                 zone, key_list, found))
 
-            if(found):
+            if found:
                 seen = zone
 
         display.v("return zone '{}' for {}".format(seen, ansible_fqdn))
@@ -181,7 +181,7 @@ class FilterModule(object):
         """
         from dns.exception import DNSException
         from dns.resolver import Resolver
-        from dns import reversename, query, zone
+        # from dns import reversename, query, zone
 
         def dns_lookup(input, timeout=3, server=""):
             """

@@ -3,9 +3,9 @@
 - name: check installed
   include_tasks: check_installed.yml
 
-#- name: update package cache
-#  package:
-#    update_cache: true
+# - name: update package cache
+#   package:
+#     update_cache: true
 
 - name: based on arch linux
   block:
@@ -25,9 +25,6 @@
         mode: 0755
       when:
         - ansible_service_mgr | lower == "openrc"
-
-    - name: check installed
-      include_tasks: check_installed.yml
 
   when:
     - icinga2_use_external_repo | bool
@@ -49,62 +46,13 @@
         state: present
       register: _icinga2_installed
 
-    #- name: do facts module to get latest information
-    #  setup:
-
     - name: remove policy-rc.d
       file:
         path: /usr/sbin/policy-rc.d
         state: absent
 
-    - name: check installed
-      include_tasks: check_installed.yml
-
   when:
     - not icinga2_installed
     - ansible_os_family | lower != 'archlinux'
-
-#- name: re-read ansible facts
-#  setup:
-
-- name: detect icinga2_user
-  icinga2_prepared_vars:
-    variable: ICINGA2_USER
-  register: _icinga2_user
-
-- name: detect icinga2_group
-  icinga2_prepared_vars:
-    variable: ICINGA2_GROUP
-  register: _icinga2_group
-
-- name: define icinga2_user to '{{ _icinga2_user.value }}'
-  set_fact:
-    icinga2_user: "{{ _icinga2_user.value }}"
-  when:
-    - _icinga2_user.value is defined
-
-- name: define icinga2_group to '{{ _icinga2_group.value }}'
-  set_fact:
-    icinga2_group: "{{ _icinga2_group.value }}"
-  when:
-    - _icinga2_group.value is defined
-
-- name: create custom fact file
-  template:
-    src: facts.d/icinga2.fact.j2
-    dest: /etc/ansible/facts.d/icinga2.fact
-    owner: root
-    group: root
-    mode: 0755
-
-- name: create sudo rules for icinga
-  template:
-    src: etc/sudo.j2
-    dest: /etc/sudoers.d/icinga
-    mode: 0440
-    validate: 'visudo -cf %s'
-
-- name: do facts module to get latest information
-  setup:
 
 ...

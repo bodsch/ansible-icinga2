@@ -86,6 +86,14 @@ class Icinga2ReloadMaster(object):
         """
           runner
         """
+        running_icinga2 = self.check_running_process()
+
+        if not running_icinga2:
+            return dict(
+                failed=True,
+                msg="missing running icinga2 process."
+            )
+
         self.module.log(msg="Acquiring lock...")
 
         with SimpleFlock(self.lock_file, self.timeout):
@@ -94,7 +102,6 @@ class Icinga2ReloadMaster(object):
             pid = self._get_pid()
 
             if not pid:
-
                 return dict(
                     failed=True,
                     msg=f"pid file {self.pid_file} not found."
@@ -113,6 +120,25 @@ class Icinga2ReloadMaster(object):
             changed=False,
             msg="process reloaded"
         )
+
+    def check_running_process(self):
+        """
+            Check if there is any running process that contains the given name processName.
+        """
+        import psutil
+
+        running_proccesses = psutil.process_iter()
+        # Iterate over the all the running process
+        for proc in running_proccesses:
+            # self.module.log(msg=f"running_proccess: {proc.name()}")
+            try:
+                # Check if process name contains the given name string.
+                if "icinga2" in proc.name().lower():
+                    return True
+            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                pass
+
+        return False
 
     def _get_pid(self):
         """

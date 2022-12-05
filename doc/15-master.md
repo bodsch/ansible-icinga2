@@ -18,6 +18,37 @@ icinga2_masters:
     ip: 192.168.130.21
 ```
 
+Both Icinga2 instances should run as an HA capable network.
+The corresponding host object of the instances must therefore contain a correspondingly identical zone definition!
+
+### primary 1
+```yaml
+icinga2_mode: master
+
+icinga2_host_object:
+  primary1:
+    import: generic-host
+    address: '{{ ansible_default_ipv4.address }}'
+    display_name: "{{ ansible_fqdn }}"
+    zone: "primary"
+    ...
+```
+
+### primary 2
+```yaml
+icinga2_mode: master
+
+icinga2_host_object:
+  primary2:
+    import: generic-host
+    address: '{{ ansible_default_ipv4.address }}'
+    display_name: "{{ ansible_fqdn }}"
+    zone: "primary"
+    ...
+```
+
+
+
 behind a NAT you would overwrite the icinga2 host name?
 
 try this:

@@ -11,6 +11,11 @@
     - icinga2-configure
     - icinga2-install
 
+- name: facts
+  include_tasks: facts.yml
+  tags:
+    - icinga2-configure
+    -
 - name: master
   include_tasks: master.yml
   when:
