@@ -3,9 +3,6 @@
 icinga2_mariadb_packages:
   - mariadb-clients
 
-icinga2_mariadb_python_packages:
-  - name: mysqlclient
-
 icinga2_os_requirements:
   - iproute2
   - git

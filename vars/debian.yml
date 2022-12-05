@@ -4,12 +4,12 @@ icinga2_mariadb_packages:
   - python{{ '3' if ansible_python.version.major | int == 3 else '' }}-mysqldb
   - python{{ '3' if ansible_python.version.major | int == 3 else '' }}-pip
 
-icinga2_mariadb_python_packages:
-  - name: mysqlclient
-  - name: psutil
-
 icinga2_mariadb_build_packages:
   - libmariadbclient-dev
+
+icinga2_python_build_packages:
+  - gcc
+  - python3-dev
 
 icinga2_os_requirements:
   - iproute2

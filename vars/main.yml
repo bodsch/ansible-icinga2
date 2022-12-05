@@ -3,11 +3,17 @@
 monitoring_plugins_directory: /usr/lib/monitoring-plugins
 
 icinga2_mariadb_build_packages: []
-icinga2_mariadb_python_packages: []
+icinga2_mariadb_python_packages:
+  - name: mysqlclient
+
+icinga2_python_build_packages: []
 
 icinga2_packages:
   - icinga2
   - icinga2-common
+
+icinga2_python_requirements:
+  - name: psutil
 
 icinga2_requirements:
   - gnupg

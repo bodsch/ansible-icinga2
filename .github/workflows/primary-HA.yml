@@ -1,9 +1,9 @@
 ---
-name: icinga2 with icingadb
+name: icinga2 primary as HA
 
 on:
   schedule:
-    - cron: "45 4 * * 0"
+    - cron: "10 4 * * 0"
   workflow_dispatch:
   workflow_run:
     workflows:
@@ -54,7 +54,7 @@ jobs:
       - name: test master with satellite
         run: |
           tox -e ansible_$(printf "${{ matrix.ansible-version }}") \
-            -- molecule test --scenario-name icinga2-with-icingadb
+            -- molecule test --scenario-name primary-as-ha
         env:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'

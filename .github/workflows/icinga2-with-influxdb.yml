@@ -26,16 +26,16 @@ jobs:
         image:
           - debian:11
         ansible-version:
-          - '5.1'
+          - '6.1'
 
     steps:
       - name: check out the codebase.
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: 'ansible-icinga2'
 
       - name: 🐍 set up python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: '3.x'
 

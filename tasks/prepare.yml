@@ -24,6 +24,8 @@
     icinga2_primary_master: "{{ icinga2_masters | primary_master }}"
 
 - name: define satellite zone
+  when:
+    - icinga2_mode == 'satellite'
   block:
     - name: define satellite zone, when icinga2_satellites are configured
       set_fact:
@@ -38,8 +40,6 @@
       when:
         - icinga2_satellites is defined
         - icinga2_satellites | count == 0
-  when:
-    - icinga2_mode == 'satellite'
 
 - name: assert missing primary master
   assert:
@@ -89,22 +89,19 @@
     msg: icinga2 salt is missing
     quiet: true
 
-- name: merge icinga2 filelogger configuration between defaults and custom
+- name: merge icinga2 configuration between defaults and custom
   set_fact:
     icinga2_filelogger: "{{ icinga2_defaults_filelogger |
       combine( icinga2_filelogger, recursive=True ) }}"
-
-- name: merge icinga2 api configuration between defaults and custom
-  set_fact:
     icinga2_api: "{{ icinga2_defaults_api |
       combine( icinga2_api, recursive=True ) }}"
-
-- name: merge icinga2 timeperiod configuration between defaults and custom
-  set_fact:
     icinga2_timeperiod: "{{ icinga2_defaults_timeperiod |
       combine( icinga2_timeperiod, recursive=True ) }}"
 
-- block:
+- name: no archlinux
+  when:
+    - ansible_os_family | lower != 'archlinux'
+  block:
     - name: find OS specific plugins directory
       find:
         paths: "/usr/lib/monitoring-plugins,/usr/lib/nagios,/usr/lib64/nagios"
@@ -120,14 +117,15 @@
       when:
         - found_directory.files is defined
         - found_directory.files | count > 0
-  when:
-    - ansible_os_family | lower != 'archlinux'
 
 # ----------------------------------------------------------------------------------
 
 # debian based
 #
 - name: based on debian
+  when:
+    - ansible_os_family | lower == 'debian'
+    - icinga2_use_external_repo | bool
   block:
     - name: add icinga2 GPG key
       apt_key:
@@ -139,13 +137,13 @@
         src: etc/apt/icinga2.list.j2
         dest: /etc/apt/sources.list.d/icinga2.list
         mode: 0644
-  when:
-    - ansible_os_family | lower == 'debian'
-    - icinga2_use_external_repo | bool
 
 # redhat based
 #
 - name: based on redhat
+  when:
+    - ansible_os_family | lower == 'redhat'
+    - icinga2_use_external_repo | bool
   block:
     - name: import EPEL GPG key
       rpm_key:
@@ -178,13 +176,13 @@
         gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-ICINGA
         gpgcheck: 1
         enabled: 1
-  when:
-    - ansible_os_family | lower == 'redhat'
-    - icinga2_use_external_repo | bool
 
 # arch-linux based
 #
 - name: based on arch linux
+  when:
+    - ansible_os_family | lower == 'archlinux'
+    - icinga2_use_external_repo | bool
   block:
     - name: install build tools
       package:
@@ -209,9 +207,6 @@
       user:
         name: aur_builder
         group: aur_builder
-  when:
-    - ansible_os_family | lower == 'archlinux'
-    - icinga2_use_external_repo | bool
 
 - name: update package cache
   package:

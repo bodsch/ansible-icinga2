@@ -12,6 +12,8 @@
         src: requirements.txt.j2
         dest: /tmp/icinga2-requirements.txt
         mode: 0660
+      vars:
+        pip_modules: "{{ icinga2_mariadb_python_packages }}"
 
     - name: do facts module to get latest information
       setup:

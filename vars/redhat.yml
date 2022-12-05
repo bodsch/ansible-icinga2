@@ -11,9 +11,6 @@ icinga2_mariadb_build_packages:
   - automake
   - python{{ '3' if ansible_python.version.major | int == 3 else '' }}-devel
 
-icinga2_mariadb_python_packages:
-  - name: mysqlclient
-
 icinga2_os_requirements:
   - iproute
 
