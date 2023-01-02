@@ -3,7 +3,7 @@
 # secondary master
 #
 - name: define PKI facts
-  set_fact:
+  ansible.builtin.set_fact:
     icinga2_pki_ca_key: "{{ icinga2_pki_dir }}/ca.key"
     icinga2_pki_ca_cert: "{{ icinga2_pki_dir }}/ca.crt"
     icinga2_pki_fqdn_key: "{{ icinga2_pki_dir }}/{{ ansible_fqdn }}.key"
@@ -11,7 +11,7 @@
     # icinga2_pki_master_cert: "{{ icinga2_pki_dir }}/trusted-master.crt"
 
 - name: "create '{{ icinga2_pki_dir }}'"
-  file:
+  ansible.builtin.file:
     dest: "{{ icinga2_pki_dir }}"
     state: directory
     owner: "{{ icinga2_user }}"
@@ -19,16 +19,20 @@
     mode: 0750
 
 - name: "check for existing '{{ icinga2_pki_fqdn_key }}'"
-  stat:
+  ansible.builtin.stat:
     path: "{{ icinga2_pki_fqdn_key }}"
   register: __fqdn_key
 
 - name: "check for existing '{{ icinga2_pki_ca_cert }}'"
-  stat:
+  ansible.builtin.stat:
     path: "{{ icinga2_pki_ca_cert }}"
   register: __ca_crt
 
 - name: create a ticket from icinga2 master for the secondary master
+  when:
+    - not __fqdn_key.stat.exists
+    - icinga2_primary_master is defined
+    - icinga2_primary_master != ansible_fqdn
   block:
     - name: "create a ticket from icinga2 master for the secondary master '{{ ansible_fqdn }}'"
       delegate_to: "{{ icinga2_primary_master }}"
@@ -38,18 +42,18 @@
       register: ticket
 
     - name: define FQDN ticket
-      set_fact:
+      ansible.builtin.set_fact:
         icinga2_fqdn_ticket: "{{ ticket.ticket }}"
 
     - name: copy ca.crt from primary icinga2 master
       delegate_to: '{{ icinga2_primary_master }}'
-      fetch:
+      ansible.builtin.fetch:
         src: "{{ icinga2_pki_ca_cert }}"
         dest: files/ca.crt
         flat: true
 
     - name: "copy ca.crt to '{{ ansible_fqdn }}'"
-      copy:
+      ansible.builtin.copy:
         src: files/ca.crt
         dest: "{{ icinga2_pki_ca_cert }}"
         owner: "{{ icinga2_user }}"
@@ -73,28 +77,24 @@
         - restart icinga2
 
     - name: fix permissions for icinga2 pki directory
-      file:
+      ansible.builtin.file:
         path: "{{ icinga2_pki_dir }}"
         owner: "{{ icinga2_user }}"
         group: "{{ icinga2_group }}"
         recurse: true
 
     - name: configure zones
-      template:
+      ansible.builtin.template:
         src: etc/icinga2/zones.conf.j2
         dest: /etc/icinga2/zones.conf
         owner: "{{ icinga2_user }}"
         group: "{{ icinga2_group }}"
         mode: 0666
         backup: true
-  when:
-    - not __fqdn_key.stat.exists
-    - icinga2_primary_master is defined
-    - icinga2_primary_master != ansible_fqdn
 
 - name: create host object file for secondary master on master '{{ icinga2_primary_master }}'
   delegate_to: "{{ icinga2_primary_master }}"
-  template:
+  ansible.builtin.template:
     src: etc/icinga2/satellite-zone.conf.j2
     dest: /etc/icinga2/zones.d/primary/{{ ansible_fqdn }}.conf
     owner: "{{ icinga2_user }}"
@@ -107,7 +107,7 @@
     - icinga2_primary_master != ansible_fqdn
 
 - name: create icinga2 constants.conf
-  template:
+  ansible.builtin.template:
     src: etc/icinga2/constants.conf.j2
     dest: /etc/icinga2/constants.conf
     owner: "{{ icinga2_user }}"
@@ -117,6 +117,6 @@
     - check configuration
 
 - name: secondary master features
-  include_tasks: features.yml
+  ansible.builtin.include_tasks: features.yml
 
 ...

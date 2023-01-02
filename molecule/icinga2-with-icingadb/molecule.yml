@@ -30,7 +30,7 @@ platforms:
         ipv4_address: "10.11.0.10"
 
   - name: icingadb
-    image: "bodsch/ansible-debian:11}"
+    image: "bodsch/ansible-debian:11"
     command: ${MOLECULE_DOCKER_COMMAND:-""}
     docker_host: "${DOCKER_HOST:-unix://run/docker.sock}"
     privileged: true
@@ -63,10 +63,8 @@ provisioner:
 
 scenario:
   test_sequence:
-    # - lint
     - destroy
     - dependency
-    - syntax
     - create
     - prepare
     - converge

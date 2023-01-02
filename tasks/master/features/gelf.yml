@@ -1,12 +1,11 @@
 ---
 
 - name: define gelf feature state
-  set_fact:
-    feature_gelf_state: "{{ 'present' if icinga2_master_features_enabled | join('|') |
-      regex_search('gelf') else 'absent' }}"
+  ansible.builtin.set_fact:
+    feature_gelf_state: "{{ 'present' if icinga2_master_features_enabled | join('|') | regex_search('gelf') else 'absent' }}"
 
 - name: configure gelf feature
-  template:
+  ansible.builtin.template:
     src: etc/icinga2/features/gelf.conf.j2
     dest: /etc/icinga2/features-available/gelf.conf
     owner: "{{ icinga2_user }}"

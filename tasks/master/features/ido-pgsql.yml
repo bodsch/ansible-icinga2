@@ -2,7 +2,7 @@
 # TODO: postgresql
 
 - name: The system may not be provisioned according to the CMDB status.
-  assert:
+  ansible.builtin.assert:
     that:
       - icinga2_ido_enabled | bool and icinga2_master_features_enabled | join('|') | regex_search('ido(.*)')
     msg: "The system may not be provisioned according to the CMDB status."

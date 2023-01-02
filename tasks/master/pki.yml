@@ -3,9 +3,12 @@
 # primary master
 #
 - name: primary master
+  when:
+    - icinga2_primary_master is defined
+    - icinga2_primary_master == ansible_fqdn
   block:
     - name: check if {{ icinga2_pki_cadir }}/ca.crt exists
-      stat:
+      ansible.builtin.stat:
         path: "{{ icinga2_pki_cadir }}/ca.crt"
       register: _icinga2_ca_file
       tags:
@@ -24,17 +27,17 @@
     # renew stat with the ca and cert files
     #
     - name: check if {{ icinga2_pki_cadir }}/ca.crt exists
-      stat:
+      ansible.builtin.stat:
         path: "{{ icinga2_pki_cadir }}/ca.crt"
       register: _icinga2_ca_file
 
     - name: check if {{ icinga2_pki_cadir }}/{{ icinga2_certificate_cn }}.crt exists
-      stat:
+      ansible.builtin.stat:
         path: "{{ icinga2_pki_dir }}/{{ icinga2_certificate_cn }}.crt"
       register: _icinga2_certificate_file
 
     - name: ensure ca.crt is replicate in pki directory
-      copy:
+      ansible.builtin.copy:
         src: "{{ icinga2_pki_cadir }}/ca.crt"
         dest: "{{ icinga2_pki_dir }}/ca.crt"
         owner: "{{ icinga2_user }}"
@@ -47,7 +50,7 @@
         _icinga2_ca_file.stat.exists
 
     - name: create symlink from {{ inventory_hostname }} to {{ icinga2_certificate_cn }}
-      file:
+      ansible.builtin.file:
         src: "{{ icinga2_pki_dir }}/{{ inventory_hostname }}.{{ item }}"
         dest: "{{ icinga2_pki_dir }}/{{ icinga2_certificate_cn }}.{{ item }}"
         owner: "{{ icinga2_user }}"
@@ -59,9 +62,5 @@
       when:
         - inventory_hostname != icinga2_certificate_cn
         - not _icinga2_certificate_file.stat.exists
-
-  when:
-    - icinga2_primary_master is defined
-    - icinga2_primary_master == ansible_fqdn
 
 ...

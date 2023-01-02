@@ -12,27 +12,27 @@
     - features
 
 - name: features api
-  include_tasks: features/api.yml
+  ansible.builtin.include_tasks: features/api.yml
 
 - name: features notification
-  include_tasks: features/notification.yml
+  ansible.builtin.include_tasks: features/notification.yml
 
 - name: features ido
-  include_tasks: features/ido.yml
+  ansible.builtin.include_tasks: features/ido.yml
 
 - name: features icingadb
-  include_tasks: features/icingadb.yml
+  ansible.builtin.include_tasks: features/icingadb.yml
 
 - name: features graphite
-  include_tasks: features/graphite.yml
+  ansible.builtin.include_tasks: features/graphite.yml
 
 - name: features influxdb
-  include_tasks: features/influxdb.yml
+  ansible.builtin.include_tasks: features/influxdb.yml
 
 - name: features influxdb2
-  include_tasks: features/influxdb2.yml
+  ansible.builtin.include_tasks: features/influxdb2.yml
 
 - name: features gelf
-  include_tasks: features/gelf.yml
+  ansible.builtin.include_tasks: features/gelf.yml
 
 ...

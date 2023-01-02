@@ -15,8 +15,8 @@ import re
 import json
 import tarfile
 import os
-import pwd
-import grp
+# import pwd
+# import grp
 import os.path
 import urllib.parse
 
@@ -41,12 +41,12 @@ class Aur():
         self.upgrade = module.params.get("upgrade")
         self.aur_only = module.params.get("aur_only")
 
-        user = pwd.getpwuid(os.geteuid())
-        owner = user.pw_name
-        uid = user.pw_uid
-        gid = user.pw_gid
-        group = grp.getgrgid(gid).gr_name
-        home = str(Path.home())
+        # user = pwd.getpwuid(os.geteuid())
+        # owner = user.pw_name
+        # uid = user.pw_uid
+        # gid = user.pw_gid
+        # group = grp.getgrgid(gid).gr_name
+        # home = str(Path.home())
 
         self.pacman_binary = self.module.get_bin_path('pacman', True)
         self.git_binary = self.module.get_bin_path('git', True)

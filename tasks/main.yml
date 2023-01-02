@@ -1,23 +1,23 @@
 ---
 
 - name: prepare
-  include_tasks: prepare.yml
+  ansible.builtin.include_tasks: prepare.yml
   tags:
     - icinga2-install
 
 - name: install
-  include_tasks: install.yml
+  ansible.builtin.include_tasks: install.yml
   tags:
     - icinga2-configure
     - icinga2-install
 
 - name: facts
-  include_tasks: facts.yml
+  ansible.builtin.include_tasks: facts.yml
   tags:
     - icinga2-configure
-    -
+
 - name: master
-  include_tasks: master.yml
+  ansible.builtin.include_tasks: master.yml
   when:
     - icinga2_mode == 'master'
   tags:
@@ -25,7 +25,7 @@
     - icinga2-master
 
 - name: satellite
-  include_tasks: satellite.yml
+  ansible.builtin.include_tasks: satellite.yml
   when:
     - icinga2_mode == 'satellite'
   tags:
@@ -33,27 +33,30 @@
     - icinga2-satellite
 
 - name: service
-  include_tasks: service.yml
+  ansible.builtin.include_tasks: service.yml
   tags:
     - icinga2-service
 
 # ---------------------------------------------------------------------------------------
 
-- include_tasks: master/backup.yml
+- name: backup
+  ansible.builtin.include_tasks: master/backup.yml
   when:
     - icinga2_mode == 'master'
   tags:
     - icinga2
     - backup
 
-- include_tasks: master/restore.yml
+- name: restore
+  ansible.builtin.include_tasks: master/restore.yml
   when:
     - icinga2_mode == 'master'
   tags:
     - icinga2
     - restore
 
-- include_tasks: downtime.yml
+- name: downtime
+  ansible.builtin.include_tasks: downtime.yml
   when:
     - icinga2_mode == 'master'
     - icinga2_downtime_comment is defined

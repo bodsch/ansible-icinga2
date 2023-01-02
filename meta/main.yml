@@ -10,7 +10,7 @@ galaxy_info:
   description: ansible role for handling icinga2 as master or satellite
 
   license: "BSD"
-  min_ansible_version: 2.10
+  min_ansible_version: "2.10"
 
   platforms:
     - name: ArchLinux
@@ -25,7 +25,7 @@ galaxy_info:
         - bullseye
     - name: EL
       versions:
-        - 8
+        - "8"
 
   galaxy_tags:
     - monitoring

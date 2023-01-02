@@ -1,7 +1,7 @@
 ---
 
 - name: create templates.conf
-  template:
+  ansible.builtin.template:
     src: etc/icinga2/global-templates.conf.j2
     dest: /etc/icinga2/global-templates.conf
     owner: "{{ icinga2_user }}"
@@ -13,7 +13,7 @@
     - restart icinga2
 
 - name: create static zone file on icinga2 satellite
-  template:
+  ansible.builtin.template:
     src: etc/icinga2/zones.conf.j2
     dest: /etc/icinga2/zones.conf
     owner: "{{ icinga2_user }}"

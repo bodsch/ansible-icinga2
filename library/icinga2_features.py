@@ -250,7 +250,7 @@ class Icinga2Features:
 
         _all = _enabled + _disabled
 
-        features_ = sorted(_all.split(' '))
+        # features_ = sorted(_all.split(' '))
         features_disabled = sorted(_disabled.split(' '))
         features_enabled = sorted(_enabled.split(' '))
 
@@ -265,8 +265,6 @@ class Icinga2Features:
           - feature disable (disables specified feature)
           - feature enable (enables specified feature)
         """
-        result = ""
-
         args = []
         args.append(self._icinga2)
         args.append('feature')

@@ -51,7 +51,7 @@ jobs:
             sudo ln -s /etc/apparmor.d/usr.sbin.mysqld /etc/apparmor.d/disable/
             sudo apparmor_parser -R /etc/apparmor.d/usr.sbin.mysqld
 
-      - name: test master with satellite
+      - name: test with tox
         run: |
           tox -e ansible_$(printf "${{ matrix.ansible-version }}") \
             -- molecule test --scenario-name icinga2-with-influxdb

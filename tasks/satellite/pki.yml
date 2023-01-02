@@ -1,14 +1,14 @@
 ---
 
 - name: assert missing salt
-  assert:
+  ansible.builtin.assert:
     that:
       - icinga2_salt | length != 0
     msg: icinga2 salt is missing
     quiet: true
 
 - name: define PKI facts
-  set_fact:
+  ansible.builtin.set_fact:
     icinga2_pki_ca_key: "{{ icinga2_pki_dir }}/ca.key"
     icinga2_pki_ca_cert: "{{ icinga2_pki_dir }}/ca.crt"
     icinga2_pki_fqdn_key: "{{ icinga2_pki_dir }}/{{ ansible_fqdn }}.key"
@@ -33,7 +33,7 @@
       delegate_to: '{{ icinga2_primary_master }}'
       become: true
       # remote_user: "{{ ansible_user_id }}"
-      fetch:
+      ansible.builtin.fetch:
         src: "{{ icinga2_pki_ca_cert }}"
         dest: files/{{ icinga2_primary_master }}/ca.crt
         flat: true
@@ -41,7 +41,7 @@
     - name: check local ca.crt
       delegate_to: localhost
       become: false
-      stat:
+      ansible.builtin.stat:
         path: "files/{{ icinga2_primary_master }}/ca.crt"
         checksum_algorithm: sha1
         get_checksum: true
@@ -49,20 +49,20 @@
       register: primary_master_ca_file
 
     - name: check for existing '{{ icinga2_pki_ca_cert }}'
-      stat:
+      ansible.builtin.stat:
         path: "{{ icinga2_pki_ca_cert }}"
         checksum_algorithm: sha1
         get_checksum: true
       register: satellite_ca_file
 
     - name: define fact for remove old certificates
-      set_fact:
+      ansible.builtin.set_fact:
         icinga2_remove_old_cert: "{{ primary_master_ca_file.stat.checksum | string == satellite_ca_file.stat.checksum | string }}"
       when:
         - satellite_ca_file.stat.checksum is defined
 
     - name: remove old ca file from satellite
-      file:
+      ansible.builtin.file:
         path: "{{ item }}"
         state: absent
       loop:
@@ -75,7 +75,7 @@
     - name: read facts from primary master '{{ icinga2_primary_master }}'"
       delegate_to: "{{ icinga2_primary_master }}"
       remote_user: "{{ ansible_user_id }}"
-      setup:
+      ansible.builtin.setup:
         gather_subset:
           - '!all'
           - '!any'
@@ -84,19 +84,19 @@
     - name: define icinga2 user from primary master '{{ icinga2_primary_master }}'"
       delegate_to: "{{ icinga2_primary_master }}"
       remote_user: "{{ ansible_user_id }}"
-      set_fact:
-        icinga2_master_user: "{{ ansible_local.icinga2.icinga2_user | default( icinga2_user ) }}"
-        icinga2_master_group: "{{ ansible_local.icinga2.icinga2_group | default( icinga2_group ) }}"
+      ansible.builtin.set_fact:
+        icinga2_master_user: "{{ ansible_local.icinga2.icinga2_user | default(icinga2_user) }}"
+        icinga2_master_group: "{{ ansible_local.icinga2.icinga2_group | default(icinga2_group) }}"
 
     - name: re-read satellite facts
-      setup:
+      ansible.builtin.setup:
         gather_subset:
           - '!all'
           - '!any'
           - facter
 
 - name: create icinga2.conf
-  template:
+  ansible.builtin.template:
     src: etc/icinga2/icinga2.conf.j2
     dest: /etc/icinga2/icinga2.conf
     owner: "{{ icinga2_user }}"
@@ -104,7 +104,7 @@
     mode: 0666
 
 - name: create constants.conf
-  template:
+  ansible.builtin.template:
     src: etc/icinga2/constants.conf.j2
     dest: /etc/icinga2/constants.conf
     owner: "{{ icinga2_user }}"
@@ -112,7 +112,7 @@
     mode: 0666
 
 - name: create mainlog.conf
-  template:
+  ansible.builtin.template:
     src: etc/icinga2/features/mainlog.conf.j2
     dest: /etc/icinga2/features-available/mainlog.conf
     owner: "{{ icinga2_user }}"
@@ -120,7 +120,7 @@
     mode: 0666
 
 - name: configure icinga2 api
-  template:
+  ansible.builtin.template:
     src: etc/icinga2/features/api.conf.j2
     dest: /etc/icinga2/features-available/api.conf
     owner: "{{ icinga2_user }}"
@@ -128,7 +128,7 @@
     mode: 0666
 
 - name: "create '{{ icinga2_pki_dir }}'"
-  file:
+  ansible.builtin.file:
     dest: "{{ icinga2_pki_dir }}"
     state: directory
     owner: "{{ icinga2_user }}"
@@ -136,7 +136,7 @@
     mode: 0755
 
 - name: "check for existing key '{{ icinga2_pki_fqdn_key }}'"
-  stat:
+  ansible.builtin.stat:
     path: "{{ icinga2_pki_fqdn_key }}"
     checksum_algorithm: sha1
     get_checksum: true
@@ -150,9 +150,11 @@
 #   register: __ca_crt
 
 - name: copy certificate to satellite
+  when:
+    - not __satellite_key.stat.exists
   block:
     - name: copy ca.crt to satellite
-      copy:
+      ansible.builtin.copy:
         src: files/{{ icinga2_primary_master }}/ca.crt
         dest: "{{ icinga2_pki_ca_cert }}"
         owner: "{{ icinga2_user }}"
@@ -167,13 +169,13 @@
       delegate_to: "{{ icinga2_primary_master }}"
 
     - name: define FQDN ticket
-      set_fact:
+      ansible.builtin.set_fact:
         icinga2_fqdn_ticket: "{{ ticket.ticket }}"
 
     - name: wait for primary icinga2 master ({{ icinga2_primary_master }}) to be accessible
       # delegate_to: '{{ icinga2_primary_master }}'
       # remote_user: "{{ ansible_user_id }}"
-      wait_for:
+      ansible.builtin.wait_for:
         host: '{{ icinga2_primary_master }}'
         port: "{{ icinga2_master_port | default(5665) }}"
         delay: 5
@@ -200,19 +202,16 @@
         - restart icinga2
 
     - name: fix permissions for icinga2 pki directory
-      file:
+      ansible.builtin.file:
         path: "{{ icinga2_pki_dir }}"
         owner: "{{ icinga2_user }}"
         group: "{{ icinga2_user }}"
         recurse: true
 
-  when:
-    - not __satellite_key.stat.exists
-
 - name: create zone entry under '/etc/icinga2/zones.d' on master '{{ icinga2_primary_master }}'
   delegate_to: "{{ icinga2_primary_master }}"
   remote_user: "{{ ansible_user_id }}"
-  file:
+  ansible.builtin.file:
     dest: /etc/icinga2/zones.d/{{ icinga2_satellite_zone }}
     state: directory
     owner: "{{ icinga2_master_user }}"
@@ -223,7 +222,7 @@
 - name: create zone file on master
   delegate_to: "{{ item.key }}"
   remote_user: "{{ ansible_user_id }}"
-  template:
+  ansible.builtin.template:
     src: etc/icinga2/satellite.conf.j2
     dest: /etc/icinga2/satellites.d/{{ icinga2_satellite_zone }}.conf
     owner: "{{ icinga2_master_user }}"
@@ -237,7 +236,7 @@
 - name: create host object file for satellite on master '{{ icinga2_primary_master }}'
   delegate_to: "{{ icinga2_primary_master }}"
   remote_user: "{{ ansible_user_id }}"
-  template:
+  ansible.builtin.template:
     src: etc/icinga2/zones.d/satellite.conf.j2
     dest: /etc/icinga2/zones.d/{{ icinga2_satellite_zone }}/{{ icinga2_certificate_cn }}.conf
     owner: "{{ icinga2_master_user }}"
@@ -247,12 +246,12 @@
     - reload icinga2 master config
 
 - name: ensure that satellite has api connetions
-  stat:
+  ansible.builtin.stat:
     path: "/var/lib/icinga2/api/zones/{{ icinga2_satellite_zone }}/_etc/{{ icinga2_certificate_cn }}.conf"
   register: __satellite_api_connections
 
 - name: define icinga2_satellite_has_api_connection
-  set_fact:
+  ansible.builtin.set_fact:
     icinga2_satellite_has_api_connection: "{{ __satellite_api_connections.stat.exists }}"
 
 ...

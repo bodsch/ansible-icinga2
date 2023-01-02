@@ -1,7 +1,7 @@
 ---
 
 - name: yum-clean-metadata
-  command: yum clean metadata
+  ansible.builtin.command: yum clean metadata
   args:
     warn: false
 
@@ -16,19 +16,19 @@
     - validated config
 
 - name: validated config
-  debug:
+  ansible.builtin.debug:
     var: icinga2_validate_config
   when:
     - icinga2_validate_config is defined
 
 - name: reload icinga2
-  service:
+  ansible.builtin.service:
     name: icinga2
     state: reloaded
 
 - name: restart icinga2
   run_once: true
-  service:
+  ansible.builtin.service:
     name: icinga2
     state: restarted
 
@@ -47,7 +47,7 @@
     - reloaded config
 
 - name: reloaded config
-  debug:
+  ansible.builtin.debug:
     var: _icinga2_master_reloaded
   when:
     - _icinga2_master_reloaded is defined

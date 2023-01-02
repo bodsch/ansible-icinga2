@@ -1,12 +1,12 @@
 ---
 
 - name: satellite pki
-  include_tasks: satellite/pki.yml
+  ansible.builtin.include_tasks: satellite/pki.yml
 
 - name: satellite configure
-  include_tasks: satellite/configure.yml
+  ansible.builtin.include_tasks: satellite/configure.yml
 
 - name: satellite features
-  include_tasks: satellite/features.yml
+  ansible.builtin.include_tasks: satellite/features.yml
 
 # /var/lib/icinga2/api/zones-stage/startup.log

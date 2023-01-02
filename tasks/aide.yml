@@ -1,13 +1,17 @@
 ---
 
-- block:
+- name: aide support
+  when:
+    - icinga2_aide_enabled is defined
+    - icinga2_aide_enabled
+  block:
     - name: ensure aide is already installed
-      stat:
+      ansible.builtin.stat:
         path: /usr/bin/aide
       register: _aide_installed
 
     - name: ensure aide.conf.d directory exists
-      file:
+      ansible.builtin.file:
         dest: /etc/aide/aide.conf.d
         state: directory
         mode: 0755
@@ -15,12 +19,9 @@
         - _aide_installed.stat.exists
 
     - name: add additional aide HIDS configuration
-      copy:
+      ansible.builtin.copy:
         src: aide/aide.conf.d/99_aide_local_icinga2
         dest: /etc/aide/aide.conf.d/99_aide_local_icinga2
         mode: 0644
       when:
         - _aide_installed.stat.exists
-  when:
-    - icinga2_aide_enabled is defined
-    - icinga2_aide_enabled

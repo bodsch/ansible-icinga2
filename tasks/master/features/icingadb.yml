@@ -1,6 +1,9 @@
 ---
 
-- block:
+- name: icingadb
+  when:
+    - icinga2_master_features_enabled | join('|') | regex_search('icingadb')
+  block:
     - name: enable icingadb feature
       icinga2_features:
         features:
@@ -14,7 +17,7 @@
         - features
 
     - name: configure icingadb feature
-      template:
+      ansible.builtin.template:
         src: etc/icinga2/features/icingadb.conf.j2
         dest: /etc/icinga2/features-available/icingadb.conf
         owner: "{{ icinga2_user }}"
@@ -23,7 +26,5 @@
       notify:
         - check configuration
         - restart icinga2
-  when:
-    - icinga2_master_features_enabled | join('|') | regex_search('icingadb')
 
 ...

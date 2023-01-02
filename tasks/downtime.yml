@@ -1,7 +1,7 @@
 ---
 
 - name: define primary icinga2 master
-  set_fact:
+  ansible.builtin.set_fact:
     icinga2_primary_master: "{{ icinga2_masters | primary_master }}"
   tags:
     - icinga2
@@ -9,7 +9,7 @@
     - downtime_remove
 
 - name: check that all necessary information is available
-  assert:
+  ansible.builtin.assert:
     that:
       - icinga2_downtime_comment is defined and icinga2_downtime_comment | length != 0
       - icinga2_downtime_duration is defined and icinga2_downtime_duration | int != 0
@@ -19,7 +19,7 @@
       - icinga2_downtime_system_name is defined
 
 - name: check if the primary icinga master {{ icinga2_primary_master }} are available
-  wait_for:
+  ansible.builtin.wait_for:
     host: "{{ icinga2_primary_master }}"
     port: "{{ icinga2_master_port | default(5665) }}"
     delay: 1              # No wait before first check (sec)

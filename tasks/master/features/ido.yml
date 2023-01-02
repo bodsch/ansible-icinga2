@@ -1,18 +1,17 @@
 ---
 
 - name: merge icinga2 ido configuration between defaults and custom
-  set_fact:
-    icinga2_ido: "{{ icinga2_defaults_ido |
-      combine( icinga2_ido, recursive=True ) }}"
+  ansible.builtin.set_fact:
+    icinga2_ido: "{{ icinga2_defaults_ido | combine(icinga2_ido, recursive=True) }}"
 
 - name: ido mysql
-  include_tasks: ido-mysql.yml
+  ansible.builtin.include_tasks: ido-mysql.yml
   when:
     - icinga2_ido.enabled | bool
     - icinga2_master_features_enabled | join('|') | regex_search('ido-mysql')
 
 - name: ido pgsql
-  include_tasks: ido-pgsql.yml
+  ansible.builtin.include_tasks: ido-pgsql.yml
   when:
     - icinga2_ido.enabled | bool
     - icinga2_master_features_enabled | join('|') | regex_search('ido-pgsql')

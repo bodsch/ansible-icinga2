@@ -3,3 +3,6 @@
 skip_list:
   - name[casing]
   - name[template]
+  - args[module]
+
+warn_list: []

@@ -1,14 +1,17 @@
 ---
 
 - name: install packages for support databases
-  package:
+  ansible.builtin.package:
     name: "{{ icinga2_mariadb_packages }}"
     state: present
 
 - name: python support
+  when:
+    - icinga2_mariadb_python_packages is defined
+    - icinga2_mariadb_python_packages | length > 0
   block:
     - name: create requirements.txt
-      template:
+      ansible.builtin.template:
         src: requirements.txt.j2
         dest: /tmp/icinga2-requirements.txt
         mode: 0660
@@ -16,10 +19,10 @@
         pip_modules: "{{ icinga2_mariadb_python_packages }}"
 
     - name: do facts module to get latest information
-      setup:
+      ansible.builtin.setup:
 
     - name: ensure python bindings for mariadb packages 1st
-      pip:
+      ansible.builtin.pip:
         # executable: pip3
         requirements: /tmp/icinga2-requirements.txt
         state: present
@@ -28,39 +31,40 @@
       # no_log: true
 
     - name: install python ip modules
-      block:
-        - name: install build essentials
-          package:
-            name: "{{ icinga2_mariadb_build_packages }}"
-            state: present
-
-        - name: ensure python bindings for mariadb packages 2nd
-          pip:
-            requirements: /tmp/icinga2-requirements.txt
-            state: present
-
-        - name: uninstall build essentials
-          package:
-            name: "{{ icinga2_mariadb_build_packages }}"
-            state: absent
       when:
         - pip_install.failed
         - icinga2_mariadb_build_packages is defined
         - icinga2_mariadb_build_packages | length > 0
-  when:
-    - icinga2_mariadb_python_packages is defined
-    - icinga2_mariadb_python_packages | length > 0
+      block:
+        - name: install build essentials
+          ansible.builtin.package:
+            name: "{{ icinga2_mariadb_build_packages }}"
+            state: present
+
+        - name: ensure python bindings for mariadb packages 2nd
+          ansible.builtin.pip:
+            requirements: /tmp/icinga2-requirements.txt
+            state: present
+
+        - name: uninstall build essentials
+          ansible.builtin.package:
+            name: "{{ icinga2_mariadb_build_packages }}"
+            state: absent
 
 - name: install icinga2-ido package
-  package:
+  ansible.builtin.package:
     name: icinga2-ido-mysql
     state: present
   when:
     - ansible_os_family | lower != 'archlinux'
 
-- block:
+- name: database
+  when:
+    - icinga2_primary_master is defined
+    - icinga2_primary_master == ansible_fqdn
+  block:
     - name: create database upgrade script
-      template:
+      ansible.builtin.template:
         src: database-upgrade.sh.j2
         dest: /usr/local/bin/database-upgrade.sh
         owner: "{{ icinga2_user }}"
@@ -68,7 +72,7 @@
         mode: 0750
 
     - name: check if configured database are available
-      wait_for:
+      ansible.builtin.wait_for:
         host: "{{ icinga2_ido.host }}"
         port: "{{ icinga2_ido.port }}"
         delay: 1              # No wait before first check (sec)
@@ -86,7 +90,7 @@
       register: _mysql_ido_version
 
     - name: create the mysql ido schema
-      mysql_db:
+      community.mysql.mysql_db:
         name: "{{ icinga2_ido.database }}"
         login_host: "{{ icinga2_ido.host }}"
         login_user: "{{ icinga2_ido.user }}"
@@ -101,16 +105,13 @@
         - not _mysql_ido_version.exists
 
     - name: update database schema  # noqa 'command-instead-of-shell'
-      command:
+      ansible.builtin.command:
         cmd: /usr/local/bin/database-upgrade.sh
       changed_when: false
       # no_log: false
-  when:
-    - icinga2_primary_master is defined
-    - icinga2_primary_master == ansible_fqdn
 
 - name: configure ido-mysql feature
-  template:
+  ansible.builtin.template:
     src: etc/icinga2/features/ido-mysql.conf.j2
     dest: /etc/icinga2/features-available/ido-mysql.conf
     owner: "{{ icinga2_user }}"

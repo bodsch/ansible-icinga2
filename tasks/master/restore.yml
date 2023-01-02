@@ -1,41 +1,47 @@
 ---
 
 - name: backup and restore
+  when:
+    - icinga2_primary_master is defined
+    - icinga2_primary_master == ansible_fqdn
   block:
     - name: add backup and restore config
-      template:
+      ansible.builtin.template:
         src: backup.config.j2
         dest: /usr/local/etc/backup.config
         mode: 0660
 
     - name: add backup script
-      template:
+      ansible.builtin.template:
         src: backup-icinga2.sh.j2
         dest: /usr/local/bin/backup-icinga2.sh
         mode: 0755
 
     - name: add restore script
-      template:
+      ansible.builtin.template:
         src: restore-icinga2.sh.j2
         dest: /usr/local/bin/restore-icinga2.sh
         mode: 0755
-  when:
-    - icinga2_primary_master is defined
-    - icinga2_primary_master == ansible_fqdn
 
 - name: restore
+  when:
+    - icinga2_master_backup_enabled is defined
+    - icinga2_master_backup_enabled | bool
+  tags:
+    - icinga2_master
+    - restore
   block:
     - name: define primary icinga2 master
-      set_fact:
+      ansible.builtin.set_fact:
         icinga2_primary_master: "{{ icinga2_masters | primary_master }}"
 
     - name: check if restore script present
-      stat:
+      ansible.builtin.stat:
         path: /usr/local/bin/restore-icinga2.sh
       register: icinga2_restore_script
 
     - name: transfer latest backup to {{ icinga2_primary_master }}
-      copy:
+      ansible.builtin.copy:
         src: backup/latest.tar.bz2
         dest: /var/tmp/latest.tar.bz2
         mode: 0640
@@ -46,7 +52,7 @@
         - icinga2_restore_script.stat.exists
 
     - name: transfer latest checksum to {{ icinga2_primary_master }}
-      copy:
+      ansible.builtin.copy:
         src: backup/latest.tar.bz2.sha512
         dest: /var/tmp/latest.tar.bz2.sha512
         mode: 0640
@@ -57,18 +63,11 @@
         - icinga2_restore_script.stat.exists
 
     - name: run restore script
-      shell: >
+      ansible.builtin.shell: >
         /usr/local/bin/restore-icinga2.sh /var/tmp/latest.tar.bz2
       when:
         - icinga2_primary_master is defined
         - icinga2_primary_master == ansible_fqdn
         - icinga2_restore_script.stat.exists
-  when:
-    - icinga2_master_backup_enabled is defined
-    - icinga2_master_backup_enabled | bool
-
-  tags:
-    - icinga2_master
-    - restore
 
 ...

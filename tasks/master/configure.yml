@@ -1,9 +1,12 @@
 ---
 
 - name: global zones directory
+  when:
+    - icinga2_primary_master is defined
+    - icinga2_primary_master == ansible_fqdn
   block:
     - name: create global-templates directory
-      file:
+      ansible.builtin.file:
         name: /etc/icinga2/zones.d/global-templates
         state: directory
         owner: "{{ icinga2_user }}"
@@ -11,18 +14,15 @@
         mode: 0755
 
     - name: create director-global directory
-      file:
+      ansible.builtin.file:
         name: /etc/icinga2/zones.d/director-global
         state: directory
         owner: "{{ icinga2_user }}"
         group: "{{ icinga2_group }}"
         mode: 0755
-  when:
-    - icinga2_primary_master is defined
-    - icinga2_primary_master == ansible_fqdn
 
 - name: create satellite directory
-  file:
+  ansible.builtin.file:
     name: /etc/icinga2/satellites.d
     state: directory
     owner: "{{ icinga2_user }}"
@@ -30,7 +30,7 @@
     mode: 0755
 
 - name: configure icinga2
-  template:
+  ansible.builtin.template:
     src: '{{ item.src }}'
     dest: "{{ item.dest }}"
     owner: "{{ icinga2_user }}"
@@ -48,7 +48,7 @@
     - restart icinga2
 
 - name: create downtimes.conf
-  template:
+  ansible.builtin.template:
     src: etc/icinga2/downtimes.conf.j2
     dest: /etc/icinga2/downtimes.conf
     owner: "{{ icinga2_user }}"
@@ -59,7 +59,7 @@
     - restart icinga2
 
 - name: create users.conf
-  template:
+  ansible.builtin.template:
     src: etc/icinga2/users.conf.j2
     dest: /etc/icinga2/users.conf
     owner: "{{ icinga2_user }}"
@@ -70,7 +70,7 @@
     - restart icinga2
 
 - name: create api-users.conf
-  template:
+  ansible.builtin.template:
     src: etc/icinga2/api-users.conf.j2
     dest: /etc/icinga2/api-users.conf
     owner: "{{ icinga2_user }}"
@@ -81,7 +81,7 @@
     - restart icinga2
 
 - name: create templates.conf in global-templates
-  template:
+  ansible.builtin.template:
     src: etc/icinga2/global-templates.conf.j2
     dest: /etc/icinga2/global-templates.conf
     owner: "{{ icinga2_user }}"
@@ -91,18 +91,16 @@
     - check configuration
     - restart icinga2
 
-- name: create configurations in global-templates
-  block:
-    - name: create timeperiods.conf in global-templates
-      template:
-        src: etc/icinga2/zones.d/global-templates/timeperiods.conf.j2
-        dest: /etc/icinga2/zones.d/global-templates/timeperiods.conf
-        owner: "{{ icinga2_user }}"
-        group: "{{ icinga2_group }}"
-        mode: 0666
-      notify:
-        - check configuration
-        - restart icinga2
+- name: create timeperiods.conf in global-templates
+  ansible.builtin.template:
+    src: etc/icinga2/zones.d/global-templates/timeperiods.conf.j2
+    dest: /etc/icinga2/zones.d/global-templates/timeperiods.conf
+    owner: "{{ icinga2_user }}"
+    group: "{{ icinga2_group }}"
+    mode: 0666
+  notify:
+    - check configuration
+    - restart icinga2
   when:
     - icinga2_primary_master is defined
     - icinga2_primary_master == ansible_fqdn

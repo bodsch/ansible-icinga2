@@ -1,10 +1,10 @@
 ---
 
 - name: re-read ansible facts
-  setup:
+  ansible.builtin.setup:
 
 - name: include OS specific configuration
-  include_vars: "{{ lookup('first_found', params) }}"
+  ansible.builtin.include_vars: "{{ lookup('first_found', params) }}"
   vars:
     params:
       paths:
@@ -20,7 +20,7 @@
       skip: true
 
 - name: define primary icinga2 master
-  set_fact:
+  ansible.builtin.set_fact:
     icinga2_primary_master: "{{ icinga2_masters | primary_master }}"
 
 - name: define satellite zone
@@ -28,28 +28,28 @@
     - icinga2_mode == 'satellite'
   block:
     - name: define satellite zone, when icinga2_satellites are configured
-      set_fact:
+      ansible.builtin.set_fact:
         icinga2_satellite_zone: "{{ icinga2_satellites | satellite_zone(ansible_fqdn) }}"
       when:
         - icinga2_satellites is defined
         - icinga2_satellites | count > 0
 
     - name: define satellite zone, when icinga2_satellites are empty
-      set_fact:
+      ansible.builtin.set_fact:
         icinga2_satellite_zone: "{{ ansible_fqdn }}"
       when:
         - icinga2_satellites is defined
         - icinga2_satellites | count == 0
 
 - name: assert missing primary master
-  assert:
+  ansible.builtin.assert:
     that:
       - icinga2_primary_master | length != 0
     msg: primary icinga2 master is missing
     quiet: true
 
 - name: assert wrong primary master
-  assert:
+  ansible.builtin.assert:
     that: ansible_fqdn in (icinga2_masters | list) or
        icinga2_mode == 'master' and
        icinga2_primary_master == ansible_fqdn
@@ -60,7 +60,7 @@
     - icinga2_mode == 'master'
 
 - name: information
-  debug:
+  ansible.builtin.debug:
     msg:
       - "fqdn           : {{ ansible_fqdn }}"
       - "mode           : {{ icinga2_mode }}"
@@ -74,7 +74,7 @@
 # read a present salt from ansible facts
 #
 - name: define icinga2_salt from local fact
-  set_fact:
+  ansible.builtin.set_fact:
     icinga2_salt: "{{ ansible_local.icinga2.salt }}"
   when:
     - ansible_local.icinga2 is defined
@@ -83,27 +83,24 @@
     - icinga2_salt != ansible_local.icinga2.salt
 
 - name: assert missing salt
-  assert:
+  ansible.builtin.assert:
     that:
       - icinga2_salt | length != 0
     msg: icinga2 salt is missing
     quiet: true
 
 - name: merge icinga2 configuration between defaults and custom
-  set_fact:
-    icinga2_filelogger: "{{ icinga2_defaults_filelogger |
-      combine( icinga2_filelogger, recursive=True ) }}"
-    icinga2_api: "{{ icinga2_defaults_api |
-      combine( icinga2_api, recursive=True ) }}"
-    icinga2_timeperiod: "{{ icinga2_defaults_timeperiod |
-      combine( icinga2_timeperiod, recursive=True ) }}"
+  ansible.builtin.set_fact:
+    icinga2_filelogger: "{{ icinga2_defaults_filelogger | combine(icinga2_filelogger, recursive=True) }}"
+    icinga2_api: "{{ icinga2_defaults_api | combine(icinga2_api, recursive=True) }}"
+    icinga2_timeperiod: "{{ icinga2_defaults_timeperiod | combine(icinga2_timeperiod, recursive=True) }}"
 
 - name: no archlinux
   when:
     - ansible_os_family | lower != 'archlinux'
   block:
     - name: find OS specific plugins directory
-      find:
+      ansible.builtin.find:
         paths: "/usr/lib/monitoring-plugins,/usr/lib/nagios,/usr/lib64/nagios"
         file_type: directory
         patterns:
@@ -112,7 +109,7 @@
       register: found_directory
 
     - name: define monitoring_plugins_directory
-      set_fact:
+      ansible.builtin.set_fact:
         monitoring_plugins_directory: "{{ found_directory.files | sort(attribute='path', reverse=True) | map(attribute='path') | list | first }}"
       when:
         - found_directory.files is defined
@@ -128,12 +125,12 @@
     - icinga2_use_external_repo | bool
   block:
     - name: add icinga2 GPG key
-      apt_key:
+      ansible.builtin.apt_key:
         id: F51A91A5EE001AA5D77D53C4C6E319C334410682
         url: https://packages.icinga.com/icinga.key
 
     - name: add icinga2 repo sources
-      template:
+      ansible.builtin.template:
         src: etc/apt/icinga2.list.j2
         dest: /etc/apt/sources.list.d/icinga2.list
         mode: 0644
@@ -146,12 +143,12 @@
     - icinga2_use_external_repo | bool
   block:
     - name: import EPEL GPG key
-      rpm_key:
+      ansible.builtin.rpm_key:
         key: https://archive.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}
         state: present
 
     - name: install EPEL repository
-      yum_repository:
+      ansible.builtin.yum_repository:
         name: epel
         state: present
         description: Extra Packages for Enterprise Linux {{ ansible_distribution_major_version }} - $basearch
@@ -163,12 +160,12 @@
         enabled: 1
 
     - name: import icinga2 GPG key
-      rpm_key:
+      ansible.builtin.rpm_key:
         key: https://packages.icinga.com/icinga.key
         state: present
 
     - name: install icinga2 repository
-      yum_repository:
+      ansible.builtin.yum_repository:
         name: icinga-stable-release
         state: present
         description: ICINGA (stable release for epel)
@@ -185,7 +182,7 @@
     - icinga2_use_external_repo | bool
   block:
     - name: install build tools
-      package:
+      ansible.builtin.package:
         name: "{{ item }}"
         state: present
       loop:
@@ -193,35 +190,35 @@
         - cmake
 
     - name: create sudo rules for aur_builder
-      copy:
+      ansible.builtin.copy:
         content: '%aur_builder ALL=(ALL) NOPASSWD: ALL'
         dest: /etc/sudoers.d/aur
         mode: 0640
         validate: visudo -cf %s
 
     - name: create build group
-      group:
+      ansible.builtin.group:
         name: aur_builder
 
     - name: create build user
-      user:
+      ansible.builtin.user:
         name: aur_builder
         group: aur_builder
 
 - name: update package cache
-  package:
+  ansible.builtin.package:
     update_cache: true
 
 - name: install requirements
-  package:
+  ansible.builtin.package:
     name: "{{ icinga2_requirements | union(icinga2_os_requirements) }}"
     state: present
 
 - name: get latest system information
-  setup:
+  ansible.builtin.setup:
 
 - name: make sure ansible local facts directory exists
-  file:
+  ansible.builtin.file:
     dest: /etc/ansible/facts.d
     state: directory
     owner: root

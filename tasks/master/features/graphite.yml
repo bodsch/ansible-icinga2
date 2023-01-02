@@ -1,12 +1,11 @@
 ---
 
 - name: define graphite feature state
-  set_fact:
-    feature_graphite_state: "{{ 'present' if icinga2_master_features_enabled | join('|') |
-      regex_search('graphite') else 'absent' }}"
+  ansible.builtin.set_fact:
+    feature_graphite_state: "{{ 'present' if icinga2_master_features_enabled | join('|') | regex_search('graphite') else 'absent' }}"
 
 - name: configure graphite feature
-  template:
+  ansible.builtin.template:
     src: etc/icinga2/features/graphite.conf.j2
     dest: /etc/icinga2/features-available/graphite.conf
     owner: "{{ icinga2_user }}"

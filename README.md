@@ -4,13 +4,15 @@
 Ansible role to setup Icinga2 master or satellite.
 
 
-[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/bodsch/ansible-icinga2/CI)][ci]
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-icinga2/main.yml?branch=main)][ci]
 [![GitHub issues](https://img.shields.io/github/issues/bodsch/ansible-icinga2)][issues]
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/bodsch/ansible-icinga2)][releases]
+[![Ansible Quality Score](https://img.shields.io/ansible/quality/50067?label=role%20quality)][quality]
 
 [ci]: https://github.com/bodsch/ansible-icinga2/actions
 [issues]: https://github.com/bodsch/ansible-icinga2/issues?q=is%3Aopen+is%3Aissue
 [releases]: https://github.com/bodsch/ansible-icinga2/releases
+[quality]: https://galaxy.ansible.com/bodsch/icinga2
 
 
 ## Requirements & Dependencies
@@ -39,7 +41,7 @@ Please read [Contribution](CONTRIBUTING.md)
 
 The `master` Branch is my *Working Horse* includes the "latest, hot shit" and can be complete broken!
 
-If you want to use something stable, please use a [Tagged Version](https://gitlab.com/bodsch/ansible-icinga2/-/tags)!
+If you want to use something stable, please use a [Tagged Version](https://github.com/bodsch/ansible-icinga2/tags)!
 
 
 ## Credits

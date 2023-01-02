@@ -1,32 +1,35 @@
 ---
 
 - name: add backup and restore
+  when:
+    - icinga2_primary_master is defined
+    - icinga2_primary_master == ansible_fqdn
   block:
     - name: add backup and restore config
-      template:
+      ansible.builtin.template:
         src: backup.config.j2
         dest: /usr/local/etc/backup.config
         mode: 0660
 
     - name: add backup script
-      template:
+      ansible.builtin.template:
         src: backup-icinga2.sh.j2
         dest: /usr/local/bin/backup-icinga2.sh
         mode: 0755
 
     - name: add restore script
-      template:
+      ansible.builtin.template:
         src: restore-icinga2.sh.j2
         dest: /usr/local/bin/restore-icinga2.sh
         mode: 0755
 
     - name: detect crontab
-      stat:
+      ansible.builtin.stat:
         path: /usr/bin/crontab
       register: _crontab_script
 
     - name: configure backup script 2/m with cron
-      cron:
+      ansible.builtin.cron:
         name: "icinga2 backup"
         minute: '0'
         hour: '23'
@@ -36,29 +39,33 @@
         cron_file: backup_icinga2
       when:
         - _crontab_script.stat.exists
-  when:
-    - icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
 
 - name: enable bakup and restore on primary master
+  when:
+    - icinga2_master_backup_enabled is defined
+    - icinga2_master_backup_enabled | bool
+  tags:
+    - icinga2_master
+    - backup
   block:
     - name: define primary icinga2 master
-      set_fact:
+      ansible.builtin.set_fact:
         icinga2_primary_master: "{{ icinga2_masters | primary_master }}"
 
     - name: check if backup script present
-      stat:
+      ansible.builtin.stat:
         path: /usr/local/bin/backup-icinga2.sh
       register: icinga2_backup_script
 
     - name: run backup script
-      shell: >
+      ansible.builtin.shell: >
         /usr/local/bin/backup-icinga2.sh
       when:
         - icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
         - icinga2_backup_script.stat.exists
 
     - name: transfer latestes backup to ansible host '{{ icinga2_local_backupdir }}'
-      fetch:
+      ansible.builtin.fetch:
         src: "{{ icinga2_backupdir }}/latest.tar.bz2"
         dest: "{{ icinga2_local_backupdir }}/"
         flat: true
@@ -69,7 +76,7 @@
         - icinga2_backup_script.stat.exists
 
     - name: transfer latestes checksum to ansible host
-      fetch:
+      ansible.builtin.fetch:
         src: "{{ icinga2_backupdir }}/latest.tar.bz2.sha512"
         dest: "{{ icinga2_local_backupdir }}/"
         flat: true
@@ -78,12 +85,5 @@
         - icinga2_primary_master is defined
         - icinga2_primary_master == ansible_fqdn
         - icinga2_backup_script.stat.exists
-  when:
-    - icinga2_master_backup_enabled is defined
-    - icinga2_master_backup_enabled | bool
-
-  tags:
-    - icinga2_master
-    - backup
 
 ...

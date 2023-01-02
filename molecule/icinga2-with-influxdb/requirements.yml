@@ -2,11 +2,11 @@
 
 - name: snapd
   src: bodsch.snapd
-  version: 1.2.0
+  version: 1.2.1
 
 - name: apparmor
   src: bodsch.apparmor
-  version: 1.0.1
+  version: 1.0.2
 
 - name: monitoring-tools
   src: bodsch.monitoring_plugins
@@ -14,12 +14,10 @@
 
 - name: mariadb
   src: bodsch.mariadb
-  version: 2.3.0
+  version: 2.3.1
 
 - name: influxdb
   src: mkayontour.influxdb
-  # src: https://github.com/mkayontour/ansible-influxdb.git
-  # scm: git
   version: v1.0.0
 
 ...

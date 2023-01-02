@@ -9,7 +9,7 @@
   register: icinga2_validate_config
 
 - name: validated config
-  debug:
+  ansible.builtin.debug:
     var: icinga2_validate_config
   when:
     - icinga2_validate_config is defined
@@ -17,12 +17,12 @@
     - not icinga2_validate_config
 
 - name: enable icinga2 services
-  service:
+  ansible.builtin.service:
     name: icinga2
     enabled: true
 
 - name: ensure services are started
-  service:
+  ansible.builtin.service:
     name: icinga2
     state: started
   when:

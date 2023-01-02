@@ -1,7 +1,6 @@
 .tox
-.cache
-__pycache__
 .galaxy_install_info
-*.kate-swp
-*.pyc
-molecule/*/files/
+*kate-swp
+__pycache__
+.cache
+.directory

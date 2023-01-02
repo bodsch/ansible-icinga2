@@ -1,19 +1,20 @@
 ---
 
 - name: merge icinga2_apply_service configuration between defaults and custom
-  set_fact:
-    icinga2_apply_service: "{{ icinga2_defaults_apply_service |
-      combine( icinga2_apply_service, recursive=True ) }}"
+  ansible.builtin.set_fact:
+    icinga2_apply_service: "{{ icinga2_defaults_apply_service | combine(icinga2_apply_service, recursive=True) }}"
 
 - name: merge icinga2_defaults_checkcommands configuration between defaults and custom
-  set_fact:
-    icinga2_checkcommands: "{{ icinga2_defaults_checkcommands |
-      combine( icinga2_checkcommands, recursive=True ) }}"
+  ansible.builtin.set_fact:
+    icinga2_checkcommands: "{{ icinga2_defaults_checkcommands | combine(icinga2_checkcommands, recursive=True) }}"
 
 - name: global templates on primary master
+  when:
+    - icinga2_primary_master is defined
+    - icinga2_primary_master == ansible_fqdn
   block:
     - name: create global-templates file for service definitions
-      template:
+      ansible.builtin.template:
         src: etc/icinga2/zones.d/global-templates/services.conf.j2
         dest: /etc/icinga2/zones.d/global-templates/services.conf
         owner: "{{ icinga2_user }}"
@@ -24,7 +25,7 @@
         - restart icinga2
 
     - name: create global-templates file for commands definitions
-      template:
+      ansible.builtin.template:
         src: etc/icinga2/zones.d/global-templates/commands.conf.j2
         dest: /etc/icinga2/zones.d/global-templates/commands.conf
         owner: "{{ icinga2_user }}"
@@ -35,7 +36,7 @@
         - restart icinga2
 
     - name: create global-templates file for functions definitions
-      template:
+      ansible.builtin.template:
         src: etc/icinga2/zones.d/global-templates/functions.conf.j2
         dest: /etc/icinga2/zones.d/global-templates/functions.conf
         owner: "{{ icinga2_user }}"
@@ -46,7 +47,7 @@
         - restart icinga2
 
     - name: create global-templates file for event commands
-      template:
+      ansible.builtin.template:
         src: etc/icinga2/zones.d/global-templates/eventcommands.conf.j2
         dest: /etc/icinga2/zones.d/global-templates/eventcommands.conf
         owner: "{{ icinga2_user }}"
@@ -55,9 +56,5 @@
       notify:
         - check configuration
         - restart icinga2
-
-  when:
-    - icinga2_primary_master is defined
-    - icinga2_primary_master == ansible_fqdn
 
 ...

@@ -19,7 +19,7 @@
 - name: configure api feature
   block:
     - name: configure api feature
-      template:
+      ansible.builtin.template:
         src: etc/icinga2/features/api.conf.j2
         dest: /etc/icinga2/features-available/api.conf
         owner: "{{ icinga2_user }}"

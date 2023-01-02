@@ -6,7 +6,7 @@
     - icinga2_python_requirements | length > 0
   block:
     - name: create requirements.txt
-      template:
+      ansible.builtin.template:
         src: requirements.txt.j2
         dest: /tmp/icinga2-requirements.txt
         mode: 0660
@@ -14,7 +14,7 @@
         pip_modules: "{{ icinga2_python_requirements }}"
 
     - name: ensure python bindings for python requirements 1st
-      pip:
+      ansible.builtin.pip:
         requirements: /tmp/icinga2-requirements.txt
         state: present
         executable: pip{{ '3' if ansible_python.version.major | int == 3 else '' }}
@@ -27,29 +27,32 @@
         - pip_install.failed
       block:
         - name: install build essentials
-          package:
+          ansible.builtin.package:
             name: "{{ icinga2_python_build_packages }}"
             state: present
 
         - name: ensure python bindings for python requirements 2nd
-          pip:
+          ansible.builtin.pip:
             requirements: /tmp/icinga2-requirements.txt
             state: present
             executable: pip{{ '3' if ansible_python.version.major | int == 3 else '' }}
 
         - name: uninstall build essentials
-          package:
+          ansible.builtin.package:
             name: "{{ icinga2_python_build_packages }}"
             state: absent
 
 - name: check installed
-  include_tasks: check_installed.yml
+  ansible.builtin.include_tasks: check_installed.yml
 
 # - name: update package cache
 #   package:
 #     update_cache: true
 
 - name: based on arch linux
+  when:
+    - icinga2_use_external_repo | bool
+    - ansible_os_family | lower == 'archlinux'
   block:
     - name: install icinga2 package via aur
       become: true
@@ -61,21 +64,20 @@
       register: _icinga2_installed
 
     - name: install openrc init script
-      template:
+      ansible.builtin.template:
         src: etc/init/openrc/icinga2.j2
         dest: /etc/init.d/icinga2
         mode: 0755
       when:
         - ansible_service_mgr | lower == "openrc"
 
-  when:
-    - icinga2_use_external_repo | bool
-    - ansible_os_family | lower == 'archlinux'
-
 - name: not based on arch linux
+  when:
+    - not icinga2_installed
+    - ansible_os_family | lower != 'archlinux'
   block:
     - name: create policy-rc.d
-      copy:
+      ansible.builtin.copy:
         dest: /usr/sbin/policy-rc.d
         content: |
           #!/bin/sh
@@ -83,18 +85,14 @@
         mode: 0755
 
     - name: install icinga2 packages
-      package:
+      ansible.builtin.package:
         name: "{{ icinga2_packages }}"
         state: present
       register: _icinga2_installed
 
     - name: remove policy-rc.d
-      file:
+      ansible.builtin.file:
         path: /usr/sbin/policy-rc.d
         state: absent
-
-  when:
-    - not icinga2_installed
-    - ansible_os_family | lower != 'archlinux'
 
 ...

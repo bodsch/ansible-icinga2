@@ -2,11 +2,11 @@
 
 - name: snapd
   src: bodsch.snapd
-  version: 1.2.0
+  version: 1.2.1
 
 - name: apparmor
   src: bodsch.apparmor
-  version: 1.0.1
+  version: 1.0.2
 
 - name: monitoring-tools
   src: bodsch.monitoring_plugins
@@ -14,7 +14,7 @@
 
 - name: mariadb
   src: bodsch.mariadb
-  version: 2.3.0
+  version: 2.3.1
 
 - name: icingadb
   src: bodsch.icingadb
@@ -22,6 +22,6 @@
 
 - name: redis
   src: bodsch.redis
-  version: 1.3.0
+  version: 1.4.0
 
 ...

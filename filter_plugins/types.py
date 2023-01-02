@@ -3,7 +3,7 @@
 from __future__ import (absolute_import, print_function)
 __metaclass__ = type
 
-import ipaddress
+# import ipaddress
 
 from ansible.utils.display import Display
 
@@ -47,10 +47,10 @@ class FilterModule(object):
             result = True
         if (isinstance(var, str) or type(var).__name__ == "AnsibleUnsafeText"):
             try:
-                ip = ipaddress.ip_address(var)
-                result_value = '{}'.format(str(var))
+                # ip = ipaddress.ip_address(var)
+                result_value = f"{str(var)}"
             except Exception:
-                result_value = '"{}"'.format(str(var))
+                result_value = f'"{str(var)}"'
             if len(var) > 0:
                 result = True
         if isinstance(var, list) and len(var) > 0:
