@@ -1,9 +1,9 @@
 ---
-name: icinga2 with icingadb
+name: icinga2 primary with one satellite
 
 on:
   schedule:
-    - cron: "45 4 * * 0"
+    - cron: "55 3 * * 0"
   workflow_dispatch:
   workflow_run:
     workflows:
@@ -26,7 +26,7 @@ jobs:
         image:
           - debian:11
         ansible-version:
-          - '6.1'
+          - '5.1'
 
     steps:
       - name: check out the codebase.
@@ -54,7 +54,7 @@ jobs:
       - name: test with tox
         run: |
           tox -e ansible_$(printf "${{ matrix.ansible-version }}") \
-            -- molecule test --scenario-name icinga2-with-icingadb
+            -- molecule test --scenario-name primary-with-satellites
         env:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'
