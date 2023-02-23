@@ -1,5 +1,5 @@
 ---
-name: icinga2 primary with one satellite
+name: icinga2 primary with satellites
 
 on:
   schedule:
