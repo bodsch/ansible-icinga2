@@ -183,11 +183,12 @@
   block:
     - name: install build tools
       ansible.builtin.package:
-        name: "{{ item }}"
+        name:
+          - base-devel
+          - cmake
+          - fakeroot
+          - patch
         state: present
-      loop:
-        - base-devel
-        - cmake
 
     - name: create sudo rules for aur_builder
       ansible.builtin.copy:
