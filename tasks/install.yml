@@ -54,14 +54,32 @@
     - icinga2_use_external_repo | bool
     - ansible_os_family | lower == 'archlinux'
   block:
+    - name: install build essentials
+      ansible.builtin.package:
+        name:
+          - make
+          - bison
+          - flex
+          - diffutils
+        state: present
+
     - name: install icinga2 package via aur
       become: true
       become_user: aur_builder
-      aur:
+      bodsch.core.aur:
         state: present
         name: icinga2
         repository: "{{ icinga2_repo_archlinux }}"
       register: _icinga2_installed
+
+    # - name: uninstall build essentials
+    #   ansible.builtin.package:
+    #     name:
+    #       - make
+    #       - bison
+    #       - flex
+    #       - diffutils
+    #     state: absent
 
     - name: install openrc init script
       ansible.builtin.template:

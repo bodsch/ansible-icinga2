@@ -121,11 +121,16 @@
         - icinga2_validate_config.failed is defined
         - not icinga2_validate_config
 
-    - name: reload icinga2 master config
-      ansible.builtin.service:
-        name: icinga2
-        state: restarted
-      register: _restart_icinga2_master
+    - name: flush handlers
+      ansible.builtin.meta: flush_handlers
+
+    # TODO
+    # check if *restart* realy needed!
+    # - name: reload icinga2 master config
+    #   ansible.builtin.service:
+    #     name: icinga2
+    #     state: restarted
+    #   register: _restart_icinga2_master
 
     - name: get state from primary master
       when:

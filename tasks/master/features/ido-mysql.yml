@@ -13,7 +13,7 @@
     - name: create requirements.txt
       ansible.builtin.template:
         src: requirements.txt.j2
-        dest: /tmp/icinga2-requirements.txt
+        dest: /tmp/icinga2-ido-requirements.txt
         mode: 0660
       vars:
         pip_modules: "{{ icinga2_mariadb_python_packages }}"
@@ -24,7 +24,7 @@
     - name: ensure python bindings for mariadb packages 1st
       ansible.builtin.pip:
         # executable: pip3
-        requirements: /tmp/icinga2-requirements.txt
+        requirements: /tmp/icinga2-ido-requirements.txt
         state: present
       register: pip_install
       ignore_errors: true
@@ -43,7 +43,7 @@
 
         - name: ensure python bindings for mariadb packages 2nd
           ansible.builtin.pip:
-            requirements: /tmp/icinga2-requirements.txt
+            requirements: /tmp/icinga2-ido-requirements.txt
             state: present
 
         - name: uninstall build essentials

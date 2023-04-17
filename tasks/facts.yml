@@ -26,12 +26,13 @@
     - _icinga2_group.value is defined
 
 - name: create custom fact file
-  ansible.builtin.template:
-    src: facts.d/icinga2.fact.j2
-    dest: /etc/ansible/facts.d/icinga2.fact
-    owner: root
-    group: root
-    mode: 0755
+  bodsch.core.facts:
+    name: icinga2
+    facts:
+      salt: "{{ icinga2_salt }}"
+      icinga2_version: "{{ icinga2_installed_version }}"
+      icinga2_user: "{{ icinga2_user | default('') }}"
+      icinga2_group: "{{ icinga2_group | default('') }}"
 
 - name: create sudo rules for icinga
   ansible.builtin.template:

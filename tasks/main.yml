@@ -3,7 +3,7 @@
 - name: prepare
   ansible.builtin.include_tasks: prepare.yml
   tags:
-    - icinga2-install
+    - always
 
 - name: install
   ansible.builtin.include_tasks: install.yml

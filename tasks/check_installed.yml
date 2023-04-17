@@ -13,15 +13,8 @@
 
 - name: define icinga2 version
   ansible.builtin.set_fact:
-    icinga2_installed_version: "{{ installed_icinga2_version.version }}"
-  when:
-    - installed_icinga2_version is defined
-    - installed_icinga2_version.rc is defined
-    - installed_icinga2_version.rc | int == 0
-
-- name: define icinga2_installed
-  ansible.builtin.set_fact:
     icinga2_installed: true
+    icinga2_installed_version: "{{ installed_icinga2_version.version }}"
   when:
     - installed_icinga2_version is defined
     - installed_icinga2_version.rc is defined

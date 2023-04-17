@@ -40,6 +40,18 @@ icinga2_host_object:
 
 ## Zones
 
+TODO
+```yaml
+    {% if icinga2_satellites[icinga2_satellite_zone] is defined and
+          icinga2_satellites[icinga2_satellite_zone][_name] is defined and
+          icinga2_satellites[icinga2_satellite_zone][_name]['ip'] is defined %}
+      {% set satellite_ip = icinga2_satellites[icinga2_satellite_zone][_name]['ip'] %}
+    {% else %}
+      {% set satellite_ip = lookup('pipe', 'host ' + ansible_fqdn   + ' | grep "has address" | cut -d" " -f4') %}
+    {% endif %}
+```
+
+
 For organize multiple Satellites in one Zone, you can define this over `icinga2_satellites`.
 
 ```yaml

@@ -218,12 +218,12 @@
 - name: get latest system information
   ansible.builtin.setup:
 
-- name: make sure ansible local facts directory exists
-  ansible.builtin.file:
-    dest: /etc/ansible/facts.d
-    state: directory
-    owner: root
-    group: root
-    mode: 0755
+# - name: make sure ansible local facts directory exists
+#   ansible.builtin.file:
+#     dest: /etc/ansible/facts.d
+#     state: directory
+#     owner: root
+#     group: root
+#     mode: 0755
 
 ...
