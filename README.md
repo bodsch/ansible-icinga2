@@ -17,7 +17,17 @@ Ansible role to setup Icinga2 master or satellite.
 
 ## Requirements & Dependencies
 
- - running mariadb / mysql database
+Ansible Collections
+
+- [bodsch.core](https://github.com/bodsch/ansible-collection-core)
+
+```bash
+ansible-galaxy collection install bodsch.core
+```
+or
+```bash
+ansible-galaxy collection install --requirements-file collections.yml
+```
 
 
 ### Operating systems
