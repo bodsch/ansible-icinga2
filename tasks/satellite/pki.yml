@@ -29,6 +29,9 @@
           - '!<any valid subset>'
           - facter
 
+    # TODO
+    # wait for ca.cert?
+
     - name: copy ca.crt from primary icinga2 master '{{ icinga2_primary_master }}'
       delegate_to: '{{ icinga2_primary_master }}'
       become: true
@@ -217,6 +220,9 @@
     owner: "{{ icinga2_master_user }}"
     group: "{{ icinga2_master_group }}"
     mode: 0755
+  tags:
+    - icinga2_configure
+    - icinga2_configure_zones
 
 # create on both masters!
 - name: create zone file on master
@@ -232,6 +238,9 @@
     "{{ icinga2_masters }}"
   notify:
     - reload icinga2 master config
+  tags:
+    - icinga2_configure
+    - icinga2_configure_zones
 
 - name: create host object file for satellite on master '{{ icinga2_primary_master }}'
   delegate_to: "{{ icinga2_primary_master }}"
@@ -244,6 +253,9 @@
     mode: 0666
   notify:
     - reload icinga2 master config
+  tags:
+    - icinga2_configure
+    - icinga2_configure_zones
 
 - name: ensure that satellite has api connetions
   ansible.builtin.stat:

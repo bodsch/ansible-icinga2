@@ -4,6 +4,8 @@
 
 TOX_TEST="${1}"
 
+set -x
+
 if [ -f "./collections.yml" ]
 then
   for collection in $(grep -v "#" collections.yml | grep "^  - name: " | awk -F ': ' '{print $2}')

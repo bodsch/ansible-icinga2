@@ -1,0 +1,75 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+// {{ ansible_managed }}
+{% if icinga2_host_object is defined and
+      icinga2_host_object | count != 0 %}
+  {#
+    define some variables from 'icinga2_host_object' dictionary
+  #}
+  {% for key, values in icinga2_host_object.items() %}
+    {% set address = icinga2_masters | dns_icinga_primary(
+            object_name=key,
+            object_data=values,
+            alternatives=[key, ansible_fqdn]) %}
+    {% set values, endpoint, endpoint_name, zone_name, display_name, check_command, _ = values | host_object_values(True, key, None) %}
+/*
+    endpoint_name {{ endpoint_name }} - {{ endpoint_name | bodsch.core.type }}
+    zone_name     {{ zone_name }}     - {{ zone_name | bodsch.core.type }}
+    display_name  {{ display_name }}  - {{ display_name | bodsch.core.type }}
+    check_command {{ check_command }} - {{ check_command | bodsch.core.type }}
+    address       {{ address }}       - {{ address | bodsch.core.type }}
+    -> {{ values }}
+*/
+  {% endfor %}
+
+  {% for key, v in icinga2_host_object.items() %}
+
+    {% if v['endpoint_name'] is defined %}
+      {% set _name = v['endpoint_name'] %}
+      {% set _v = v.pop('endpoint_name') %}
+    {% else %}
+      {% set _name = key %}
+    {% endif %}
+    {% if v['zone'] is defined %}
+      {% set _zone = v['zone'] %}
+      {% set _v = v.pop('zone') %}
+    {% else %}
+      {% set _zone = ansible_fqdn %}
+    {% endif %}
+    {% if icinga2_satellites[icinga2_satellite_zone] is defined and
+          icinga2_satellites[icinga2_satellite_zone][_name] is defined and
+          icinga2_satellites[icinga2_satellite_zone][_name]['ip'] is defined %}
+      {% set satellite_ip = icinga2_satellites[icinga2_satellite_zone][_name]['ip'] %}
+    {% else %}
+      {% set satellite_ip = lookup('pipe', 'host ' + ansible_fqdn   + ' | grep "has address" | cut -d" " -f4') %}
+    {% endif %}
+    {% if v['display_name'] is defined %}
+      {% set display_name = v['display_name'] %}
+      {% set _v = v.pop('display_name') %}
+    {% endif %}
+
+// icinga2 secondary - {{ key }}
+object Host "{{ _name }}" {
+    {% if satellite_ip is defined and satellite_ip | length != 0 %}
+  address = "{{ satellite_ip }}"
+    {% endif %}
+    {% if display_name is defined %}
+  display_name = "{{ display_name }}"
+    {% endif %}
+  command_endpoint = "{{ ansible_fqdn }}"
+  zone = "{{ _zone }}"
+    {% for ke,ve in v.items() | sort %}
+      {% if ke == 'import' %}
+  {{ ke }} "{{ ve }}"
+      {% elif ke == 'groups' %}
+  {{ ke }} = ["{{ ve | join('","') }}"]
+      {% elif ke == 'vars' %}
+  vars = {
+    {{ ve | indent(4) }}
+  }
+      {% else %}
+  {{ ke }} = "{{ ve }}"
+      {% endif %}
+    {% endfor %}
+}
+  {% endfor %}
+{% endif %}

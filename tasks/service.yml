@@ -1,6 +1,8 @@
 ---
 
 - name: validate icinga2 configuration
+  tags:
+    - icinga2_service
   icinga2_daemon:
     parameters:
       - --validate
@@ -9,6 +11,8 @@
   register: icinga2_validate_config
 
 - name: validated config
+  tags:
+    - icinga2_service
   ansible.builtin.debug:
     var: icinga2_validate_config
   when:
@@ -17,11 +21,15 @@
     - not icinga2_validate_config
 
 - name: enable icinga2 services
+  tags:
+    - icinga2_service
   ansible.builtin.service:
     name: icinga2
     enabled: true
 
 - name: ensure services are started
+  tags:
+    - icinga2_service
   ansible.builtin.service:
     name: icinga2
     state: started

@@ -25,8 +25,8 @@ object ApiListener "api" {
   {{ "%-18s" | format(key,) }} = "{{ value }}"
       {% elif value is string %}
   {{ "%-18s" | format(key,) }} = {{ value }}
-      {% elif value | type == "bool" %}
-  {{ "%-18s" | format(key,) }} = {{ value | bool | ternary('true', 'false') }}
+      {% elif value | bodsch.core.type == "bool" %}
+  {{ "%-18s" | format(key,) }} = {{ value | bodsch.core.config_bool(true_as='true', false_as='false') }}
       {% elif value is iterable %}
   {{ "%-18s" | format(key,) }} = {{ value | join(':') }}
       {% else %}

@@ -14,7 +14,7 @@ object GraphiteWriter "graphite" {
     {% for k, v in icinga2_features.graphite.items() %}
       {% if k in _attr %}
         {% if v is sameas true or v is sameas false %}
-  {{ k }} = {{ v | bool | ternary('true', 'false') }}
+  {{ k }} = {{ v | bodsch.core.config_bool(true_as='true', false_as='false') }}
         {% elif k is string %}
   {{ k }} = "{{ v }}"
         {% else %}

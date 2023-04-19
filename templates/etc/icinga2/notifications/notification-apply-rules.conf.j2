@@ -26,10 +26,10 @@ apply Notification "{{ n }}" to {{  _type | capitalize }} {
         {% elif key in ['users', 'display_name', 'user_groups', 'interval'] and
                 value | string | length > 0 %}
           {% if key in ['users', 'user_groups'] and
-                value | type == "list" and
+                value | bodsch.core.type == "list" and
                 value | count > 0 %}
   {{ key }} = [ "{{ value | join( '", "') }}" ]
-          {% elif value | type == "str" %}
+          {% elif value | bodsch.core.type == "str" %}
   {{ key }} = {{ value }}
           {% endif %}
         {% elif key == 'extra_parameters' %}

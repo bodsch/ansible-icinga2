@@ -1,74 +1,86 @@
 ---
 
+- name: d
+  debug:
+    msg: "{{ ansible_run_tags }}"
+
 - name: prepare
   ansible.builtin.include_tasks: prepare.yml
   tags:
     - always
 
 - name: install
-  ansible.builtin.include_tasks: install.yml
+  ansible.builtin.include_tasks: install/main.yml
+  when:
+    - ansible_run_tags | intersect(["all","icinga2_install"]) | count > 0
   tags:
-    - icinga2-configure
-    - icinga2-install
+    - icinga2_install
 
 - name: facts
   ansible.builtin.include_tasks: facts.yml
+  when:
+    - ansible_run_tags | intersect(["all","icinga2_install","icinga2_configure","icinga2_master"]) | count > 0
+    # - '"icinga2_install" in ansible_run_tags or "all" in ansible_run_tags'
   tags:
-    - icinga2-configure
+    - icinga2_install
 
 - name: master
   ansible.builtin.include_tasks: master.yml
   when:
     - icinga2_mode == 'master'
+    - ansible_run_tags | intersect(["all","icinga2_configure","icinga2_configure_zones","icinga2_master"]) | count > 0
   tags:
-    - icinga2-configure
-    - icinga2-master
+    - icinga2_configure
+    - icinga2_master
 
 - name: satellite
   ansible.builtin.include_tasks: satellite.yml
   when:
     - icinga2_mode == 'satellite'
+    - ansible_run_tags | intersect(["all","icinga2_configure","icinga2_configure_zones","icinga2_satellite"]) | count > 0
   tags:
-    - icinga2-configure
-    - icinga2-satellite
+    - icinga2_configure
+    - icinga2_satellite
 
 - name: service
   ansible.builtin.include_tasks: service.yml
+  when:
+    - - ansible_run_tags | intersect(["all","icinga2_service"]) | count > 0
   tags:
-    - icinga2-service
+    - icinga2_service
 
 # ---------------------------------------------------------------------------------------
 
-- name: backup
-  ansible.builtin.include_tasks: master/backup.yml
-  when:
-    - icinga2_mode == 'master'
-  tags:
-    - icinga2
-    - backup
-
-- name: restore
-  ansible.builtin.include_tasks: master/restore.yml
-  when:
-    - icinga2_mode == 'master'
-  tags:
-    - icinga2
-    - restore
-
-- name: downtime
-  ansible.builtin.include_tasks: downtime.yml
-  when:
-    - icinga2_mode == 'master'
-    - icinga2_downtime_comment is defined
-    - icinga2_downtime_comment | length != 0
-    - icinga2_downtime_duration is defined
-    - icinga2_downtime_duration | int != 0
-    - icinga2_api.user is defined
-    - icinga2_api.password is defined
-    - icinga2_downtime_system_name is defined
-  tags:
-    - icinga2
-    - downtime_schedule
-    - downtime_remove
+# - name: backup
+#   ansible.builtin.include_tasks: master/backup.yml
+#   when:
+#     - icinga2_mode == 'master'
+#   tags:
+#     - icinga2
+#     - backup
+#
+# - name: restore
+#   ansible.builtin.include_tasks: master/restore.yml
+#   when:
+#     - icinga2_mode == 'master'
+#   tags:
+#     - icinga2
+#     - restore
+#
+# - name: downtime
+#   ansible.builtin.include_tasks: downtime.yml
+#   when:
+#     - icinga2_mode == 'master'
+#     - icinga2_downtime_comment is defined
+#     - icinga2_downtime_comment | length != 0
+#     - icinga2_downtime_duration is defined
+#     - icinga2_downtime_duration | int != 0
+#     - icinga2_api.user is defined
+#     - icinga2_api.password is defined
+#     - icinga2_downtime_system_name is defined
+#   tags:
+#     - icinga2
+#     - downtime_schedule
+#     - downtime_remove
 
 ...

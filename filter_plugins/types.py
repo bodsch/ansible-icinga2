@@ -20,7 +20,7 @@ class FilterModule(object):
 
     def filters(self):
         return {
-            'type': self.var_type,
+            # 'type': self.var_type,
             'has_valid_values': self.has_values
         }
 
@@ -36,7 +36,6 @@ class FilterModule(object):
 
     def has_values(self, var):
         """
-
         """
         result = False
         result_value = var

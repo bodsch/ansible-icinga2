@@ -2,11 +2,25 @@
 
 - name: satellite pki
   ansible.builtin.include_tasks: satellite/pki.yml
+  tags:
+    - icinga2_configure
+    - icinga2_configure_pki
 
 - name: satellite configure
   ansible.builtin.include_tasks: satellite/configure.yml
+  when:
+    - ansible_run_tags | intersect(["all","icinga2_configure","icinga2_configure_zones","icinga2_master"]) | count > 0
+  tags:
+    - icinga2_configure
+    - icinga2_configure_zones
 
 - name: satellite features
   ansible.builtin.include_tasks: satellite/features.yml
+  tags:
+    - icinga2_configure
+    - icinga2_configure_features
 
 # /var/lib/icinga2/api/zones-stage/startup.log
+
+
+

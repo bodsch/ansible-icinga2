@@ -1,0 +1,80 @@
+---
+
+- name: check installed
+  ansible.builtin.include_tasks: check_installed.yml
+  tags:
+    - icinga2_install
+
+# - name: update package cache
+#   package:
+#     update_cache: true
+
+- name: based on arch linux
+  tags:
+    - icinga2_install
+  when:
+    - icinga2_use_external_repo | bool
+    - ansible_os_family | lower == 'archlinux'
+  block:
+    - name: install build essentials
+      ansible.builtin.package:
+        name:
+          - make
+          - bison
+          - flex
+          - diffutils
+        state: present
+
+    - name: install icinga2 package via aur
+      become: true
+      become_user: aur_builder
+      bodsch.core.aur:
+        state: present
+        name: icinga2
+        repository: "{{ icinga2_repo_archlinux }}"
+      register: _icinga2_installed
+
+    # - name: uninstall build essentials
+    #   ansible.builtin.package:
+    #     name:
+    #       - make
+    #       - bison
+    #       - flex
+    #       - diffutils
+    #     state: absent
+
+    - name: install openrc init script
+      ansible.builtin.template:
+        src: etc/init/openrc/icinga2.j2
+        dest: /etc/init.d/icinga2
+        mode: 0755
+      when:
+        - ansible_service_mgr | lower == "openrc"
+
+- name: not based on arch linux
+  tags:
+    - icinga2_install
+  when:
+    - not icinga2_installed
+    - ansible_os_family | lower != 'archlinux'
+  block:
+    - name: create policy-rc.d
+      ansible.builtin.copy:
+        dest: /usr/sbin/policy-rc.d
+        content: |
+          #!/bin/sh
+          exit 101
+        mode: 0755
+
+    - name: install icinga2 packages
+      ansible.builtin.package:
+        name: "{{ icinga2_packages }}"
+        state: present
+      register: _icinga2_installed
+
+    - name: remove policy-rc.d
+      ansible.builtin.file:
+        path: /usr/sbin/policy-rc.d
+        state: absent
+
+...

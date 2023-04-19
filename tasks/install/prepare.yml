@@ -1,0 +1,122 @@
+---
+
+# debian based
+#
+- name: based on debian
+  tags:
+    - icinga2_install
+  when:
+    - ansible_os_family | lower == 'debian'
+    - icinga2_use_external_repo | bool
+  block:
+    - name: add icinga2 GPG key
+      ansible.builtin.apt_key:
+        id: F51A91A5EE001AA5D77D53C4C6E319C334410682
+        url: https://packages.icinga.com/icinga.key
+      tags:
+        - icinga2_install
+
+    - name: add icinga2 repo sources
+      ansible.builtin.template:
+        src: etc/apt/icinga2.list.j2
+        dest: /etc/apt/sources.list.d/icinga2.list
+        mode: 0644
+
+# redhat based
+#
+- name: based on redhat
+  tags:
+    - icinga2_install
+  when:
+    - ansible_os_family | lower == 'redhat'
+    - icinga2_use_external_repo | bool
+  block:
+    - name: import EPEL GPG key
+      ansible.builtin.rpm_key:
+        key: https://archive.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}
+        state: present
+
+    - name: install EPEL repository
+      ansible.builtin.yum_repository:
+        name: epel
+        state: present
+        description: Extra Packages for Enterprise Linux {{ ansible_distribution_major_version }} - $basearch
+        baseurl: http://download.fedoraproject.org/pub/epel/{{ ansible_distribution_major_version }}/$basearch
+        gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-{{ ansible_distribution_major_version }}
+        metalink: https://mirrors.fedoraproject.org/metalink?repo=epel-{{ ansible_distribution_major_version }}&arch=$basearch&infra=$infra&content=$contentdir
+        failovermethod: priority
+        gpgcheck: 1
+        enabled: 1
+
+    - name: import icinga2 GPG key
+      ansible.builtin.rpm_key:
+        key: https://packages.icinga.com/icinga.key
+        state: present
+
+    - name: install icinga2 repository
+      ansible.builtin.yum_repository:
+        name: icinga-stable-release
+        state: present
+        description: ICINGA (stable release for epel)
+        baseurl: https://packages.icinga.com/epel/$releasever/release/
+        gpgkey: file:///etc/pki/rpm-gpg/RPM-GPG-KEY-ICINGA
+        gpgcheck: 1
+        enabled: 1
+
+# arch-linux based
+#
+- name: based on arch linux
+  tags:
+    - icinga2_install
+  when:
+    - ansible_os_family | lower == 'archlinux'
+    - icinga2_use_external_repo | bool
+  block:
+    - name: install build tools
+      ansible.builtin.package:
+        name:
+          - base-devel
+          - bison
+          - cmake
+          - diffutils
+          - fakeroot
+          - flex
+          - make
+          - patch
+        state: present
+
+    - name: create sudo rules for aur_builder
+      ansible.builtin.copy:
+        content: '%aur_builder ALL=(ALL) NOPASSWD: ALL'
+        dest: /etc/sudoers.d/aur
+        mode: 0640
+        validate: visudo -cf %s
+
+    - name: create build group
+      ansible.builtin.group:
+        name: aur_builder
+
+    - name: create build user
+      ansible.builtin.user:
+        name: aur_builder
+        group: aur_builder
+
+- name: update package cache
+  tags:
+    - icinga2_install
+  ansible.builtin.package:
+    update_cache: true
+
+- name: install requirements
+  tags:
+    - icinga2_install
+  ansible.builtin.package:
+    name: "{{ icinga2_requirements | union(icinga2_os_requirements) }}"
+    state: present
+
+- name: get latest system information
+  tags:
+    - icinga2_install
+  ansible.builtin.setup:
+
+...

@@ -1,12 +1,10 @@
 {#
 #   List of macros for icinga2
 #}
-{# set print = self #}
 
-{% macro endpoint(endpoint, host, port = "5665" ) %}
+{% macro endpoint(endpoint, host = None, port = "5665" ) %}
 object Endpoint "{{ endpoint }}" {
-  {% if host is defined and
-        host | string | length > 0 %}
+  {% if host and host | string | length > 0 %}
   host = "{{ host }}"
   {% endif %}
   port = "{{ port }}"
@@ -17,8 +15,8 @@ object Endpoint "{{ endpoint }}" {
 {% macro zone(endpoints, zone, parent = None) %}
 object Zone "{{ zone }}" {
   {% if endpoints is defined and
-        endpoints | type == "list" or
-        endpoints | type == "dict_keys" %}
+        endpoints | bodsch.core.type == "list" or
+        endpoints | bodsch.core.type == "dict_keys" %}
   endpoints = [ "{{ endpoints | join( '", "') }}" ]
   {% else %}
   endpoints = [ "{{ endpoints  }}" ]

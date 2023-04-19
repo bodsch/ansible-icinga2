@@ -1,5 +1,6 @@
 ansible-lint
 docker
+dnspython
 flake8
 molecule
 molecule-docker

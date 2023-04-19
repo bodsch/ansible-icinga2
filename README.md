@@ -29,6 +29,10 @@ or
 ansible-galaxy collection install --requirements-file collections.yml
 ```
 
+Python Module
+
+- dnspython
+
 
 ### Operating systems
 

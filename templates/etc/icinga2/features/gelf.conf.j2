@@ -13,9 +13,9 @@ object GelfWriter "gelf" {
         icinga2_features.gelf | count != 0 %}
     {% for k, v in icinga2_features.gelf.items() %}
       {% if k in _attr %}
-        {% if v is sameas true or v is sameas false %}
-  {{ k }} = {{ v | bool | ternary('true', 'false') }}
-        {% elif k is string %}
+        {% if v | bodsch.core.type == "bool" %}
+  {{ k }} = {{ v | bodsch.core.config_bool(true_as='true', false_as='false') }}
+        {% elif k | bodsch.core.type == "str" %}
   {{ k }} = "{{ v }}"
         {% else %}
   {{ k }} = {{ v }}
