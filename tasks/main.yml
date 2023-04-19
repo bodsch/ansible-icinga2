@@ -1,9 +1,5 @@
 ---
 
-- name: d
-  debug:
-    msg: "{{ ansible_run_tags }}"
-
 - name: prepare
   ansible.builtin.include_tasks: prepare.yml
   tags:
@@ -45,7 +41,7 @@
 - name: service
   ansible.builtin.include_tasks: service.yml
   when:
-    - - ansible_run_tags | intersect(["all","icinga2_service"]) | count > 0
+    - ansible_run_tags | intersect(["all","icinga2_service"]) | count > 0
   tags:
     - icinga2_service
 

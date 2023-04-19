@@ -17,7 +17,7 @@ class FilterModule(object):
         return {
             'primary_master': self.filter_primary,
             'reorder_master': self.filter_reorder,
-            'satellite_zone': self.satellite_zone,
+            'icinga_satellite_zone': self.satellite_zone,
             'apply_service_name': self.apply_service_name,
             'apply_notification': self.apply_notification,
             'host_object_values': self.host_object_values,
@@ -101,29 +101,29 @@ class FilterModule(object):
 
         return result
 
-    def satellite_zone(self, data, ansible_fqdn):
+    def satellite_zone(self, data, fqdn):
         """
         """
-        result = ansible_fqdn
+        result = fqdn
 
         if isinstance(data, dict):
 
             count = len(data.keys())
 
             display.vv(f"found: {count} entries in {data}")
-            display.vv(f"search zone for '{ansible_fqdn}'")
+            display.vv(f"search zone for '{fqdn}'")
 
             for zone, zone_entries in data.items():
                 keys = zone_entries.keys()
                 key_list = list(keys)
-                found = self.__search(key_list, ansible_fqdn)
+                found = self.__search(key_list, fqdn)
 
                 display.vv(f"zone : {zone} -> values {key_list} ({found})")
 
                 if found:
                     result = zone
 
-            display.v(f"return zone '{result}' for {ansible_fqdn}")
+            display.v(f"return zone '{result}' for {fqdn}")
 
         return result
 
@@ -265,7 +265,6 @@ class FilterModule(object):
         if address:
             result = address
 
-
         if not result:
             # try a given IP in 'icinga2_satellites' for icinga2_satellite_zone
             if isinstance(object_data, dict):
@@ -328,13 +327,9 @@ class FilterModule(object):
                     display.v("  multiple DNS entries are a problem!")
                     display.v("  you should configure 'icinga2_satellites' properly")
 
-
                 result = result[0]
                 break
 
         display.v(f" = result {result}")
 
         return result
-
-
-

@@ -62,7 +62,7 @@
         - icinga2_primary_master == ansible_fqdn
         - icinga2_restore_script.stat.exists
 
-    - name: run restore script
+    - name: run restore script  # noqa no-changed-when
       ansible.builtin.shell: >
         /usr/local/bin/restore-icinga2.sh /var/tmp/latest.tar.bz2
       when:

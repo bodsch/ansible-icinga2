@@ -29,7 +29,7 @@
   block:
     - name: define satellite zone, when icinga2_satellites are configured
       ansible.builtin.set_fact:
-        icinga2_satellite_zone: "{{ icinga2_satellites | satellite_zone(ansible_fqdn) }}"
+        icinga2_satellite_zone: "{{ icinga2_satellites | icinga_satellite_zone(ansible_fqdn) }}"
       when:
         - icinga2_satellites is defined
         - icinga2_satellites | count > 0
