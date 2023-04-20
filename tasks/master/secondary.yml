@@ -91,6 +91,21 @@
         group: "{{ icinga2_group }}"
         mode: 0666
         backup: true
+  rescue:
+
+    - name: remove pki directory
+      ansible.builtin.file:
+        state: absent
+        path: "{{ icinga2_pki_dir }}"
+
+    - name: remove zones config
+      ansible.builtin.file:
+        state: absent
+        path: /etc/icinga2/zones.conf
+
+    - name: exit with fail
+      ansible.builtin.fail:
+        msg: "Error when creating a ticket from icinga2 master !"
 
 - name: create host object file for secondary master on master '{{ icinga2_primary_master }}'
   delegate_to: "{{ icinga2_primary_master }}"

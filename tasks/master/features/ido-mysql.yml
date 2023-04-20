@@ -109,6 +109,11 @@
         cmd: /usr/local/bin/database-upgrade.sh
       changed_when: false
       # no_log: false
+  rescue:
+
+    - name: exit with fail
+      ansible.builtin.fail:
+        msg: "Error when creating the IDO configuration!"
 
 - name: configure ido-mysql feature
   ansible.builtin.template:

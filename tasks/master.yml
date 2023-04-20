@@ -109,7 +109,7 @@
     - icinga2_primary_master is defined
     - icinga2_primary_master == ansible_fqdn
 
-- name: master configue
+- name: master configure
   ansible.builtin.include_tasks: master/configure.yml
   tags:
     - icinga2_configure
