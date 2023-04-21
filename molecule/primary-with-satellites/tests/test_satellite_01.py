@@ -10,7 +10,7 @@ import os
 
 import testinfra.utils.ansible_runner
 
-HOST = 'icinga'
+HOST = 'satellite-01'
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts(HOST)
@@ -115,12 +115,6 @@ def test_directories(host, dirs):
     d = host.file(dirs)
     assert d.is_directory
 
-@pytest.mark.parametrize("files", [
-    "/etc/ansible/facts.d/icinga2.fact",
-])
-def test_directories(host, files):
-    d = host.file(files)
-    assert d.is_file
 
 def test_user(host):
     user = local_facts(host).get("icinga2_user")

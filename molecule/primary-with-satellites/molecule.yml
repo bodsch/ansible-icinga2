@@ -1,6 +1,11 @@
 ---
 dependency:
   name: galaxy
+  #options:
+  #  ignore-certs: true
+  #  ignore-errors: false
+  #  # role-file: requirements.yml
+  #  # requirements-file: collections.yml
 
 driver:
   name: docker
@@ -21,12 +26,12 @@ platforms:
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
     docker_networks:
-      - name: icinga2
+      - name: icinga2_satellites
         ipam_config:
-          - subnet: "10.15.0.0/16"
-            gateway: "10.15.0.254"
+          - subnet: "10.15.0.0/24"
+            gateway: "10.15.0.2"
     networks:
-      - name: icinga2
+      - name: icinga2_satellites
         ipv4_address: "10.15.0.10"
 
   - name: instance
@@ -39,9 +44,9 @@ platforms:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
     groups:
       - icinga
-      - primary
+      - icinga_primary
     networks:
-      - name: icinga2
+      - name: icinga2_satellites
         ipv4_address: "10.15.0.20"
 
   - name: satellite-01
@@ -54,9 +59,9 @@ platforms:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
     groups:
       - icinga
-      - satellite
+      - icinga_satellite
     networks:
-      - name: icinga2
+      - name: icinga2_satellites
         ipv4_address: "10.15.0.31"
 
   - name: satellite-02
@@ -69,9 +74,9 @@ platforms:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
     groups:
       - icinga
-      - satellite
+      - icinga_satellite
     networks:
-      - name: icinga2
+      - name: icinga2_satellites
         ipv4_address: "10.15.0.32"
 
   - name: satellite-03
@@ -84,9 +89,9 @@ platforms:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
     groups:
       - icinga
-      - satellite
+      - icinga_satellite
     networks:
-      - name: icinga2
+      - name: icinga2_satellites
         ipv4_address: "10.15.0.33"
 
   - name: satellite-04
@@ -99,9 +104,9 @@ platforms:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
     groups:
       - icinga
-      - satellite
+      - icinga_satellite
     networks:
-      - name: icinga2
+      - name: icinga2_satellites
         ipv4_address: "10.15.0.34"
 
   - name: satellite-05
@@ -114,23 +119,53 @@ platforms:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
     groups:
       - icinga
-      - satellite
+      - icinga_satellite
     networks:
-      - name: icinga2
+      - name: icinga2_satellites
         ipv4_address: "10.15.0.35"
 
 provisioner:
   name: ansible
+  ansible_args:
+    - --diff
+    - -v
   config_options:
+    # set tags
+    config_options:
+      tags:
+        run: "" # tag1,tag2,tag3
+    # or env
+    env:
+      ANSIBLE_RUN_TAGS: "" # tag1,tag2,tag3
+
     defaults:
-      deprecation_warnings: True
+      deprecation_warnings: true
       stdout_callback: yaml
       callbacks_enabled: profile_tasks
+      gathering: smart
+      fact_caching: jsonfile
+      fact_caching_timeout: 8640
+      fact_caching_connection: "${MOLECULE_EPHEMERAL_DIRECTORY}/ansible_facts"
 
 scenario:
+  create_sequence:
+    - dependency
+    - create
+    - prepare
+  converge_sequence:
+    - dependency
+    - create
+    - prepare
+    - converge
+  destroy_sequence:
+    - dependency
+    - cleanup
+    - destroy
   test_sequence:
+    # - lint
     - destroy
     - dependency
+    - syntax
     - create
     - prepare
     - converge

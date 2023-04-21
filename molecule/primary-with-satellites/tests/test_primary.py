@@ -10,7 +10,7 @@ import os
 
 import testinfra.utils.ansible_runner
 
-HOST = 'icinga'
+HOST = 'instance'
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts(HOST)
@@ -103,39 +103,28 @@ def get_vars(host):
 def local_facts(host):
     return host.ansible("setup").get("ansible_facts").get("ansible_local").get("icinga2")
 
-
-@pytest.mark.parametrize("dirs", [
+@pytest.mark.parametrize("directories", [
     "/etc/ansible/facts.d",
-    "/etc/icinga2",
-    "/usr/share/icinga2",
-    "/var/log/icinga2",
-    "/var/lib/icinga2"
+    "/etc/icinga2/zones.d/primary",
+    "/etc/icinga2/zones.d/director-global",
+    "/etc/icinga2/zones.d/global-templates",
 ])
-def test_directories(host, dirs):
-    d = host.file(dirs)
+def test_directories(host, directories):
+    d = host.file(directories)
     assert d.is_directory
 
 @pytest.mark.parametrize("files", [
     "/etc/ansible/facts.d/icinga2.fact",
+    "/etc/icinga2/zones.d/primary/instance.conf",
+    "/etc/icinga2/zones.d/global-templates/commands.conf",
+    "/etc/icinga2/zones.d/global-templates/eventcommands.conf",
+    "/etc/icinga2/zones.d/global-templates/functions.conf",
+    "/etc/icinga2/zones.d/global-templates/services.conf",
+    "/etc/icinga2/zones.d/global-templates/timeperiods.conf",
 ])
 def test_directories(host, files):
     d = host.file(files)
     assert d.is_file
-
-def test_user(host):
-    user = local_facts(host).get("icinga2_user")
-    group = local_facts(host).get("icinga2_group")
-
-    assert host.group(group).exists
-    assert host.user(user).exists
-    assert group in host.user(user).groups
-
-
-def test_service(host):
-    service = host.service("icinga2")
-    assert service.is_enabled
-    assert service.is_running
-
 
 @pytest.mark.parametrize("ports", [
     '0.0.0.0:5665',

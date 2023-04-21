@@ -23,7 +23,7 @@ platforms:
     docker_networks:
       - name: icinga2
         ipam_config:
-          - subnet: "10.15.0.0/16"
+          - subnet: "10.15.0.0/24"
             gateway: "10.15.0.254"
     networks:
       - name: icinga2
@@ -59,11 +59,21 @@ platforms:
 
 provisioner:
   name: ansible
+  #env:
+  #  ANSIBLE_LOCAL_TEMP: "${WORKSPACE:-$HOME}/.ansible/tmp"
+  #  ANSIBLE_REMOTE_TMP: /tmp
+  ansible_args:
+    - --diff
+    - -v
   config_options:
     defaults:
-      deprecation_warnings: True
+      deprecation_warnings: true
       stdout_callback: yaml
       callbacks_enabled: profile_tasks
+      gathering: smart
+      fact_caching: jsonfile
+      fact_caching_timeout: 8640
+      fact_caching_connection: "${MOLECULE_EPHEMERAL_DIRECTORY}/ansible_facts"
 
 scenario:
   test_sequence:

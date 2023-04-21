@@ -11,8 +11,11 @@
           - "distribution version : {{ ansible_distribution_major_version }}"
           - "ansible version      : {{ ansible_version.full }}"
           - "python version       : {{ ansible_python.version.major }}.{{ ansible_python.version.minor }}"
+          - "ansible tasks        : {{ ansible_run_tags }}"
+      tags:
+        - always
 
-- name: converge
+- name: install icinga2
   hosts: instance
   any_errors_fatal: true
 
@@ -21,6 +24,10 @@
 
   roles:
     - role: ansible-icinga2
+      when:
+        - ansible_run_tags | intersect(["all","icinga2_install"]) | count > 0
+      tags:
+        - icinga2_install
 
   # tasks:
   #   # - include: ../../tasks/master/features.yml
@@ -37,3 +44,17 @@
   #
   #     tags:
   #       - downtime_schedule
+
+- name: configure icinga2
+  hosts: instance
+  any_errors_fatal: true
+
+  environment:
+    NETRC: ''
+
+  roles:
+    - role: ansible-icinga2
+      when:
+        - ansible_run_tags | intersect(["all","icinga2_configure","icinga2_master"]) | count > 0
+      tags:
+        - icinga2_configure

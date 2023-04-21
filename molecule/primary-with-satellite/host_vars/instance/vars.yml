@@ -6,7 +6,7 @@ icinga2_sudo_cmd:
   - /sbin/service foo restart
 
 icinga2_host_object:
-  localhost:
+  primary:
     import: generic-host
     address: '{{ ansible_default_ipv4.address }}'
     display_name: "{{ ansible_fqdn }}"
@@ -14,6 +14,7 @@ icinga2_host_object:
       os = "Linux"
       dist = "{{ ansible_distribution }}"
       dist_ver = "{{ ansible_distribution_version }}"
+      satellite = true
       disks = {
         "disk /" = {
           disk_partitions = "/"

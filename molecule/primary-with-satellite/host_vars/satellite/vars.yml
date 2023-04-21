@@ -5,6 +5,12 @@ icinga2_mode: satellite
 icinga2_masters:
   instance:
 
+# icinga2_satellites: satellite
+# icinga2_satellites:
+#   satellite:
+#     satellite:
+#       ip: 10.15.0.30
+
 icinga2_host_object:
   localhost:
     import: generic-host

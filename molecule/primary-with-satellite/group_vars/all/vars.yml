@@ -4,6 +4,7 @@ icinga2_salt: tmpams80tqx
 
 icinga2_masters:
   instance:
+    ip: "10.15.0.20"
 
 icinga2_api:
   user:
@@ -30,4 +31,5 @@ icinga2_master_features_enabled:
 icinga2_notification_apply_rules:
   mail-service:
     user_groups: host.vars.notification.mail.groups
+
 ...
