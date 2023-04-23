@@ -49,17 +49,27 @@ platforms:
     pre_build_image: true
     volumes:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    groups:
+      - icinga
+      - icinga_primary
     networks:
       - name: icinga_icingadb
         ipv4_address: "10.11.0.20"
 
 provisioner:
   name: ansible
+  ansible_args:
+    - --diff
+    - -v
   config_options:
     defaults:
-      deprecation_warnings: True
+      deprecation_warnings: true
       stdout_callback: yaml
       callbacks_enabled: profile_tasks
+      gathering: smart
+      fact_caching: jsonfile
+      fact_caching_timeout: 8640
+      fact_caching_connection: "${MOLECULE_EPHEMERAL_DIRECTORY}/ansible_facts"
 
 scenario:
   test_sequence:

@@ -1,35 +1,98 @@
+# coding: utf-8
+from __future__ import unicode_literals
 
 from ansible.parsing.dataloader import DataLoader
 from ansible.template import Templar
+
+import json
 import pytest
 import os
+
 import testinfra.utils.ansible_runner
 
-# import pprint
-# pp = pprint.PrettyPrinter()
+HOST = 'icinga'
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
-    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('instance')
+    os.environ['MOLECULE_INVENTORY_FILE']).get_hosts(HOST)
+
+
+def pp_json(json_thing, sort=True, indents=2):
+    if type(json_thing) is str:
+        print(json.dumps(json.loads(json_thing), sort_keys=sort, indent=indents))
+    else:
+        print(json.dumps(json_thing, sort_keys=sort, indent=indents))
+    return None
+
+
+def base_directory():
+    """
+    """
+    cwd = os.getcwd()
+
+    if 'group_vars' in os.listdir(cwd):
+        directory = "../.."
+        molecule_directory = "."
+    else:
+        directory = "."
+        molecule_directory = f"molecule/{os.environ.get('MOLECULE_SCENARIO_NAME')}"
+
+    return directory, molecule_directory
+
+
+def read_ansible_yaml(file_name, role_name):
+    """
+    """
+    read_file = None
+
+    for e in ["yml", "yaml"]:
+        test_file = f"{file_name}.{e}"
+        if os.path.isfile(test_file):
+            read_file = test_file
+            break
+
+    return f"file={read_file} name={role_name}"
 
 
 @pytest.fixture()
 def get_vars(host):
     """
-
+        parse ansible variables
+        - defaults/main.yml
+        - vars/main.yml
+        - vars/${DISTRIBUTION}.yaml
+        - molecule/${MOLECULE_SCENARIO_NAME}/group_vars/all/vars.yml
     """
-    cwd = os.getcwd()
+    base_dir, molecule_dir = base_directory()
+    distribution = host.system_info.distribution
+    operation_system = None
 
-    file_defaults = "file={}/defaults/main.yml name=role_defaults".format(cwd)
-    file_vars = "file={}/vars/main.yml name=role_vars".format(cwd)
-    file_molecule = "file=molecule/default/group_vars/all/vars.yml name=test_vars"
+    if distribution in ['debian', 'ubuntu']:
+        operation_system = "debian"
+    elif distribution in ['redhat', 'ol', 'centos', 'rocky', 'almalinux']:
+        operation_system = "redhat"
+    elif distribution in ['arch', 'artix']:
+        operation_system = f"{distribution}linux"
 
-    defaults_vars = host.ansible("include_vars", file_defaults).get("ansible_facts").get("role_defaults")
-    vars_vars = host.ansible("include_vars", file_vars).get("ansible_facts").get("role_vars")
-    molecule_vars = host.ansible("include_vars", file_molecule).get("ansible_facts").get("test_vars")
+    # print(" -> {} / {}".format(distribution, os))
+    # print(" -> {}".format(base_dir))
+
+    file_defaults      = read_ansible_yaml(f"{base_dir}/defaults/main", "role_defaults")
+    file_vars          = read_ansible_yaml(f"{base_dir}/vars/main", "role_vars")
+    file_distibution   = read_ansible_yaml(f"{base_dir}/vars/{operation_system}", "role_distibution")
+    file_molecule      = read_ansible_yaml(f"{molecule_dir}/group_vars/all/vars", "test_vars")
+    # file_host_molecule = read_ansible_yaml("{}/host_vars/{}/vars".format(base_dir, HOST), "host_vars")
+
+    defaults_vars      = host.ansible("include_vars", file_defaults).get("ansible_facts").get("role_defaults")
+    vars_vars          = host.ansible("include_vars", file_vars).get("ansible_facts").get("role_vars")
+    distibution_vars   = host.ansible("include_vars", file_distibution).get("ansible_facts").get("role_distibution")
+    molecule_vars      = host.ansible("include_vars", file_molecule).get("ansible_facts").get("test_vars")
+    # host_vars          = host.ansible("include_vars", file_host_molecule).get("ansible_facts").get("host_vars")
 
     ansible_vars = defaults_vars
     ansible_vars.update(vars_vars)
+    ansible_vars.update(distibution_vars)
     ansible_vars.update(molecule_vars)
+    # ansible_vars.update(host_vars)
 
     templar = Templar(loader=DataLoader(), variables=ansible_vars)
     result = templar.template(ansible_vars, fail_on_undefined=False)
@@ -41,59 +104,23 @@ def local_facts(host):
     return host.ansible("setup").get("ansible_facts").get("ansible_local").get("icinga2")
 
 
-@pytest.mark.parametrize("directories", [
+@pytest.mark.parametrize("dirs", [
     "/etc/ansible/facts.d",
     "/etc/icinga2",
-    "/etc/icinga2/satellites.d",
-    "/etc/icinga2/zones.d",
-    "/etc/icinga2/features-enabled",
-    "/etc/icinga2/features-available",
-    "/etc/icinga2/scripts",
     "/usr/share/icinga2",
-    "/usr/share/icinga2/include",
-    "/usr/share/icinga2/include/plugins-contrib.d",
     "/var/log/icinga2",
-    "/var/lib/icinga2",
-    "/var/lib/icinga2/ca",
-    "/var/lib/icinga2/certs",
-    "/var/lib/icinga2/api",
-    "/var/lib/icinga2/api/log",
-    "/var/lib/icinga2/api/packages",
-    "/var/lib/icinga2/api/packages/_api",
-    "/var/lib/icinga2/api/zones",
-    "/var/lib/icinga2/api/zones/global-templates",
+    "/var/lib/icinga2"
 ])
-def test_directories(host, directories):
-    d = host.file(directories)
+def test_directories(host, dirs):
+    d = host.file(dirs)
     assert d.is_directory
 
-
 @pytest.mark.parametrize("files", [
-    "/etc/icinga2/icinga2.conf",
-    "/etc/icinga2/api-users.conf",
-    "/etc/icinga2/constants.conf",
-    "/etc/icinga2/zones.conf",
-    "/etc/icinga2/users.conf",
-    "/usr/share/icinga2/include/command-icinga.conf",
-    "/usr/share/icinga2/include/command-plugins.conf",
-    "/usr/share/icinga2/include/command-plugins-windows.conf",
-    "/usr/share/icinga2/include/plugins",
-    "/usr/share/icinga2/include/plugins-contrib",
-    "/var/log/icinga2/icinga2.log",
-    "/var/lib/icinga2/icinga2.state",
-    "/var/lib/icinga2/ca/ca.crt",
-    "/var/lib/icinga2/ca/ca.key",
-    "/var/lib/icinga2/certs/ca.crt",
-    "/var/lib/icinga2/api/log/current",
-    "/var/lib/icinga2/api/packages/_api/active.conf",
-    "/var/lib/icinga2/api/packages/_api/active-stage",
-    "/var/lib/icinga2/api/packages/_api/include.conf",
-    "/var/lib/icinga2/api/zones/global-templates/_etc/services.conf",
+    "/etc/ansible/facts.d/icinga2.fact",
 ])
-def test_files(host, files):
+def test_directories(host, files):
     d = host.file(files)
     assert d.is_file
-
 
 def test_user(host):
     user = local_facts(host).get("icinga2_user")

@@ -19,9 +19,6 @@
   hosts: icinga
   any_errors_fatal: true
 
-  environment:
-    NETRC: ''
-
   roles:
     - role: ansible-icinga2
       when:
@@ -29,13 +26,9 @@
       tags:
         - icinga2_install
 
-
 - name: configure icinga2 primary
-  hosts: instance
+  hosts: icinga_primary
   any_errors_fatal: true
-
-  environment:
-    NETRC: ''
 
   roles:
     - role: ansible-icinga2
@@ -45,11 +38,8 @@
         - icinga2_configure
 
 - name: configure icinga2 satellite
-  hosts: satellite
+  hosts: icinga_satellite
   any_errors_fatal: true
-
-  environment:
-    NETRC: ''
 
   roles:
     - role: ansible-icinga2

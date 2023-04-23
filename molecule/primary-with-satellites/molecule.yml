@@ -137,7 +137,6 @@ provisioner:
     # or env
     env:
       ANSIBLE_RUN_TAGS: "" # tag1,tag2,tag3
-
     defaults:
       deprecation_warnings: true
       stdout_callback: yaml

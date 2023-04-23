@@ -216,15 +216,15 @@ class FilterModule(object):
         """
             dns_primary({'instance': None}, [None, 'instance'])
         """
-        # display.v(f"dns_primary({data}, {object_name}, {object_data}, {alternatives})")
+        display.v(f"dns_primary({data}, {object_name}, {object_data}, {alternatives})")
 
         result = None
 
         endpoint_name = object_data.get('endpoint_name', None)
         address = object_data.get('address', None)
 
-        # display.v(f"  - endpoint_name {endpoint_name}")
-        # display.v(f"  - address   {address}")
+        display.v(f"  - endpoint_name {endpoint_name}")
+        display.v(f"  - address   {address}")
 
         if not endpoint_name:
             endpoint_name = object_name
@@ -242,7 +242,7 @@ class FilterModule(object):
         if not result:
             result = self.__dns_alternatives(alternatives)
 
-        # display.v(f" = result {result}")
+        display.v(f" = result {result}")
 
         return result
 

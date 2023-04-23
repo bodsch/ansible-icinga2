@@ -10,7 +10,7 @@ import os
 
 import testinfra.utils.ansible_runner
 
-HOST = 'icinga_primary'
+HOST = 'icinga_satellite'
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts(HOST)
@@ -103,37 +103,31 @@ def get_vars(host):
 def local_facts(host):
     return host.ansible("setup").get("ansible_facts").get("ansible_local").get("icinga2")
 
-@pytest.mark.parametrize("directories", [
+
+@pytest.mark.parametrize("dirs", [
     "/etc/ansible/facts.d",
-    "/etc/icinga2/zones.d/primary",
-    "/etc/icinga2/zones.d/director-global",
-    "/etc/icinga2/zones.d/global-templates",
-    "/var/lib/icinga2/api",
-    "/var/lib/icinga2/ca",
-    "/var/lib/icinga2/certs",
+    "/etc/icinga2",
+    "/usr/share/icinga2",
+    "/var/log/icinga2",
+    "/var/lib/icinga2",
+    "/var/lib/icinga2/certs"
 ])
-def test_directories(host, directories):
-    d = host.file(directories)
+def test_directories(host, dirs):
+    d = host.file(dirs)
     assert d.is_directory
+
 
 @pytest.mark.parametrize("files", [
     "/etc/ansible/facts.d/icinga2.fact",
-    "/etc/icinga2/zones.d/primary/instance.conf",
-    "/etc/icinga2/zones.d/global-templates/commands.conf",
-    "/etc/icinga2/zones.d/global-templates/eventcommands.conf",
-    "/etc/icinga2/zones.d/global-templates/functions.conf",
-    "/etc/icinga2/zones.d/global-templates/services.conf",
-    "/etc/icinga2/zones.d/global-templates/timeperiods.conf",
+    "/var/lib/icinga2/certs/ticket",
     "/etc/icinga2/features-enabled/api.conf",
     "/etc/icinga2/features-enabled/checker.conf",
     "/etc/icinga2/features-enabled/mainlog.conf",
-    "/var/lib/icinga2/ca/ca.crt",
-    "/var/lib/icinga2/ca/ca.key",
-    "/var/lib/icinga2/certs/ca.crt",
-    "/var/lib/icinga2/certs/instance.crt",
-    "/var/lib/icinga2/certs/instance.csr",
-    "/var/lib/icinga2/certs/instance.key",
 ])
 def test_directories(host, files):
     d = host.file(files)
     assert d.is_file
+
+
+
+

@@ -39,6 +39,7 @@ platforms:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
     groups:
       - icinga
+      - icinga_primary
     networks:
       - name: icinga2
         ipv4_address: "10.15.0.20"
@@ -53,6 +54,7 @@ platforms:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
     groups:
       - icinga
+      - icinga_satellite
     networks:
       - name: icinga2
         ipv4_address: "10.15.0.30"
@@ -76,9 +78,24 @@ provisioner:
       fact_caching_connection: "${MOLECULE_EPHEMERAL_DIRECTORY}/ansible_facts"
 
 scenario:
+  create_sequence:
+    - dependency
+    - create
+    - prepare
+  converge_sequence:
+    - dependency
+    - create
+    - prepare
+    - converge
+  destroy_sequence:
+    - dependency
+    - cleanup
+    - destroy
   test_sequence:
+    # - lint
     - destroy
     - dependency
+    - syntax
     - create
     - prepare
     - converge
