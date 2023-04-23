@@ -55,8 +55,9 @@
     - role: ansible-icinga2
       vars:
         icinga2_master: '{{ ansible_default_ipv4.address }}'
-        icinga2_api.user: root
-        icinga2_api.password: foo
+        icinga2_api:
+          user: root
+          password: foo
         icinga2_downtime_comment: Downtime for deployment
         icinga2_downtime_system_name: localhost
         icinga2_downtime_duration: 120
