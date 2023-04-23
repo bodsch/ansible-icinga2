@@ -124,10 +124,6 @@ def test_directories(host, dirs):
     "/etc/icinga2/features-enabled/checker.conf",
     "/etc/icinga2/features-enabled/mainlog.conf",
 ])
-def test_directories(host, files):
+def test_files(host, files):
     d = host.file(files)
     assert d.is_file
-
-
-
-

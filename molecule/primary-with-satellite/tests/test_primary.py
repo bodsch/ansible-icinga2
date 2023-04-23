@@ -103,6 +103,7 @@ def get_vars(host):
 def local_facts(host):
     return host.ansible("setup").get("ansible_facts").get("ansible_local").get("icinga2")
 
+
 @pytest.mark.parametrize("directories", [
     "/etc/ansible/facts.d",
     "/etc/icinga2/zones.d/primary",
@@ -115,6 +116,7 @@ def local_facts(host):
 def test_directories(host, directories):
     d = host.file(directories)
     assert d.is_directory
+
 
 @pytest.mark.parametrize("files", [
     "/etc/ansible/facts.d/icinga2.fact",
@@ -134,6 +136,6 @@ def test_directories(host, directories):
     "/var/lib/icinga2/certs/instance.csr",
     "/var/lib/icinga2/certs/instance.key",
 ])
-def test_directories(host, files):
+def test_files(host, files):
     d = host.file(files)
     assert d.is_file

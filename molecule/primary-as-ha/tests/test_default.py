@@ -45,7 +45,7 @@ def read_ansible_yaml(file_name, role_name):
     read_file = None
 
     for e in ["yml", "yaml"]:
-        test_file = "{}.{}".format(file_name, e)
+        test_file = f"{file_name}.{e}"
         if os.path.isfile(test_file):
             read_file = test_file
             break
@@ -76,16 +76,16 @@ def get_vars(host):
     # print(" -> {} / {}".format(distribution, os))
     # print(" -> {}".format(base_dir))
 
-    file_defaults = read_ansible_yaml(f"{base_dir}/defaults/main", "role_defaults")
-    file_vars = read_ansible_yaml(f"{base_dir}/vars/main", "role_vars")
-    file_distibution = read_ansible_yaml(f"{base_dir}/vars/{operation_system}", "role_distibution")
-    file_molecule = read_ansible_yaml(f"{molecule_dir}/group_vars/all/vars", "test_vars")
+    file_defaults      = read_ansible_yaml(f"{base_dir}/defaults/main", "role_defaults")
+    file_vars          = read_ansible_yaml(f"{base_dir}/vars/main", "role_vars")
+    file_distibution   = read_ansible_yaml(f"{base_dir}/vars/{operation_system}", "role_distibution")
+    file_molecule      = read_ansible_yaml(f"{molecule_dir}/group_vars/all/vars", "test_vars")
     # file_host_molecule = read_ansible_yaml("{}/host_vars/{}/vars".format(base_dir, HOST), "host_vars")
 
-    defaults_vars = host.ansible("include_vars", file_defaults).get("ansible_facts").get("role_defaults")
-    vars_vars = host.ansible("include_vars", file_vars).get("ansible_facts").get("role_vars")
-    distibution_vars = host.ansible("include_vars", file_distibution).get("ansible_facts").get("role_distibution")
-    molecule_vars = host.ansible("include_vars", file_molecule).get("ansible_facts").get("test_vars")
+    defaults_vars      = host.ansible("include_vars", file_defaults).get("ansible_facts").get("role_defaults")
+    vars_vars          = host.ansible("include_vars", file_vars).get("ansible_facts").get("role_vars")
+    distibution_vars   = host.ansible("include_vars", file_distibution).get("ansible_facts").get("role_distibution")
+    molecule_vars      = host.ansible("include_vars", file_molecule).get("ansible_facts").get("test_vars")
     # host_vars          = host.ansible("include_vars", file_host_molecule).get("ansible_facts").get("host_vars")
 
     ansible_vars = defaults_vars

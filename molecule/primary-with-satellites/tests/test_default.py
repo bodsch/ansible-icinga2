@@ -115,12 +115,14 @@ def test_directories(host, dirs):
     d = host.file(dirs)
     assert d.is_directory
 
+
 @pytest.mark.parametrize("files", [
     "/etc/ansible/facts.d/icinga2.fact",
 ])
-def test_directories(host, files):
+def test_files(host, files):
     d = host.file(files)
     assert d.is_file
+
 
 def test_user(host):
     user = local_facts(host).get("icinga2_user")
