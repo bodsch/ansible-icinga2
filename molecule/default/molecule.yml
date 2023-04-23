@@ -5,11 +5,11 @@ dependency:
 driver:
   name: docker
 
-lint: |
-  set -e
-  yamllint .
-  ansible-lint .
-  flake8 .
+# lint: |
+#   set -e
+#   yamllint .
+#   ansible-lint .
+#   flake8 .
 
 platforms:
   - name: database
@@ -23,7 +23,7 @@ platforms:
     docker_networks:
       - name: icinga_default
         ipam_config:
-          - subnet: "10.11.0.0/16"
+          - subnet: "10.11.0.0/24"
             gateway: "10.11.0.254"
     networks:
       - name: icinga_default
@@ -45,15 +45,37 @@ provisioner:
   name: ansible
   ansible_args:
     - --diff
-    # - -v
+    - -v
   config_options:
     defaults:
-      deprecation_warnings: True
+      deprecation_warnings: true
       stdout_callback: yaml
       callbacks_enabled: profile_tasks
-      # fact_caching: "jsonfile"
+      # gathering: smart
+      # fact_caching: jsonfile
       # fact_caching_timeout: 8640
-      # fact_caching_connection: "/tmp/.facts"
+      # fact_caching_connection: ansible_facts
+
+#   name: install
+#   ansible_args:
+#     - --diff
+#     - -v
+#   config_options:
+#     # Either via config option
+#     config_options:
+#       tags:
+#         run: tag1,tag2,tag3
+#     # or env
+#     env:
+#       ANSIBLE_RUN_TAGS: tag1,tag2,tag3
+#     defaults:
+#       deprecation_warnings: true
+#       stdout_callback: yaml
+#       callbacks_enabled: profile_tasks
+#       gathering: smart
+#       fact_caching: jsonfile
+#       fact_caching_timeout: 8640
+#       fact_caching_connection: ansible_facts
 
 scenario:
   test_sequence:

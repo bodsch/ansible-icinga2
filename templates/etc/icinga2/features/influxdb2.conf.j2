@@ -23,9 +23,9 @@ object Influxdb2Writer "influxdb2" {
       {% if key in _attr %}
         {% if key in ["host", "organization", "bucket", "auth_token"] %}
   {{ key }} = "{{ value }}"
-        {% elif value | type == "bool" %}
-  {{ key }} = {{ value | bool | ternary('true', 'false') }}
-        {% elif key in ["host_template", "service_template"] and value | type == "dict" %}
+        {% elif value | bodsch.core.type == "bool" %}
+  {{ key }} = {{ value | bodsch.core.config_bool(true_as='true', false_as='false') }}
+        {% elif key in ["host_template", "service_template"] and value | bodsch.core.type == "dict" %}
   {{ key }} = {
           {% for dict_key, dict_value in value.items() | sort %}
             {% if dict_key == "tags" %}

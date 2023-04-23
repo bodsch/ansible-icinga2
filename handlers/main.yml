@@ -1,6 +1,6 @@
 ---
 
-- name: yum-clean-metadata
+- name: yum-clean-metadata  # noqa no-changed-when
   ansible.builtin.command: yum clean metadata
   args:
     warn: false

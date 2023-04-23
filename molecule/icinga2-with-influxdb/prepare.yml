@@ -5,48 +5,72 @@
   gather_facts: true
 
   pre_tasks:
-    - name: update pacman system
-      command: |
-        pacman --refresh --sync --sysupgrade --noconfirm
+    - name: arch- / artixlinux
       when:
-        - ansible_distribution | lower == 'archlinux'
+        - ansible_distribution | lower == 'archlinux' or
+          ansible_os_family | lower == 'artix linux'
+      block:
+        - name: update pacman system
+          ansible.builtin.command: |
+            pacman --refresh --sync --sysupgrade --noconfirm
 
-    - debug:
+        - name: create depends service
+          ansible.builtin.copy:
+            mode: 0755
+            dest: /etc/init.d/net
+            content: |
+              #!/usr/bin/openrc-run
+              true
+          when:
+            - ansible_os_family | lower == 'artix linux'
+
+    - name: environment
+      ansible.builtin.debug:
         msg:
           - "os family            : {{ ansible_distribution }} ({{ ansible_os_family }})"
           - "distribution version : {{ ansible_distribution_major_version }}"
           - "ansible version      : {{ ansible_version.full }}"
           - "python version       : {{ ansible_python.version.major }}.{{ ansible_python.version.minor }}"
+      tags:
+        - always
 
-- name: prepare container
+- name: prepare all containers
   hosts: all
-  gather_facts: true
+  any_errors_fatal: true
 
   roles:
     - role: apparmor
+      tags:
+        - always
     - role: snapd
+      tags:
+        - always
     - role: monitoring-tools
+      tags:
+        - always
 
-- name: prepare container
+- name: prepare database container
   hosts: database
-  gather_facts: true
+  any_errors_fatal: true
 
   roles:
     - role: mariadb
+      tags:
+        - always
 
-- name: prepare influxdb
+- name: prepare influxdb container
   hosts: influxdb
-  gather_facts: true
+  any_errors_fatal: true
 
   pre_tasks:
     - name: install pip
-      package:
+      ansible.builtin.package:
         name: python3-pip
         state: present
 
     # to fix https://github.com/mkayontour/ansible-influxdb/issues/9
     - name: add influxdata-archive_compat.key
-      shell:
+      ansible.builtin.shell:
         cd /tmp/ ;
         curl https://repos.influxdata.com/influxdata-archive_compat.key > /tmp/influxdata-archive_compat.key &&
         echo '393e8779c89ac8d958f81f942f9ad7fb82a25e133faddaf92e15b16e6ac9ce4c /tmp/influxdata-archive_compat.key' | sha256sum -c && cat /tmp/influxdata-archive_compat.key | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/influxdata-archive_compat.gpg
@@ -55,3 +79,5 @@
 
   roles:
     - role: influxdb
+      tags:
+        - always

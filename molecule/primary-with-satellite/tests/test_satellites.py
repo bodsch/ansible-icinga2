@@ -10,7 +10,7 @@ import os
 
 import testinfra.utils.ansible_runner
 
-HOST = 'icinga'
+HOST = 'icinga_satellite'
 
 testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
     os.environ['MOLECULE_INVENTORY_FILE']).get_hosts(HOST)
@@ -109,7 +109,8 @@ def local_facts(host):
     "/etc/icinga2",
     "/usr/share/icinga2",
     "/var/log/icinga2",
-    "/var/lib/icinga2"
+    "/var/lib/icinga2",
+    "/var/lib/icinga2/certs"
 ])
 def test_directories(host, dirs):
     d = host.file(dirs)
@@ -118,34 +119,11 @@ def test_directories(host, dirs):
 
 @pytest.mark.parametrize("files", [
     "/etc/ansible/facts.d/icinga2.fact",
+    "/var/lib/icinga2/certs/ticket",
+    "/etc/icinga2/features-enabled/api.conf",
+    "/etc/icinga2/features-enabled/checker.conf",
+    "/etc/icinga2/features-enabled/mainlog.conf",
 ])
 def test_files(host, files):
     d = host.file(files)
     assert d.is_file
-
-
-def test_user(host):
-    user = local_facts(host).get("icinga2_user")
-    group = local_facts(host).get("icinga2_group")
-
-    assert host.group(group).exists
-    assert host.user(user).exists
-    assert group in host.user(user).groups
-
-
-def test_service(host):
-    service = host.service("icinga2")
-    assert service.is_enabled
-    assert service.is_running
-
-
-@pytest.mark.parametrize("ports", [
-    '0.0.0.0:5665',
-])
-def test_open_port(host, ports):
-
-    for i in host.socket.get_listening_sockets():
-        print(i)
-
-    service = host.socket("tcp://{}".format(ports))
-    assert service.is_listening

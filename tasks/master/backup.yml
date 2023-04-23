@@ -57,7 +57,7 @@
         path: /usr/local/bin/backup-icinga2.sh
       register: icinga2_backup_script
 
-    - name: run backup script
+    - name: run backup script  # noqa no-changed-when
       ansible.builtin.shell: >
         /usr/local/bin/backup-icinga2.sh
       when:

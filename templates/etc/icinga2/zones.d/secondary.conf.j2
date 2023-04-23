@@ -1,19 +1,19 @@
 #jinja2: trim_blocks: True, lstrip_blocks: True
 // {{ ansible_managed }}
+{% set endpoint = false %}
 {% if icinga2_host_object is defined and
       icinga2_host_object | count != 0 %}
   {#
     define some variables from 'icinga2_host_object' dictionary
   #}
   {% for key, values in icinga2_host_object.items() %}
-    {% set address = icinga2_satellites | dns_icinga_satellite(
+    {% set address = icinga2_masters | dns_icinga_primary(
             object_name=key,
             object_data=values,
-            satellite_zone=icinga2_satellite_zone,
             alternatives=[key, ansible_fqdn]) %}
-    {% set values, _, object_name, zone_name, display_name, check_command, address = values | host_object_values(False, key, ansible_fqdn) %}
+    {% set values, endpoint, endpoint_name, zone_name, display_name, check_command, _ = values | host_object_values(True, key, None) %}
 {#
-    object_name   {{ object_name }}   - {{ object_name | bodsch.core.type }}
+    endpoint_name {{ endpoint_name }} - {{ endpoint_name | bodsch.core.type }}
     zone_name     {{ zone_name }}     - {{ zone_name | bodsch.core.type }}
     display_name  {{ display_name }}  - {{ display_name | bodsch.core.type }}
     check_command {{ check_command }} - {{ check_command | bodsch.core.type }}
@@ -21,8 +21,8 @@
     -> {{ values }}
 #}
 
-// icinga2 satellite - {{ key }}
-object Host "{{ object_name }}" {
+// icinga2 secondary - {{ key }}
+object Host "{{ key }}" {
     {% if address is defined and address | string | length > 0 %}
   address = "{{ address }}"
     {% endif %}
@@ -32,21 +32,27 @@ object Host "{{ object_name }}" {
     {% if display_name and display_name | string | length > 0 %}
   display_name = "{{ display_name }}"
     {% endif %}
-  command_endpoint = "{{ ansible_fqdn }}"
+    {% if endpoint %}
+  command_endpoint = "{{ endpoint_name }}"
+    {% endif %}
+    {% if zone_name and zone_name | string | length > 0 %}
   zone = "{{ zone_name }}"
-    {% for ke,ve in values.items() | sort %}
-      {% if ke == 'import' %}
+    {% endif %}
+    {% if values | bodsch.core.type == "dict" %}
+      {% for ke, ve in values.items() | sort %}
+        {% if ke == 'import' %}
   {{ ke }} "{{ ve }}"
-      {% elif ke == 'groups' %}
+        {% elif ke == 'groups' %}
   {{ ke }} = ["{{ ve | join('","') }}"]
-      {% elif ke == 'vars' %}
+        {% elif ke == 'vars' %}
   vars = {
     {{ ve | indent(4) }}
   }
-      {% else %}
+        {% else %}
   {{ ke }} = "{{ ve }}"
-      {% endif %}
-    {% endfor %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
 }
   {% endfor %}
 {% endif %}

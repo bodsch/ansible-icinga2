@@ -27,8 +27,8 @@ apply Service {{ _name }} {
       {% elif k == 'ignore_where' %}
   ignore where {{ ve }}
       {% else %}
-        {% if ve | type == "bool" %}
-  {{ k }} = {{ ve | bool | ternary( 'true', 'false') }}
+        {% if ve | bodsch.core.type == "bool" %}
+  {{ k }} = {{ ve | bodsch.core.config_bool(true_as='true', false_as='false') }}
         {% else %}
   {{ k }} = {{ ve }}
         {% endif %}

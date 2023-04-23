@@ -1,0 +1,23 @@
+---
+
+- name: prepare for install
+  ansible.builtin.include_tasks: install/prepare.yml
+  tags:
+    - icinga2_install
+
+- name: python support
+  ansible.builtin.include_tasks: install/python-support.yml
+  tags:
+    - icinga2_install
+
+- name: check installed
+  ansible.builtin.include_tasks: check_installed.yml
+  tags:
+    - icinga2_install
+
+- name: install icinga2
+  ansible.builtin.include_tasks: install/install.yml
+  tags:
+    - icinga2_install
+
+...

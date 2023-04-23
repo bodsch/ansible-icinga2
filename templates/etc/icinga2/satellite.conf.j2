@@ -13,7 +13,7 @@
   tpl.endpoint(
     endpoint = s,
     host = icinga2_satellites[icinga2_satellite_zone][s]['ip']
-  ) | indent(0, first=False)
+  )
 }}
 /*
 object Endpoint "{{ s }}" {
@@ -28,7 +28,7 @@ object Endpoint "{{ s }}" {
     endpoints = _keys,
     zone = icinga2_satellite_zone,
     parent = "primary"
-  ) | indent(0, first=False)
+  )
 }}
 // object Zone "{{ icinga2_satellite_zone }}" { endpoints = [ "{{ _keys | join( '", "') }}" ] ; parent = "primary" }
       {% else %}
@@ -36,14 +36,14 @@ object Endpoint "{{ s }}" {
   tpl.endpoint(
     endpoint = icinga2_satellite_zone,
     host = icinga2_satellite_zone
-  ) | indent(0, first=False)
+  )
 }}
 {{
   tpl.zone(
     endpoints = icinga2_satellite_zone,
     zone = icinga2_satellite_zone,
     parent = "primary"
-  ) | indent(0, first=False)
+  )
 }}
 
 // object Endpoint "{{ icinga2_satellite_zone }}" { host = "{{ icinga2_satellite_zone }}"; port = "5665" }
@@ -58,14 +58,14 @@ object Endpoint "{{ s }}" {
   tpl.endpoint(
     endpoint = icinga2_satellite_zone,
     host = _ip
-  ) | indent(0, first=False)
+  )
 }}
 {{
   tpl.zone(
     endpoints = icinga2_satellite_zone,
     zone = icinga2_satellite_zone,
     parent = "primary"
-  ) | indent(0, first=False)
+  )
 }}
 
 // object Endpoint "{{ icinga2_satellite_zone }}" { host = "{{ _ip }}"; port = "5665" }

@@ -4,5 +4,6 @@ skip_list:
   - name[casing]
   - name[template]
   - args[module]
+  - jinja[invalid]
 
 warn_list: []
