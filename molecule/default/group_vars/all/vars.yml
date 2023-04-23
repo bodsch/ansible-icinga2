@@ -74,7 +74,6 @@ icinga2_host_object:
         }
       }
 
-
 icinga2_notification_usergroups:
   icingaadmins:
     display_name: "Icinga2 Admin Group"
