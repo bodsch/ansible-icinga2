@@ -24,7 +24,7 @@ platforms:
       - name: icinga_default
         ipam_config:
           - subnet: "10.11.0.0/24"
-            gateway: "10.11.0.254"
+            gateway: "10.11.0.2"
     networks:
       - name: icinga_default
         ipv4_address: "10.11.0.10"

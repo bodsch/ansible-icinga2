@@ -23,11 +23,11 @@ platforms:
     docker_networks:
       - name: icinga2
         ipam_config:
-          - subnet: "10.15.0.0/24"
-            gateway: "10.15.0.254"
+          - subnet: "10.16.0.0/24"
+            gateway: "10.16.0.2"
     networks:
       - name: icinga2
-        ipv4_address: "10.15.0.10"
+        ipv4_address: "10.16.0.10"
 
   - name: instance
     image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
@@ -42,7 +42,7 @@ platforms:
       - icinga_primary
     networks:
       - name: icinga2
-        ipv4_address: "10.15.0.20"
+        ipv4_address: "10.16.0.20"
 
   - name: satellite
     image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
@@ -57,7 +57,7 @@ platforms:
       - icinga_satellite
     networks:
       - name: icinga2
-        ipv4_address: "10.15.0.30"
+        ipv4_address: "10.16.0.30"
 
 provisioner:
   name: ansible

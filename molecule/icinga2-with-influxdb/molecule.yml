@@ -23,11 +23,11 @@ platforms:
     docker_networks:
       - name: icinga_influxdb
         ipam_config:
-          - subnet: "10.11.0.0/24"
-            gateway: "10.11.0.1"
+          - subnet: "10.14.0.0/24"
+            gateway: "10.14.0.2"
     networks:
       - name: icinga_influxdb
-        ipv4_address: "10.11.0.10"
+        ipv4_address: "10.14.0.10"
 
   - name: influxdb
     image: "bodsch/ansible-debian:11"
@@ -39,7 +39,7 @@ platforms:
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
     networks:
       - name: icinga_influxdb
-        ipv4_address: "10.11.0.11"
+        ipv4_address: "10.14.0.11"
 
   - name: instance
     image: "bodsch/ansible-${DISTRIBUTION:-debian:11}"
@@ -54,7 +54,7 @@ platforms:
       - icinga_primary
     networks:
       - name: icinga_influxdb
-        ipv4_address: "10.11.0.20"
+        ipv4_address: "10.14.0.20"
 
 provisioner:
   name: ansible
