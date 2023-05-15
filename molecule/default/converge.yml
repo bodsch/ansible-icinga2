@@ -65,4 +65,3 @@
         - ansible_run_tags | intersect(["icinga2_downtime_schedule"]) | count > 0
       tags:
         - icinga2_downtime_schedule
-

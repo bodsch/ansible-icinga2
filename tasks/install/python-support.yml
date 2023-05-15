@@ -67,43 +67,4 @@
       ansible.builtin.fail:
         msg: Sorry, but a serious error occurred when installing the required Python packages.
 
-
-
-    # - name: create requirements.txt
-    #   ansible.builtin.template:
-    #     src: requirements.txt.j2
-    #     dest: /tmp/icinga2-requirements.txt
-    #     mode: 0660
-    #   vars:
-    #     pip_modules: "{{ icinga2_python_requirements }}"
-    #
-    # - name: ensure python bindings for python requirements 1st
-    #   ansible.builtin.pip:
-    #     requirements: /tmp/icinga2-requirements.txt
-    #     state: present
-    #     executable: pip{{ '3' if ansible_python.version.major | int == 3 else '' }}
-    #   register: pip_install
-    #   ignore_errors: true
-    #   no_log: true
-    #
-    # - name: use build tools
-    #   when:
-    #     - pip_install.failed
-    #   block:
-    #     - name: install build essentials
-    #       ansible.builtin.package:
-    #         name: "{{ icinga2_python_build_packages }}"
-    #         state: present
-    #
-    #     - name: ensure python bindings for python requirements 2nd
-    #       ansible.builtin.pip:
-    #         requirements: /tmp/icinga2-requirements.txt
-    #         state: present
-    #         executable: pip{{ '3' if ansible_python.version.major | int == 3 else '' }}
-    #
-    #     - name: uninstall build essentials
-    #       ansible.builtin.package:
-    #         name: "{{ icinga2_python_build_packages }}"
-    #         state: absent
-
 ...
