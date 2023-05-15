@@ -6,5 +6,6 @@ icinga2_mariadb_packages:
 icinga2_os_requirements:
   - iproute2
   - git
+  - python-pip
 
 ...

@@ -24,8 +24,7 @@ jobs:
         image:
           - archlinux:latest
         ansible-version:
-          - '5.1'
-          - '6.1'
+          - '6.7'
         scenario:
           - default
 
@@ -44,13 +43,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r test-requirements.txt
-
-      # See: https://github.com/geerlingguy/ansible-role-mysql/issues/422
-      # - name: Disable AppArmor
-      #   run: |
-      #       sudo apt-get install apparmor-profiles
-      #       sudo ln -s /etc/apparmor.d/usr.sbin.mysqld /etc/apparmor.d/disable/
-      #       sudo apparmor_parser -R /etc/apparmor.d/usr.sbin.mysqld
 
       - name: test with tox
         run: |
@@ -76,8 +68,7 @@ jobs:
           - debian:11
           - ubuntu:20.04
         ansible-version:
-          - '5.1'
-          - '6.1'
+          - '6.7'
         scenario:
           - default
 
@@ -96,13 +87,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r test-requirements.txt
-
-      # See: https://github.com/geerlingguy/ansible-role-mysql/issues/422
-      # - name: Disable AppArmor
-      #   run: |
-      #       sudo apt-get install apparmor-profiles
-      #       sudo ln -s /etc/apparmor.d/usr.sbin.mysqld /etc/apparmor.d/disable/
-      #       sudo apparmor_parser -R /etc/apparmor.d/usr.sbin.mysqld
 
       - name: test default
         run: |
@@ -128,9 +112,7 @@ jobs:
           - rockylinux:8
           - almalinux:8
         ansible-version:
-          # - '4.10'
-          - '5.1'
-          - '6.1'
+          - '6.7'
         scenario:
           - default
 
@@ -149,14 +131,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r test-requirements.txt
-
-      # See: https://github.com/geerlingguy/ansible-role-mysql/issues/422
-      # See: https://github.com/geerlingguy/ansible-role-mysql/issues/422
-      # - name: Disable AppArmor
-      #   run: |
-      #       sudo apt-get install apparmor-profiles
-      #       sudo ln -s /etc/apparmor.d/usr.sbin.mysqld /etc/apparmor.d/disable/
-      #       sudo apparmor_parser -R /etc/apparmor.d/usr.sbin.mysqld
 
       - name: test default
         run: |

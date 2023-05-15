@@ -7,41 +7,103 @@
     - icinga2_python_requirements is defined
     - icinga2_python_requirements | length > 0
   block:
-    - name: create requirements.txt
-      ansible.builtin.template:
-        src: requirements.txt.j2
-        dest: /tmp/icinga2-requirements.txt
-        mode: 0660
-      vars:
-        pip_modules: "{{ icinga2_python_requirements }}"
+    - name: create pip requirements file
+      bodsch.core.pip_requirements:
+        name: icinga2
+        requirements: "{{ icinga2_python_requirements }}"
+      register: pip_requirements
 
-    - name: ensure python bindings for python requirements 1st
+    - name: fail if pip not installed
+      ansible.builtin.fail:
+        msg: python pip is not installed
+      when:
+        - not pip_requirements.pip.present
+
+    - name: install docker python packages  # noqa no-handler
       ansible.builtin.pip:
-        requirements: /tmp/icinga2-requirements.txt
+        executable: pip3
+        requirements: "{{ pip_requirements.requirements_file }}"
         state: present
-        executable: pip{{ '3' if ansible_python.version.major | int == 3 else '' }}
       register: pip_install
       ignore_errors: true
       no_log: true
-
-    - name: use build tools
       when:
+        - pip_requirements.requirements_file is defined
+        - pip_requirements.changed
+
+    - name: first run is failed, try with build
+      when:
+        - pip_install is defined
+        - pip_install.failed is defined
         - pip_install.failed
+        - icinga2_python_build_packages | default([]) | count > 0
       block:
         - name: install build essentials
           ansible.builtin.package:
             name: "{{ icinga2_python_build_packages }}"
             state: present
 
-        - name: ensure python bindings for python requirements 2nd
+        - name: ensure python bindings for icinga2 packages 2nd
           ansible.builtin.pip:
-            requirements: /tmp/icinga2-requirements.txt
+            requirements: "{{ pip_requirements.requirements_file }}"
             state: present
-            executable: pip{{ '3' if ansible_python.version.major | int == 3 else '' }}
+            executable: pip3
 
         - name: uninstall build essentials
           ansible.builtin.package:
             name: "{{ icinga2_python_build_packages }}"
             state: absent
+
+    - name: do facts module to get latest information
+      ansible.builtin.setup:
+  rescue:
+    - name: remove python requirements file
+      bodsch.core.pip_requirements:
+        name: icinga2
+        requirements: "{{ icinga2_python_requirements }}"
+        state: absent
+
+    - name: exit with fail
+      ansible.builtin.fail:
+        msg: Sorry, but a serious error occurred when installing the required Python packages.
+
+
+
+    # - name: create requirements.txt
+    #   ansible.builtin.template:
+    #     src: requirements.txt.j2
+    #     dest: /tmp/icinga2-requirements.txt
+    #     mode: 0660
+    #   vars:
+    #     pip_modules: "{{ icinga2_python_requirements }}"
+    #
+    # - name: ensure python bindings for python requirements 1st
+    #   ansible.builtin.pip:
+    #     requirements: /tmp/icinga2-requirements.txt
+    #     state: present
+    #     executable: pip{{ '3' if ansible_python.version.major | int == 3 else '' }}
+    #   register: pip_install
+    #   ignore_errors: true
+    #   no_log: true
+    #
+    # - name: use build tools
+    #   when:
+    #     - pip_install.failed
+    #   block:
+    #     - name: install build essentials
+    #       ansible.builtin.package:
+    #         name: "{{ icinga2_python_build_packages }}"
+    #         state: present
+    #
+    #     - name: ensure python bindings for python requirements 2nd
+    #       ansible.builtin.pip:
+    #         requirements: /tmp/icinga2-requirements.txt
+    #         state: present
+    #         executable: pip{{ '3' if ansible_python.version.major | int == 3 else '' }}
+    #
+    #     - name: uninstall build essentials
+    #       ansible.builtin.package:
+    #         name: "{{ icinga2_python_build_packages }}"
+    #         state: absent
 
 ...

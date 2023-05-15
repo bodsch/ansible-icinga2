@@ -9,9 +9,10 @@ icinga2_mariadb_build_packages:
   - gcc-c++
   - autoconf
   - automake
-  - python{{ '3' if ansible_python.version.major | int == 3 else '' }}-devel
+  - python3-devel
 
 icinga2_os_requirements:
   - iproute
+  - python3-pip
 
 ...
