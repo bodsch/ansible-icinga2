@@ -10,46 +10,106 @@
     - icinga2_mariadb_python_packages is defined
     - icinga2_mariadb_python_packages | length > 0
   block:
-    - name: create requirements.txt
-      ansible.builtin.template:
-        src: requirements.txt.j2
-        dest: /tmp/icinga2-ido-requirements.txt
-        mode: 0660
-      vars:
-        pip_modules: "{{ icinga2_mariadb_python_packages }}"
+    - name: create pip requirements file
+      bodsch.core.pip_requirements:
+        name: icinga2-ido
+        requirements: "{{ icinga2_mariadb_python_packages }}"
+      register: pip_requirements
 
-    - name: do facts module to get latest information
-      ansible.builtin.setup:
+    - name: fail if pip not installed
+      ansible.builtin.fail:
+        msg: python pip is not installed
+      when:
+        - not pip_requirements.pip.present
 
-    - name: ensure python bindings for mariadb packages 1st
+    - name: install docker python packages  # noqa no-handler
       ansible.builtin.pip:
-        # executable: pip3
-        requirements: /tmp/icinga2-ido-requirements.txt
+        executable: pip3
+        requirements: "{{ pip_requirements.requirements_file }}"
         state: present
       register: pip_install
       ignore_errors: true
-      # no_log: true
-
-    - name: install python ip modules
+      no_log: true
       when:
+        - pip_requirements.requirements_file is defined
+        - pip_requirements.changed
+
+    - name: first run is failed, try with build
+      when:
+        - pip_install is defined
+        - pip_install.failed is defined
         - pip_install.failed
-        - icinga2_mariadb_build_packages is defined
-        - icinga2_mariadb_build_packages | length > 0
+        - icinga2_mariadb_build_packages | default([]) | count > 0
       block:
         - name: install build essentials
           ansible.builtin.package:
             name: "{{ icinga2_mariadb_build_packages }}"
             state: present
 
-        - name: ensure python bindings for mariadb packages 2nd
+        - name: ensure python bindings for icinga2 packages 2nd
           ansible.builtin.pip:
-            requirements: /tmp/icinga2-ido-requirements.txt
+            requirements: "{{ pip_requirements.requirements_file }}"
             state: present
+            executable: pip3
 
         - name: uninstall build essentials
           ansible.builtin.package:
             name: "{{ icinga2_mariadb_build_packages }}"
             state: absent
+
+    - name: do facts module to get latest information
+      ansible.builtin.setup:
+  rescue:
+    - name: remove python requirements file
+      bodsch.core.pip_requirements:
+        name: icinga2-ido
+        requirements: "{{ icinga2_python_requirements }}"
+        state: absent
+
+    - name: exit with fail
+      ansible.builtin.fail:
+        msg: Sorry, but a serious error occurred when installing the required Python packages.
+
+    # - name: create requirements.txt
+    #   ansible.builtin.template:
+    #     src: requirements.txt.j2
+    #     dest: /tmp/icinga2-ido-requirements.txt
+    #     mode: 0660
+    #   vars:
+    #     pip_modules: "{{ icinga2_mariadb_python_packages }}"
+    #
+    # - name: do facts module to get latest information
+    #   ansible.builtin.setup:
+    #
+    # - name: ensure python bindings for mariadb packages 1st
+    #   ansible.builtin.pip:
+    #     # executable: pip3
+    #     requirements: /tmp/icinga2-ido-requirements.txt
+    #     state: present
+    #   register: pip_install
+    #   ignore_errors: true
+    #   # no_log: true
+    #
+    # - name: install python ip modules
+    #   when:
+    #     - pip_install.failed
+    #     - icinga2_mariadb_build_packages is defined
+    #     - icinga2_mariadb_build_packages | length > 0
+    #   block:
+    #     - name: install build essentials
+    #       ansible.builtin.package:
+    #         name: "{{ icinga2_mariadb_build_packages }}"
+    #         state: present
+    #
+    #     - name: ensure python bindings for mariadb packages 2nd
+    #       ansible.builtin.pip:
+    #         requirements: /tmp/icinga2-ido-requirements.txt
+    #         state: present
+    #
+    #     - name: uninstall build essentials
+    #       ansible.builtin.package:
+    #         name: "{{ icinga2_mariadb_build_packages }}"
+    #         state: absent
 
 - name: install icinga2-ido package
   ansible.builtin.package:

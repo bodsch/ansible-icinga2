@@ -18,7 +18,6 @@ icinga2_python_requirements:
 icinga2_requirements:
   - gnupg
   - ca-certificates
-  - python3-pip
 
 icinga2_remove_old_cert: false
 icinga2_installed: false
