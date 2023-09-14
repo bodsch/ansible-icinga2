@@ -9,6 +9,12 @@
     - ansible_os_family | lower == 'debian'
     - icinga2_use_external_repo | bool
   block:
+    - name: install needed packages
+      ansible.builtin.package:
+        name:
+          - gpg-agent
+          - python3-jinja2
+          
     - name: add icinga2 GPG key
       ansible.builtin.apt_key:
         id: F51A91A5EE001AA5D77D53C4C6E319C334410682
