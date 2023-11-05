@@ -3,6 +3,14 @@
 
 Ansible role to setup Icinga2 master or satellite.
 
+---
+
+> I am in the process of transferring this role to a [collection](https://github.com/bodsch/ansible-collection-icinga) and will therefore no longer process any issues or merge requests here.  
+> However, I will include them in the collection!  
+> **Please be patient until I have completed the work!**
+
+---
+
 
 [![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bodsch/ansible-icinga2/main.yml?branch=main)][ci]
 [![GitHub issues](https://img.shields.io/github/issues/bodsch/ansible-icinga2)][issues]
